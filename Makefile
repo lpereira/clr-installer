@@ -20,7 +20,7 @@ check:
 	go test -cover ${GO_PACKAGE_PREFIX}/...
 
 PHONY += coverage
-coverage:
+coverage: build
 	@rm -rf .coverage/; \
 	mkdir -p .coverage/; \
 	for pkg in $$(go list $$GO_PACKAGE_PREFIX/...); do \
