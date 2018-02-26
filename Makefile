@@ -11,10 +11,8 @@ export GOPATH=$(pkg_dir)
 export GO_PACKAGE_PREFIX := clr-installer
 
 build:
-	go get -v ${GO_PACKAGE_PREFIX}/clr-installer-tui
-	go install -v ${GO_PACKAGE_PREFIX}/clr-installer-tui
-	go get -v ${GO_PACKAGE_PREFIX}/clr-installer-gui
-	go install -v ${GO_PACKAGE_PREFIX}/clr-installer-gui
+	go get -v ${GO_PACKAGE_PREFIX}/clr-installer
+	go install -v ${GO_PACKAGE_PREFIX}/clr-installer
 
 check:
 	go test -cover ${GO_PACKAGE_PREFIX}/...
