@@ -1,0 +1,40 @@
+pipeline {
+    agent {
+        docker {
+            image 'mhorn-linux.jf.intel.com:5000/travisci/ci-garnet:latest'
+            // The Travis-CI script tries to modify the /etc/resolv.conf,
+            // this prevent it from being modified -- and keep working.
+            args '-v /etc/resolv.conf:/etc/resolv.conf:ro'
+        }
+    }
+    stages {
+        stage("setup") {
+            steps {
+                sh 'chmod 755 ${WORKSPACE}/.Jenkins/run_travis-ci.sh'
+                sh 'sudo -i -u travis ${WORKSPACE}/.Jenkins/run_travis-ci.sh'
+            }
+        }
+        stage("pause") {
+            steps {
+                sh 'touch /tmp/sleep'
+                // To have the docker image stay alive from the Jenkins run,
+                // uncomment the while command
+                // sh 'while [ -f /tmp/sleep ]; do sleep 5 ; done'
+            }
+        }
+        stage("travis-ci") {
+            steps {
+                sh 'sudo -i -u travis chmod +x /home/travis/travis-ci.sh'
+                sh 'sudo -i -u travis /home/travis/travis-ci.sh'
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Do something when it is successful'
+        }
+        failure {
+            echo 'Do something when it is failed'
+        }
+    }
+}
