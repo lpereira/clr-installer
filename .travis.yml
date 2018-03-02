@@ -12,5 +12,7 @@ before_install:
     - gometalinter.v2 --install
 
 script:
+    - make dist-clean
+    - make
     - make lint
     - make check
