@@ -1,2 +1,12 @@
+# Lines that start with '#' are comments.
+# See http://git-scm.com/docs/gitignore
+
+# Ignore all Linux Editor revision save files
+*~
+*.swp
+# Emacs
+.#*
+
+# Project directories to ignore
 .coverage/
 bin/
