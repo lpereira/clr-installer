@@ -10,6 +10,7 @@ cov_dir = $(top_srcdir)/.coverage
 
 export GOPATH=$(pkg_dir)
 export GO_PACKAGE_PREFIX := clr-installer
+export TESTS_DIR := $(top_srcdir)/tests/
 
 build:
 	go get -v ${GO_PACKAGE_PREFIX}/clr-installer
