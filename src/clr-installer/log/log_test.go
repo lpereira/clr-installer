@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"clr-installer/errors"
 )
 
 func TestTag(t *testing.T) {
@@ -21,7 +23,9 @@ func TestTag(t *testing.T) {
 
 	w := bytes.NewBuffer(nil)
 	SetOutput(w)
-	SetLogLevel(LogLevelDebug)
+	if err := SetLogLevel(LogLevelDebug); err != nil {
+		t.Fatal("Shoul not fail with a valid level")
+	}
 
 	for _, curr := range tests {
 		curr.fc(curr.msg)
@@ -50,10 +54,6 @@ func TestErrorError(t *testing.T) {
 	if str == "" {
 		t.Fatal("No log written to output")
 	}
-
-	if !strings.Contains(str, "[ERR] log_test.go") {
-		t.Fatalf("Expected to have trace marks and the error tag - entry: %s", str)
-	}
 }
 
 func TestLogLevel(t *testing.T) {
@@ -71,7 +71,9 @@ func TestLogLevel(t *testing.T) {
 	SetOutput(w)
 
 	for _, curr := range tests {
-		SetLogLevel(curr.mutedLevel)
+		if err := SetLogLevel(curr.mutedLevel); err != nil {
+			t.Fatal("Should not fail with a valid log level")
+		}
 		curr.fc(curr.msg)
 
 		if w.String() != "" {
@@ -109,5 +111,31 @@ func TestInvalidLogLevelStr(t *testing.T) {
 	_, err := LevelStr(-1)
 	if err == nil {
 		t.Fatal("Should have failed to format an invalid log level")
+	}
+}
+
+func TestInvalidLogLevel(t *testing.T) {
+	if err := SetLogLevel(999); err == nil {
+		t.Fatal("Shold fail with an invalid log level")
+	}
+}
+
+func TestLogTraceableError(t *testing.T) {
+	w := bytes.NewBuffer(nil)
+	SetOutput(w)
+	ErrorError(errors.Errorf("Traceable error"))
+
+	if !strings.Contains(w.String(), "log_test.go") {
+		t.Fatal("Traceable should contains the source name")
+	}
+}
+
+func TestLogOut(t *testing.T) {
+	w := bytes.NewBuffer(nil)
+	SetOutput(w)
+	Out("command output")
+
+	if !strings.Contains(w.String(), "[OUT]") {
+		t.Fatal("Out logs should contain the tag [OUT]")
 	}
 }
