@@ -294,9 +294,7 @@ func TestParseBlockDevicesDescriptor(t *testing.T) {
 	}
 }
 
-//
-
-func TestNoChildren(t *testing.T) {
+func TestNullRemovable(t *testing.T) {
 	lsblkOutput := `{
    "blockdevices": [
       {"name": "sda", "maj:min": "8:0", "rm": "0", "size": "223.6G", "ro": "0", "type": "disk", "mountpoint": null,
