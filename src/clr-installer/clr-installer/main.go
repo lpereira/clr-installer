@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
+	"os/user"
+	"path/filepath"
 	"syscall"
 
 	"clr-installer/controller"
@@ -15,6 +17,7 @@ import (
 )
 
 var (
+	logFile    string
 	configFile string
 	logLevel   int
 )
@@ -31,6 +34,14 @@ func init() {
 		fmt.Sprintf("%d (debug), %d (info), %d (warning), %d (error)",
 			log.LogLevelDebug, log.LogLevelInfo, log.LogLevelWarning, log.LogLevelError),
 	)
+
+	usr, err := user.Current()
+	if err != nil {
+		fatal(err)
+	}
+
+	defaultLogFile := filepath.Join(usr.HomeDir, "clr-installer.log")
+	flag.StringVar(&logFile, "log-file", defaultLogFile, "The log file path")
 }
 
 func fatal(err error) {
@@ -44,6 +55,13 @@ func main() {
 	if err := log.SetLogLevel(logLevel); err != nil {
 		fatal(err)
 	}
+
+	f, err := os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		fatal(err)
+	}
+	defer f.Close()
+	log.SetOutput(f)
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
