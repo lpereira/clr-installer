@@ -25,6 +25,26 @@
 #   unused-packages = true
 
 
+[[constraint]]
+  name = "github.com/VladimirMarkelov/clui"
+  version = "0.7.0"
+
+[[constraint]]
+  name = "github.com/huandu/xstrings"
+  version = "1.0.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/nsf/termbox-go"
+
+[[constraint]]
+  name = "github.com/spf13/pflag"
+  version = "1.0.0"
+
+[[constraint]]
+  name = "golang.org/x/text"
+  version = "0.3.0"
+
 [prune]
   go-tests = true
   unused-packages = true

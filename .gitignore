@@ -10,3 +10,4 @@
 # Project directories to ignore
 .coverage/
 bin/
+pkg/

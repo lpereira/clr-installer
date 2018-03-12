@@ -2,14 +2,57 @@
 
 
 [[projects]]
+  name = "github.com/VladimirMarkelov/clui"
+  packages = ["."]
+  revision = "c051927c580615cf654745705c522f32200d36d8"
+  branch = "master"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/atotto/clipboard"
+  packages = ["."]
+  revision = "bc5958e1c8339112fc3347a89f3c482f416a69d3"
+
+[[projects]]
+  name = "github.com/huandu/xstrings"
+  packages = ["."]
+  revision = "2bf18b218c51864a87384c06996e40ff9dcff8e1"
+  version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/mattn/go-runewidth"
+  packages = ["."]
+  revision = "9e777a8366cce605130a531d2cd6363d07ad7317"
+  version = "v0.0.2"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/nsf/termbox-go"
+  packages = ["."]
+  revision = "e2050e41c8847748ec5288741c0b19a8cb26d084"
+
+[[projects]]
   name = "github.com/spf13/pflag"
   packages = ["."]
   revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
   version = "v1.0.0"
 
+[[projects]]
+  name = "golang.org/x/text"
+  packages = [
+    "internal/format",
+    "internal/gen",
+    "internal/tag",
+    "language",
+    "language/display",
+    "unicode/cldr"
+  ]
+  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
+  version = "v0.3.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "813c79246545d1abdbf87a7a54e15710c6c9935122ee741cdf3059dd9ff11217"
+  inputs-digest = "58b99590d5e7cf27677a8677bf6115b87ef6fb98ae217b461a68982d153eecda"
   solver-name = "gps-cdcl"
   solver-version = 1
