@@ -8,6 +8,7 @@ build_bin_dir = $(build_dir)/bin
 pkg_dir = $(top_srcdir)
 cov_dir = $(top_srcdir)/.coverage
 
+orig_go_path = $(shell go env GOPATH)
 export GOPATH=$(pkg_dir)
 export GO_PACKAGE_PREFIX := clr-installer
 export TESTS_DIR := $(top_srcdir)/tests/
@@ -38,8 +39,23 @@ PHONY += coverage-html
 coverage-html: coverage
 	@go tool cover -html="${cov_dir}/cover.out"
 
+PHONY += install-linters
+install-linters:
+ifneq ($(shell which gometalinter.v2 2>/dev/null 1>&2 ; echo $$?),0)
+	@echo "Installing linters..."
+	@GOPATH=${orig_go_path} go get -u gopkg.in/alecthomas/gometalinter.v2 1>/dev/null
+	@GOPATH=${orig_go_path} gometalinter.v2 --install 1>/dev/null
+endif
+
+PHONY += update-linters
+update-linters:
+ifeq ($(shell which gometalinter.v2 2>/dev/null 1>&2 ; echo $$?),0)
+	@echo "Updating linters..."
+	@GOPATH=${orig_go_path} gometalinter.v2 --update 1>/dev/null
+endif
+
 PHONY += lint
-lint:
+lint: install-linters
 	@gometalinter.v2 --deadline=10m --tests --vendor --disable-all \
 	--enable=misspell \
 	--enable=vet \
