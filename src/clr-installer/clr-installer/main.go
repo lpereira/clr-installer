@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,6 +10,8 @@ import (
 	"clr-installer/controller"
 	"clr-installer/log"
 	"clr-installer/model"
+
+	flag "github.com/spf13/pflag"
 )
 
 var (
