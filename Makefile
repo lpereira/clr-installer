@@ -41,7 +41,7 @@ coverage-html: coverage
 
 PHONY += install-linters
 install-linters:
-ifneq ($(shell which gometalinter.v2 2>/dev/null 1>&2 ; echo $$?),0)
+ifneq ($(shell gometalinter.v2 --version 2>/dev/null 1>&2 ; echo $$?),0)
 	@echo "Installing linters..."
 	@GOPATH=${orig_go_path} go get -u gopkg.in/alecthomas/gometalinter.v2 1>/dev/null
 	@GOPATH=${orig_go_path} gometalinter.v2 --install 1>/dev/null
@@ -49,14 +49,18 @@ endif
 
 PHONY += update-linters
 update-linters:
-ifeq ($(shell which gometalinter.v2 2>/dev/null 1>&2 ; echo $$?),0)
+ifeq ($(shell gometalinter.v2 --version 2>/dev/null 1>&2 ; echo $$?),0)
 	@echo "Updating linters..."
 	@GOPATH=${orig_go_path} gometalinter.v2 --update 1>/dev/null
+else
+	@echo "Linters not installed"
+	@exit 1
 endif
 
 PHONY += lint
 lint: install-linters
-	@gometalinter.v2 --deadline=10m --tests --vendor --disable-all \
+	@gometalinter.v2 --deadline=10m --tests --vendor \
+	--exclude=vendor --disable-all \
 	--enable=misspell \
 	--enable=vet \
 	--enable=ineffassign \
@@ -70,6 +74,30 @@ lint: install-linters
 	--enable=vetshadow \
 	--enable=errcheck \
 	./...
+
+PHONY += install-dep
+install-dep:
+ifneq ($(shell dep version 2>/dev/null 1>&2 ; echo $$?),0)
+	@echo "Installing dep..."
+	@mkdir -p ${orig_go_path}/bin
+	@curl https://raw.githubusercontent.com/golang/dep/master/install.sh 2>/dev/null \
+		| GOPATH=${orig_go_path} bash
+endif
+
+PHONY += update-dep
+update-dep:
+ifeq ($(shell dep version 2>/dev/null 1>&2 ; echo $$?),0)
+	@echo "Updating dep..."
+	@curl https://raw.githubusercontent.com/golang/dep/master/install.sh 2>/dev/null \
+		| GOPATH=${orig_go_path} bash
+else
+	@echo "Dep not installed"
+	@exit 1
+endif
+
+PHONY += update-vendor
+update-vendor: install-dep
+	@cd ${GOPATH}/src/${GO_PACKAGE_PREFIX} ; dep ensure -update
 
 PHONY += clean
 clean:
