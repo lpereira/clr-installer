@@ -13,6 +13,8 @@ import (
 // medias, bundles to install and whatever state a install may require
 type SystemInstall struct {
 	TargetMedias []*storage.BlockDevice
+	Keyboard     string
+	Language     string
 	Bundles      []string
 }
 
@@ -27,30 +29,30 @@ func (si *SystemInstall) Validate() error {
 		return errors.Errorf("System Installation must provide a target media")
 	}
 
-	bootPartition := false
-	rootPartition := false
-
 	for _, curr := range si.TargetMedias {
-		for _, ch := range curr.Children {
-			if ch.FsType == "vfat" && ch.MountPoint == "/boot" {
-				bootPartition = true
-			}
-
-			if ch.MountPoint == "/" {
-				rootPartition = true
-			}
+		if err := curr.Validate(); err != nil {
+			return err
 		}
 	}
 
-	if !bootPartition {
-		return errors.Errorf("Could not find a suitable EFI partition")
+	if si.Keyboard == "" {
+		return errors.Errorf("Keyboard not set")
 	}
 
-	if !rootPartition {
-		return errors.Errorf("Could not find a root partition")
+	if si.Language == "" {
+		return errors.Errorf("System Language not set")
 	}
 
 	return nil
+}
+
+// AddTargetMedia adds a BlockDevice instance to the list of TargetMedias
+func (si *SystemInstall) AddTargetMedia(bd *storage.BlockDevice) {
+	if si.TargetMedias == nil {
+		si.TargetMedias = []*storage.BlockDevice{}
+	}
+
+	si.TargetMedias = append(si.TargetMedias, bd)
 }
 
 // LoadFile loads a model from a json file pointed by path
