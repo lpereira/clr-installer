@@ -10,6 +10,7 @@ import (
 	"clr-installer/errors"
 	"clr-installer/log"
 	"clr-installer/model"
+	"clr-installer/progress"
 	"clr-installer/storage"
 )
 
@@ -52,8 +53,6 @@ func Install(rootDir string, model *model.SystemInstall) error {
 
 	// prepare all the target block devices
 	for _, curr := range model.TargetMedias {
-		log.Info("Writing partition table for: %s", curr.Name)
-
 		// based on the description given, write the partition table
 		err = curr.WritePartitionTable()
 		if err != nil {
@@ -62,10 +61,12 @@ func Install(rootDir string, model *model.SystemInstall) error {
 
 		// prepare the blockdevice's partitions filesystem
 		for _, ch := range curr.Children {
+			prg := progress.NewLoop(fmt.Sprintf("Writing %s file system to %s", ch.FsType, ch.Name))
 			err = ch.MakeFs()
 			if err != nil {
 				return err
 			}
+			prg.Done()
 
 			// if we have a mount point set it for future mounting
 			if ch.MountPoint != "" {
@@ -98,6 +99,7 @@ func Install(rootDir string, model *model.SystemInstall) error {
 }
 
 func contentInstall(rootDir string, version string, bundles []string) error {
+	prg := progress.NewLoop("Installing the base system")
 	args := []string{
 		"swupd",
 		"verify",
@@ -113,19 +115,25 @@ func contentInstall(rootDir string, version string, bundles []string) error {
 	if err != nil {
 		return errors.Wrap(err)
 	}
+	prg.Done()
 
-	args = []string{
-		"swupd",
-		"bundle-add",
-		fmt.Sprintf("--path=%s", rootDir),
+	for _, bundle := range bundles {
+		prg = progress.NewLoop(fmt.Sprintf("Installing bundle: %s", bundle))
+		args = []string{
+			"swupd",
+			"bundle-add",
+			fmt.Sprintf("--path=%s", rootDir),
+			bundle,
+		}
+
+		err = cmd.RunAndLog(true, args...)
+		if err != nil {
+			return errors.Wrap(err)
+		}
+		prg.Done()
 	}
-	args = append(args, bundles...)
 
-	err = cmd.RunAndLog(true, args...)
-	if err != nil {
-		return errors.Wrap(err)
-	}
-
+	prg = progress.NewLoop("Installing boot loader")
 	args = []string{
 		fmt.Sprintf("%s/usr/bin/clr-boot-manager", rootDir),
 		"update",
@@ -136,21 +144,24 @@ func contentInstall(rootDir string, version string, bundles []string) error {
 	if err != nil {
 		return errors.Wrap(err)
 	}
+	prg.Done()
 
 	return nil
 }
 
 // Cleanup executes post-install cleanups i.e unmount partition, remove
 // temporary directory etc.
-func Cleanup(rootDir string) error {
+func Cleanup(rootDir string, umount bool) error {
 	var err error
 
 	log.Info("Umounting %s", rootDir)
 
 	// we'll fail to umount only if a device is not mounted
 	// then, just log it and move cleaning up
-	if storage.UmountAll(rootDir) != nil {
-		log.Warning("Failed to umount volumes")
+	if umount {
+		if storage.UmountAll(rootDir) != nil {
+			log.Warning("Failed to umount volumes")
+		}
 	}
 
 	args := []string{

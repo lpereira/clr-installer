@@ -9,6 +9,7 @@ import (
 	"clr-installer/cmd"
 	"clr-installer/errors"
 	"clr-installer/log"
+	"clr-installer/progress"
 )
 
 type blockDeviceOps struct {
@@ -137,6 +138,7 @@ func (bd *BlockDevice) WritePartitionTable() error {
 		return errors.Errorf("Type is partition, disk required")
 	}
 
+	prg := progress.NewLoop(fmt.Sprintf("Writing partition table to: %s", bd.Name))
 	args := []string{
 		"parted",
 		"-s",
@@ -204,7 +206,10 @@ func (bd *BlockDevice) WritePartitionTable() error {
 	if err != nil {
 		return errors.Wrap(err)
 	}
+	prg.Done()
 
+	prg = progress.MultiStep(len(guids), "Adjusting filesystem configurations")
+	cnt := 1
 	for idx, guid := range guids {
 		args = []string{
 			"sgdisk",
@@ -216,7 +221,11 @@ func (bd *BlockDevice) WritePartitionTable() error {
 		if err != nil {
 			return errors.Wrap(err)
 		}
+
+		prg.Partial(cnt)
+		cnt = cnt + 1
 	}
+	prg.Done()
 
 	return nil
 }
@@ -343,6 +352,7 @@ func ext4MakePartCommand(bd *BlockDevice, start uint64, end uint64) (string, err
 func ext4MakeFs(bd *BlockDevice) error {
 	args := []string{
 		"mkfs.ext4",
+		"-v",
 		"-F",
 		"-b",
 		"4096",
