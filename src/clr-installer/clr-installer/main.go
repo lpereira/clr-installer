@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"clr-installer/controller"
+	"clr-installer/frontend"
 	"clr-installer/log"
-	"clr-installer/model"
-
+	"clr-installer/massinstall"
+	"clr-installer/tui"
 	flag "github.com/spf13/pflag"
 )
 
@@ -20,6 +20,8 @@ var (
 	logFile    string
 	configFile string
 	logLevel   int
+
+	frontEndImpls []frontend.Frontend
 )
 
 func init() {
@@ -49,6 +51,13 @@ func fatal(err error) {
 	os.Exit(1)
 }
 
+func initFrontendList() {
+	frontEndImpls = []frontend.Frontend{
+		massinstall.New(configFile),
+		tui.New(),
+	}
+}
+
 func main() {
 	flag.Parse()
 
@@ -60,8 +69,12 @@ func main() {
 	if err != nil {
 		fatal(err)
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 	log.SetOutput(f)
+
+	initFrontendList()
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
@@ -74,21 +87,17 @@ func main() {
 	}
 
 	go func() {
-		if configFile != "" {
-			log.Debug("Loading config file: %s", configFile)
-			model, err := model.LoadFile(configFile)
+		for _, fe := range frontEndImpls {
+			if !fe.MustRun() {
+				continue
+			}
+
+			err := fe.Run(rootDir)
 			if err != nil {
 				fatal(err)
 			}
 
-			log.Debug("Starting install")
-			err = controller.Install(rootDir, model)
-			if err != nil {
-				if controller.Cleanup(rootDir) != nil {
-					log.ErrorError(err)
-				}
-				fatal(err)
-			}
+			break
 		}
 
 		done <- true
@@ -101,7 +110,4 @@ func main() {
 	}()
 
 	<-done
-	if err := controller.Cleanup(rootDir); err != nil {
-		log.ErrorError(err)
-	}
 }
