@@ -73,3 +73,27 @@ func LoadFile(path string) (*SystemInstall, error) {
 
 	return &result, nil
 }
+
+// WriteFile writes a json formated representation of si into the provided file path
+func (si *SystemInstall) WriteFile(path string) error {
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		_ = f.Close()
+	}()
+
+	b, err := json.MarshalIndent(si, "", " ")
+	if err != nil {
+		return err
+	}
+
+	_, err = f.Write(b)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

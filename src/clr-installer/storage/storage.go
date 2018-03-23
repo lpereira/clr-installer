@@ -15,44 +15,92 @@ import (
 
 // A BlockDevice describes a block device and its partitions
 type BlockDevice struct {
-	Name            string         // device name
-	Model           string         // device model
-	MajorMinor      string         // major:minor device number
-	FsType          string         // filesystem type
-	UUID            string         // filesystem uuid
-	MountPoint      string         // where the device is mounted
-	Size            float64        // size of the device
-	Type            int            // device type
-	State           int            // device state (running, live etc)
-	ReadOnly        bool           // read-only device
-	RemovableDevice bool           // removable device
-	Children        []*BlockDevice // children devices/partitions
+	Name            string           // device name
+	Model           string           // device model
+	MajorMinor      string           // major:minor device number
+	FsType          string           // filesystem type
+	UUID            string           // filesystem uuid
+	MountPoint      string           // where the device is mounted
+	Size            float64          // size of the device
+	Type            BlockDeviceType  // device type
+	State           BlockDeviceState // device state (running, live etc)
+	ReadOnly        bool             // read-only device
+	RemovableDevice bool             // removable device
+	Children        []*BlockDevice   // children devices/partitions
 }
+
+// BlockDeviceState is the representation of a block device state (live, running, etc)
+type BlockDeviceState int
+
+// BlockDeviceType is the representation of a block device type (disk, part, rom, etc)
+type BlockDeviceType int
 
 const (
 	// BlockDeviceTypeDisk identifies a BlockDevice as a disk
-	BlockDeviceTypeDisk = 1
+	BlockDeviceTypeDisk = iota
 
 	// BlockDeviceTypePart identifies a BlockDevice as a partition
-	BlockDeviceTypePart = 2
+	BlockDeviceTypePart
 
 	// BlockDeviceTypeRom identifies a BlockDevice as a rom
-	BlockDeviceTypeRom = 3
+	BlockDeviceTypeRom
+
+	// BlockDeviceTypeUnknown identifies a BlockDevice as unknown
+	BlockDeviceTypeUnknown
 
 	// BlockDeviceStateUnknown identifies a BlockDevice in a unknown state
-	BlockDeviceStateUnknown = 0
+	BlockDeviceStateUnknown = iota
 
 	// BlockDeviceStateRunning identifies a BlockDevice as running
-	BlockDeviceStateRunning = 1
+	BlockDeviceStateRunning
 
 	// BlockDeviceStateLive identifies a BlockDevice as live
-	BlockDeviceStateLive = 2
+	BlockDeviceStateLive
 )
 
 var (
-	lsblkBinary = "lsblk"
-	storageExp  = regexp.MustCompile(`([0-9](\.)?[0-9]*)?([m,g,t,k,p])`)
+	lsblkBinary         = "lsblk"
+	storageExp          = regexp.MustCompile(`([0-9](\.)?[0-9]*)?([m,g,t,k,p])`)
+	blockDeviceStateMap = map[BlockDeviceState]string{
+		BlockDeviceStateRunning: "running",
+		BlockDeviceStateLive:    "live",
+		BlockDeviceStateUnknown: "",
+	}
+	blockDeviceTypeMap = map[BlockDeviceType]string{
+		BlockDeviceTypeDisk:    "disk",
+		BlockDeviceTypePart:    "part",
+		BlockDeviceTypeRom:     "rom",
+		BlockDeviceTypeUnknown: "",
+	}
 )
+
+func (bt BlockDeviceType) String() string {
+	return blockDeviceTypeMap[bt]
+}
+
+func parseBlockDeviceType(bdt string) (BlockDeviceType, error) {
+	for k, v := range blockDeviceTypeMap {
+		if v == bdt {
+			return k, nil
+		}
+	}
+
+	return BlockDeviceTypeUnknown, errors.Errorf("Unknown block device type: %s", bdt)
+}
+
+func (bs BlockDeviceState) String() string {
+	return blockDeviceStateMap[bs]
+}
+
+func parseBlockDeviceState(bds string) (BlockDeviceState, error) {
+	for k, v := range blockDeviceStateMap {
+		if v == bds {
+			return k, nil
+		}
+	}
+
+	return BlockDeviceStateUnknown, errors.Errorf("Unrecognized block device state: %s", bds)
+}
 
 // Validate checks if the minimal requirements for a installation is met
 func (bd *BlockDevice) Validate() error {
@@ -328,14 +376,9 @@ func (bd *BlockDevice) UnmarshalJSON(b []byte) error {
 				return err
 			}
 
-			if tp == "disk" {
-				bd.Type = BlockDeviceTypeDisk
-			} else if tp == "part" {
-				bd.Type = BlockDeviceTypePart
-			} else if tp == "rom" {
-				bd.Type = BlockDeviceTypeRom
-			} else {
-				return errors.Errorf("Unknown block device type: %s", tp)
+			bd.Type, err = parseBlockDeviceType(tp)
+			if err != nil {
+				return err
 			}
 		case "state":
 			var state string
@@ -345,14 +388,9 @@ func (bd *BlockDevice) UnmarshalJSON(b []byte) error {
 				return err
 			}
 
-			if state == "running" {
-				bd.State = BlockDeviceStateRunning
-			} else if state == "live" {
-				bd.State = BlockDeviceStateLive
-			} else if state == "" {
-				bd.Type = BlockDeviceStateUnknown
-			} else {
-				return errors.Errorf("Unrecognized block device state: %s", state)
+			bd.State, err = parseBlockDeviceState(state)
+			if err != nil {
+				return err
 			}
 		case "mountpoint":
 			var mpoint string
@@ -383,6 +421,45 @@ func (bd *BlockDevice) UnmarshalJSON(b []byte) error {
 	}
 
 	return nil
+}
+
+func marshalBool(value bool) string {
+	if value {
+		return "1"
+	}
+	return "0"
+}
+
+// MarshalJSON is the json Marshaller implementation
+func (bd *BlockDevice) MarshalJSON() ([]byte, error) {
+	type BlockDeviceMarshal struct {
+		Name            string         `json:"name,omitempty"`
+		Model           string         `json:"model,omitempty"`
+		MajorMinor      string         `json:"maj:min,omitempty"`
+		FsType          string         `json:"fstype,omitempty"`
+		UUID            string         `json:"uuid,omitempty"`
+		MountPoint      string         `json:"mountpoint,omitempty"`
+		Size            float64        `json:"size,string,omitempty"`
+		ReadOnly        string         `json:"ro,omitempty"`
+		RemovableDevice string         `json:"rm,omitempty"`
+		Type            string         `json:"type,omitempty"`
+		State           string         `json:"state,omitempty"`
+		Children        []*BlockDevice `json:"children,omitempty"`
+	}
+	return json.MarshalIndent(&BlockDeviceMarshal{
+		Name:            bd.Name,
+		Model:           bd.Model,
+		MajorMinor:      bd.MajorMinor,
+		FsType:          bd.FsType,
+		UUID:            bd.UUID,
+		MountPoint:      bd.MountPoint,
+		Size:            bd.Size,
+		ReadOnly:        marshalBool(bd.ReadOnly),
+		RemovableDevice: marshalBool(bd.RemovableDevice),
+		Type:            bd.Type.String(),
+		State:           bd.State.String(),
+		Children:        bd.Children,
+	}, "", " ")
 }
 
 // SupportedFileSystems exposes the currently supported file system
