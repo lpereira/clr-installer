@@ -1,36 +1,15 @@
 package tui
 
 import (
-	"bytes"
-	"strings"
-
-	"clr-installer/cmd"
+	"clr-installer/keyboard"
 	"github.com/VladimirMarkelov/clui"
 )
 
 // KeyboardPage is the Page implementation for the keyboard configuration page
 type KeyboardPage struct {
 	BasePage
-	avKeymaps  []string
+	avKeymaps  []*keyboard.Keymap
 	kbdListBox *clui.ListBox
-}
-
-func (page *KeyboardPage) initKeymaps() error {
-	w := bytes.NewBuffer(nil)
-	err := cmd.Run(w, "localectl", "list-keymaps", "--no-pager")
-	if err != nil {
-		return err
-	}
-
-	tks := strings.Split(w.String(), "\n")
-	for _, curr := range tks {
-		if curr == "" {
-			continue
-		}
-		page.avKeymaps = append(page.avKeymaps, curr)
-	}
-
-	return nil
 }
 
 // SetDone sets the keyboard page flag done, and sets back the configuration to the data model
@@ -41,12 +20,13 @@ func (page *KeyboardPage) SetDone(done bool) bool {
 }
 
 func newKeyboardPage(mi *Tui) (Page, error) {
-	page := &KeyboardPage{
-		avKeymaps: []string{},
+	kmaps, err := keyboard.LoadKeymaps()
+	if err != nil {
+		return nil, err
 	}
 
-	if err := page.initKeymaps(); err != nil {
-		return nil, err
+	page := &KeyboardPage{
+		avKeymaps: kmaps,
 	}
 
 	page.setupMenu(mi, TuiPageKeyboard, "Configure the keyboard", DoneButton)
@@ -58,9 +38,9 @@ func newKeyboardPage(mi *Tui) (Page, error) {
 
 	defKeyboard := 0
 	for idx, curr := range page.avKeymaps {
-		page.kbdListBox.AddItem(curr)
+		page.kbdListBox.AddItem(curr.Code)
 
-		if curr == "us" {
+		if curr.IsDefault() {
 			defKeyboard = idx
 		}
 	}
