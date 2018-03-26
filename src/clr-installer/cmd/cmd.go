@@ -23,26 +23,20 @@ func (rl runLogger) Write(p []byte) (n int, err error) {
 
 // RunAndLog executes a command (similar to Run) but takes care of writing
 // the output to default logger
-func RunAndLog(root bool, args ...string) error {
-	return Run(runLogger{}, root, args...)
+func RunAndLog(args ...string) error {
+	return Run(runLogger{}, args...)
 }
 
 // Run executes a command and uses writer to write both stdout and stderr
-// root determines if the command must be executed as root (using sudo) and
 // args are the actual command and its arguments
-func Run(writer io.Writer, root bool, args ...string) error {
+func Run(writer io.Writer, args ...string) error {
 	var exe string
 	var cmdArgs []string
 
 	log.Debug("%s", strings.Join(args, " "))
 
-	if root {
-		exe = "sudo"
-		cmdArgs = args
-	} else {
-		exe = args[0]
-		cmdArgs = args[1:]
-	}
+	exe = args[0]
+	cmdArgs = args[1:]
 
 	cmd := exec.Command(exe, cmdArgs...)
 

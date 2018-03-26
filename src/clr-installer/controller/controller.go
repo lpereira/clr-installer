@@ -3,6 +3,9 @@ package controller
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"os/user"
+	"path"
 	"path/filepath"
 	"sort"
 
@@ -22,10 +25,34 @@ func sortMountPoint(bds []*storage.BlockDevice) []*storage.BlockDevice {
 	return bds
 }
 
+func verifyRootUser() error {
+	// ProgName is the short name of this executable
+	progName := path.Base(os.Args[0])
+
+	user, err := user.Current()
+	if err != nil {
+		return errors.Errorf("%s MUST run as 'root' user to install! (user=%s)",
+			progName, "UNKNOWN")
+	}
+
+	if user.Uid != "0" {
+		return errors.Errorf("%s MUST run as 'root' user to install! (user=%s)",
+			progName, user.Uid)
+	}
+
+	return nil
+}
+
 // Install is the main install controller, this is the entry point for a full
 // installation
 func Install(rootDir string, model *model.SystemInstall) error {
 	var err error
+
+	// First verify we are running as 'root' user which is required
+	// for most of the Installation commands
+	if err = verifyRootUser(); err != nil {
+		return err
+	}
 
 	log.Info("Querying clear linux version")
 
@@ -38,7 +65,7 @@ func Install(rootDir string, model *model.SystemInstall) error {
 	}
 
 	version := bytes.NewBuffer(nil)
-	err = cmd.Run(version, true, args...)
+	err = cmd.Run(version, args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -111,7 +138,7 @@ func contentInstall(rootDir string, version string, bundles []string) error {
 		"--no-scripts",
 	}
 
-	err := cmd.RunAndLog(true, args...)
+	err := cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -126,7 +153,7 @@ func contentInstall(rootDir string, version string, bundles []string) error {
 			bundle,
 		}
 
-		err = cmd.RunAndLog(true, args...)
+		err = cmd.RunAndLog(args...)
 		if err != nil {
 			return errors.Wrap(err)
 		}
@@ -140,7 +167,7 @@ func contentInstall(rootDir string, version string, bundles []string) error {
 		fmt.Sprintf("--path=%s", rootDir),
 	}
 
-	err = cmd.RunAndLog(true, args...)
+	err = cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -153,6 +180,13 @@ func contentInstall(rootDir string, version string, bundles []string) error {
 // temporary directory etc.
 func Cleanup(rootDir string, umount bool) error {
 	var err error
+
+	// Verify we are running as 'root' user which is required
+	// for most of the Cleanup commands
+	// We probably should not call clean-up if we didn't call Install
+	if err = verifyRootUser(); err != nil {
+		return err
+	}
 
 	log.Info("Umounting %s", rootDir)
 
@@ -172,7 +206,7 @@ func Cleanup(rootDir string, umount bool) error {
 	}
 
 	log.Info("Removing rootDir: %s", rootDir)
-	err = cmd.RunAndLog(true, args...)
+	err = cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}

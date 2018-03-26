@@ -47,7 +47,7 @@ func (bd *BlockDevice) MakeFs() error {
 			fmt.Sprintf("/dev/%s", bd.Name),
 		}
 
-		if err := cmd.Run(nil, true, args...); err != nil {
+		if err := cmd.Run(nil, args...); err != nil {
 			log.ErrorError(err)
 		}
 
@@ -95,7 +95,7 @@ func (bd *BlockDevice) Mount(root string) error {
 			targetPath,
 		}
 
-		err = cmd.RunAndLog(true, args...)
+		err = cmd.RunAndLog(args...)
 		if err != nil {
 			return errors.Wrap(err)
 		}
@@ -107,7 +107,7 @@ func (bd *BlockDevice) Mount(root string) error {
 		targetPath,
 	}
 
-	err := cmd.RunAndLog(true, args...)
+	err := cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -124,7 +124,7 @@ func UmountAll(rootDir string) error {
 		rootDir,
 	}
 
-	err := cmd.RunAndLog(true, args...)
+	err := cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -147,7 +147,7 @@ func (bd *BlockDevice) WritePartitionTable() error {
 		"gpt",
 	}
 
-	err := cmd.RunAndLog(true, args...)
+	err := cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -191,7 +191,7 @@ func (bd *BlockDevice) WritePartitionTable() error {
 		start = end
 	}
 
-	err = cmd.RunAndLog(true, args...)
+	err = cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -202,7 +202,7 @@ func (bd *BlockDevice) WritePartitionTable() error {
 		fmt.Sprintf("set %d boot on", bootPartition),
 	}
 
-	err = cmd.RunAndLog(true, args...)
+	err = cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -217,7 +217,7 @@ func (bd *BlockDevice) WritePartitionTable() error {
 			fmt.Sprintf("--typecode=%d:%s", idx, guid),
 		}
 
-		err = cmd.RunAndLog(true, args...)
+		err = cmd.RunAndLog(args...)
 		if err != nil {
 			return errors.Wrap(err)
 		}
@@ -259,7 +259,7 @@ func mountDevFs(rootDir string) error {
 		mPointPath,
 	}
 
-	err := cmd.RunAndLog(true, args...)
+	err := cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -271,7 +271,7 @@ func mountDevFs(rootDir string) error {
 		mPointPath,
 	}
 
-	err = cmd.RunAndLog(true, args...)
+	err = cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -288,7 +288,7 @@ func mountSysFs(rootDir string) error {
 		mPointPath,
 	}
 
-	err := cmd.RunAndLog(true, args...)
+	err := cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -300,7 +300,7 @@ func mountSysFs(rootDir string) error {
 		mPointPath,
 	}
 
-	err = cmd.RunAndLog(true, args...)
+	err = cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -317,7 +317,7 @@ func mountProcFs(rootDir string) error {
 		mPointPath,
 	}
 
-	err := cmd.RunAndLog(true, args...)
+	err := cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -330,7 +330,7 @@ func mountProcFs(rootDir string) error {
 		mPointPath,
 	}
 
-	err = cmd.RunAndLog(true, args...)
+	err = cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -359,7 +359,7 @@ func ext4MakeFs(bd *BlockDevice) error {
 		fmt.Sprintf("/dev/%s", bd.Name),
 	}
 
-	err := cmd.RunAndLog(true, args...)
+	err := cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -384,7 +384,7 @@ func swapMakeFs(bd *BlockDevice) error {
 		fmt.Sprintf("/dev/%s", bd.Name),
 	}
 
-	err := cmd.RunAndLog(true, args...)
+	err := cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
@@ -411,7 +411,7 @@ func vfatMakeFs(bd *BlockDevice) error {
 		fmt.Sprintf("/dev/%s", bd.Name),
 	}
 
-	err := cmd.RunAndLog(true, args...)
+	err := cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}

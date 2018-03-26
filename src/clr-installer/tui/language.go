@@ -19,7 +19,7 @@ type LanguagePage struct {
 
 func (page *LanguagePage) initLanguages() error {
 	w := bytes.NewBuffer(nil)
-	err := cmd.Run(w, false, "localectl", "list-locales", "--no-pager")
+	err := cmd.Run(w, "localectl", "list-locales", "--no-pager")
 	if err != nil {
 		return err
 	}

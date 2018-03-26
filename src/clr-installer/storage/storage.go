@@ -206,7 +206,7 @@ func (bd *BlockDevice) HumanReadableSize() (string, error) {
 // ListBlockDevices Lists all available/attached block devices
 func ListBlockDevices() ([]*BlockDevice, error) {
 	w := bytes.NewBuffer(nil)
-	err := cmd.Run(w, false, lsblkBinary, "-J", "-b", "-O")
+	err := cmd.Run(w, lsblkBinary, "-J", "-b", "-O")
 	if err != nil {
 		return nil, fmt.Errorf("%s", w.String())
 	}

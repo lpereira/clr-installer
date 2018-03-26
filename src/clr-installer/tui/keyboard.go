@@ -17,7 +17,7 @@ type KeyboardPage struct {
 
 func (page *KeyboardPage) initKeymaps() error {
 	w := bytes.NewBuffer(nil)
-	err := cmd.Run(w, false, "localectl", "list-keymaps", "--no-pager")
+	err := cmd.Run(w, "localectl", "list-keymaps", "--no-pager")
 	if err != nil {
 		return err
 	}
