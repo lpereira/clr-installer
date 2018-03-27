@@ -4,8 +4,7 @@
 [[projects]]
   name = "github.com/VladimirMarkelov/clui"
   packages = ["."]
-  revision = "c051927c580615cf654745705c522f32200d36d8"
-  branch = "master"
+  revision = "8d3cd97d8ead25113787bfadb816a2f975beef60"
 
 [[projects]]
   branch = "master"
@@ -53,6 +52,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "58b99590d5e7cf27677a8677bf6115b87ef6fb98ae217b461a68982d153eecda"
+  inputs-digest = "a7ffaddb79c70a16ef9040ca8e3a5545a929aea53ba47ed07c801a6cb6bbabff"
   solver-name = "gps-cdcl"
   solver-version = 1
