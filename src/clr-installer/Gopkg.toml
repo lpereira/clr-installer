@@ -26,6 +26,10 @@
 
 
 [[constraint]]
+  name = "github.com/VladimirMarkelov/clui"
+  version = "0.7.0"
+
+[[constraint]]
   name = "github.com/huandu/xstrings"
   version = "1.0.0"
 
