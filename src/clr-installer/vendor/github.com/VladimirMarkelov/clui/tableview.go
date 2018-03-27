@@ -127,7 +127,6 @@ control should keep its original size.
 */
 func CreateTableView(parent Control, width, height int, scale int) *TableView {
 	l := new(TableView)
-	l.BaseControl = NewBaseControl()
 
 	if height == AutoSize {
 		height = 3

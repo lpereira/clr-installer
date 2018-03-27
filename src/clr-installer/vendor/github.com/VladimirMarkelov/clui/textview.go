@@ -46,7 +46,6 @@ control should keep its original size.
 */
 func CreateTextView(parent Control, width, height int, scale int) *TextView {
 	l := new(TextView)
-	l.BaseControl = NewBaseControl()
 
 	if height == AutoSize {
 		height = 3

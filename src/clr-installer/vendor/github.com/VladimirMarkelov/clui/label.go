@@ -29,7 +29,6 @@ control should keep its original size.
 */
 func CreateLabel(parent Control, w, h int, title string, scale int) *Label {
 	c := new(Label)
-	c.BaseControl = NewBaseControl()
 
 	if w == AutoSize {
 		w = xs.Len(title)
