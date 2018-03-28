@@ -118,7 +118,7 @@ func (page *ManualPartPage) Activate() {
 	}
 
 	if err := page.showManualStorageList(); err != nil {
-		panic(err)
+		page.Panic(err)
 	}
 	page.data = nil
 

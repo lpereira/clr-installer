@@ -69,16 +69,16 @@ func (page *InstallPage) Activate() {
 
 		err := controller.Install(page.mi.rootDir, page.mi.model)
 		if err != nil {
-			panic(err)
+			page.Panic(err)
 		}
 
 		if err := page.mi.model.WriteFile(page.descFile); err != nil {
-			panic(err)
+			page.Panic(err)
 		}
 
 		prg := progress.NewLoop("Cleaning up install environment")
 		if err := controller.Cleanup(page.mi.rootDir, true); err != nil {
-			panic(err)
+			page.Panic(err)
 		}
 		prg.Done()
 

@@ -54,7 +54,7 @@ func (page *GuidedPartPage) showGuidedDisk(bd *storage.BlockDevice) error {
 		for _, part := range bd.Children {
 			lbl, err := showGuidedPartition(frame, part)
 			if err != nil {
-				panic(err)
+				page.Panic(err)
 			}
 
 			labels = append(labels, lbl)
@@ -108,7 +108,7 @@ func newGuidedPartitionPage(mi *Tui) (Page, error) {
 		}
 
 		if err = page.showGuidedDisk(bd); err != nil {
-			panic(err)
+			page.Panic(err)
 		}
 	}
 

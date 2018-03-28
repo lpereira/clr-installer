@@ -63,7 +63,7 @@ func (page *DiskPartitionPage) setPartitionForm(part *storage.BlockDevice) {
 
 	size, err := part.HumanReadableSize()
 	if err != nil {
-		panic(err)
+		page.Panic(err)
 	}
 
 	page.sizeEdit.SetTitle(size)

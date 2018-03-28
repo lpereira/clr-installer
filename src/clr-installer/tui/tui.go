@@ -7,6 +7,7 @@ import (
 
 	"clr-installer/controller"
 	"clr-installer/errors"
+	"clr-installer/log"
 	"clr-installer/model"
 	"github.com/VladimirMarkelov/clui"
 	"github.com/nsf/termbox-go"
@@ -20,6 +21,7 @@ type Tui struct {
 	prevPage Page
 	model    *model.SystemInstall
 	rootDir  string
+	paniced  chan error
 }
 
 var (
@@ -104,6 +106,7 @@ func (mi *Tui) Run(rootDir string) error {
 	errorLabelFg = clui.RealColor(clui.ColorDefault, "ErrorLabelText")
 
 	mi.rootDir = rootDir
+	mi.paniced = make(chan error, 1)
 
 	menus := []struct {
 		desc string
@@ -124,17 +127,37 @@ func (mi *Tui) Run(rootDir string) error {
 		var page Page
 
 		if page, err = menu.fc(mi); err != nil {
-			panic(err)
+			return err
 		}
 
 		mi.pages = append(mi.pages, page)
 	}
 
 	mi.gotoPage(TuiPageMenu, mi.currPage)
+
+	var paniced error
+
+	go func() {
+		if paniced = <-mi.paniced; paniced != nil {
+			clui.Stop()
+			log.ErrorError(paniced)
+		}
+	}()
+
 	clui.MainLoop()
 
+	errStack := []string{}
 	if err := controller.Cleanup(rootDir, false); err != nil {
-		panic(err)
+		errStack = append(errStack, err.Error())
+		log.ErrorError(err)
+	}
+
+	if paniced != nil {
+		errStack = append(errStack, paniced.Error())
+	}
+
+	if len(errStack) > 0 {
+		panic(strings.Join(errStack, "\n"))
 	}
 
 	return nil
