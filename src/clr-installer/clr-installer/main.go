@@ -48,7 +48,7 @@ func init() {
 
 func fatal(err error) {
 	log.ErrorError(err)
-	os.Exit(1)
+	panic(err)
 }
 
 func initFrontendList() {
