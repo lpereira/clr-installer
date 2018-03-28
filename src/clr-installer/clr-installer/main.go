@@ -6,17 +6,20 @@ import (
 	"os"
 	"os/signal"
 	"os/user"
+	"path"
 	"path/filepath"
 	"syscall"
 
 	"clr-installer/frontend"
 	"clr-installer/log"
 	"clr-installer/massinstall"
+	"clr-installer/model"
 	"clr-installer/tui"
 	flag "github.com/spf13/pflag"
 )
 
 var (
+	version    bool
 	logFile    string
 	configFile string
 	logLevel   int
@@ -25,6 +28,10 @@ var (
 )
 
 func init() {
+	flag.BoolVar(
+		&version, "version", false, "Version of the Installer",
+	)
+
 	flag.StringVar(
 		&configFile, "config", "", "Installation configuration file",
 	)
@@ -63,6 +70,11 @@ func main() {
 
 	if err := log.SetLogLevel(logLevel); err != nil {
 		fatal(err)
+	}
+
+	if version {
+		fmt.Println(path.Base(os.Args[0]) + ": " + model.Version)
+		return
 	}
 
 	f, err := os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)

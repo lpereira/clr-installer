@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"clr-installer/model"
 	"github.com/VladimirMarkelov/clui"
 )
 
@@ -177,7 +178,7 @@ func (page *BasePage) newWindow() {
 	x := (sw - 80) / 2
 	y := (sh - 24) / 2
 
-	page.window = clui.AddWindow(x, y, 80, 24, " [Clear Linux Installer] ")
+	page.window = clui.AddWindow(x, y, 80, 24, " [Clear Linux Installer ("+model.Version+")] ")
 	page.window.SetTitleButtons(0)
 
 	page.window.OnScreenResize(func(evt clui.Event) {

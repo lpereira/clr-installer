@@ -9,6 +9,10 @@ import (
 	"clr-installer/storage"
 )
 
+// Version of Clear Installer.
+// Also used by the Makefile for releases.
+const Version = "0.0.1"
+
 // SystemInstall represents the system install "configuration", the target
 // medias, bundles to install and whatever state a install may require
 type SystemInstall struct {
