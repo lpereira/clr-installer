@@ -102,13 +102,13 @@ update-vendor: install-dep
 PHONY += tag
 tag:
 ifeq ($(shell git diff-index --quiet HEAD; echo $$?),0)
-ifeq ($(shell git diff @{upstream}.. --quiet; echo $$?),0)
+ifeq ($(shell git diff @{upstream}.. --quiet 2>/dev/null; echo $$?),0)
 	@VERSION=$$(git show HEAD:src/clr-installer/model/model.go | grep -e 'const Version' | cut -d '"' -f 2) ; \
 	if [ -z "$$VERSION" ]; then \
 		echo "Couldn't extract version number from the source code"; \
 		exit 1; \
 	fi; \
-	git tag $$VERSION
+	git tag $$VERSION; \
 	git push --tags
 else
 	@echo "Unpushed changes; git push upstream and try again."
