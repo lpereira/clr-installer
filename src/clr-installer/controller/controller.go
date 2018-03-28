@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/user"
 	"path"
@@ -47,6 +47,8 @@ func verifyRootUser() error {
 // installation
 func Install(rootDir string, model *model.SystemInstall) error {
 	var err error
+	var version string
+	var versionBuf []byte
 
 	// First verify we are running as 'root' user which is required
 	// for most of the Installation commands
@@ -54,21 +56,17 @@ func Install(rootDir string, model *model.SystemInstall) error {
 		return err
 	}
 
-	log.Info("Querying clear linux version")
+	log.Info("Querying Clear Linux version")
 
 	// in order to avoid issues raised by format bumps between installers image
 	// version and the latest released we assume the installers host version
 	// in other words we use the same version swupd is based on
-	args := []string{
-		"cat",
-		"/var/lib/swupd/version",
+	if versionBuf, err = ioutil.ReadFile("/var/lib/swupd/version"); err != nil {
+		return errors.Errorf("Read verision file /var/lib/swupd/version: %v", err)
 	}
 
-	version := bytes.NewBuffer(nil)
-	err = cmd.Run(version, args...)
-	if err != nil {
-		return errors.Wrap(err)
-	}
+	version = string(versionBuf)
+	log.Debug("Clear Linux version: %s", version)
 
 	// do we have the minimum required to install a system?
 	err = model.Validate()
@@ -117,7 +115,7 @@ func Install(rootDir string, model *model.SystemInstall) error {
 		return err
 	}
 
-	err = contentInstall(rootDir, version.String(), model.Bundles)
+	err = contentInstall(rootDir, version, model.Bundles)
 	if err != nil {
 		return err
 	}
@@ -188,27 +186,19 @@ func Cleanup(rootDir string, umount bool) error {
 		return err
 	}
 
-	log.Info("Umounting %s", rootDir)
+	log.Info("Cleaning up %s", rootDir)
 
 	// we'll fail to umount only if a device is not mounted
 	// then, just log it and move cleaning up
 	if umount {
-		if storage.UmountAll(rootDir) != nil {
+		if storage.UmountAll() != nil {
 			log.Warning("Failed to umount volumes")
 		}
 	}
 
-	args := []string{
-		"rm",
-		"-R",
-		"-f",
-		rootDir,
-	}
-
 	log.Info("Removing rootDir: %s", rootDir)
-	err = cmd.RunAndLog(args...)
-	if err != nil {
-		return errors.Wrap(err)
+	if err = os.RemoveAll(rootDir); err != nil {
+		return errors.Errorf("Failed to remove all in %s: %v", rootDir, err)
 	}
 
 	return nil

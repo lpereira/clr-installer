@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
+	"syscall"
 
 	"clr-installer/cmd"
 	"clr-installer/errors"
@@ -31,6 +33,8 @@ var (
 		"swap":  "0657FD6D-A4AB-43C4-84E5-0933C84B4F4F",
 		"efi":   "C12A7328-F81F-11D2-BA4B-00A0C93EC93B",
 	}
+
+	mountedPoints []string
 )
 
 // MakeFs runs mkfs.* commands for a BlockDevice definition
@@ -40,17 +44,6 @@ func (bd *BlockDevice) MakeFs() error {
 	}
 
 	if op, ok := bdOps[bd.FsType]; ok {
-		args := []string{
-			"umount",
-			"-f",
-			"-A",
-			fmt.Sprintf("/dev/%s", bd.Name),
-		}
-
-		if err := cmd.Run(nil, args...); err != nil {
-			log.ErrorError(err)
-		}
-
 		return op.makeFs(bd)
 	}
 
@@ -85,51 +78,34 @@ func (bd *BlockDevice) Mount(root string) error {
 	}
 
 	targetPath := filepath.Join(root, bd.MountPoint)
-	var args []string
+	devName := fmt.Sprintf("/dev/%s", bd.Name)
 
-	if _, err := os.Stat(targetPath); os.IsNotExist(err) {
-		args = []string{
-			"mkdir",
-			"-p",
-			"-v",
-			targetPath,
-		}
-
-		err = cmd.RunAndLog(args...)
-		if err != nil {
-			return errors.Wrap(err)
-		}
-	}
-
-	args = []string{
-		"mount",
-		fmt.Sprintf("/dev/%s", bd.Name),
-		targetPath,
-	}
-
-	err := cmd.RunAndLog(args...)
-	if err != nil {
-		return errors.Wrap(err)
-	}
-
-	return nil
+	return mountFs(devName, targetPath, bd.FsType, syscall.MS_RELATIME)
 }
 
-// UmountAll unmounts all mounted block devices on rootDir
-func UmountAll(rootDir string) error {
-	args := []string{
-		"umount",
-		"-f",
-		"-R",
-		rootDir,
+// UmountAll unmounts all previously mounted devices
+func UmountAll() error {
+	var mountError error
+	fails := make([]string, 0)
+
+	// Ensure the top level mount point is unmounted last
+	sort.Sort(sort.Reverse(sort.StringSlice(mountedPoints)))
+
+	for _, point := range mountedPoints {
+		if err := syscall.Unmount(point, syscall.MNT_FORCE); err != nil {
+			err = fmt.Errorf("umount %s: %v", point, err)
+			log.ErrorError(err)
+			fails = append(fails, point)
+		} else {
+			log.Debug("Unmounted ok: %s", point)
+		}
 	}
 
-	err := cmd.RunAndLog(args...)
-	if err != nil {
-		return errors.Wrap(err)
+	if len(fails) > 0 {
+		mountError = errors.Errorf("Failed to unmount: %v", fails)
 	}
 
-	return nil
+	return mountError
 }
 
 // WritePartitionTable writes the defined partitions to the actual block device
@@ -250,92 +226,41 @@ func MountMetaFs(rootDir string) error {
 	return nil
 }
 
+func mountFs(device string, mPointPath string, fsType string, flags uintptr) error {
+	var err error
+
+	if _, err = os.Stat(mPointPath); os.IsNotExist(err) {
+		if err = os.MkdirAll(mPointPath, 0777); err != nil {
+			return errors.Errorf("mkdir %s: %v", mPointPath, err)
+		}
+	}
+
+	if err = syscall.Mount(device, mPointPath, fsType, flags, ""); err != nil {
+		return errors.Errorf("mount %s: %v", mPointPath, err)
+	}
+	log.Debug("Mounted ok: %s", mPointPath)
+	// Store the mount point for later unmounting
+	mountedPoints = append(mountedPoints, mPointPath)
+
+	return err
+}
+
 func mountDevFs(rootDir string) error {
 	mPointPath := filepath.Join(rootDir, "dev")
-	args := []string{
-		"mkdir",
-		"-v",
-		"-p",
-		mPointPath,
-	}
 
-	err := cmd.RunAndLog(args...)
-	if err != nil {
-		return errors.Wrap(err)
-	}
-
-	args = []string{
-		"mount",
-		"--bind",
-		"/dev",
-		mPointPath,
-	}
-
-	err = cmd.RunAndLog(args...)
-	if err != nil {
-		return errors.Wrap(err)
-	}
-
-	return nil
+	return mountFs("/dev", mPointPath, "devtmpfs", syscall.MS_BIND)
 }
 
 func mountSysFs(rootDir string) error {
 	mPointPath := filepath.Join(rootDir, "sys")
-	args := []string{
-		"mkdir",
-		"-v",
-		"-p",
-		mPointPath,
-	}
 
-	err := cmd.RunAndLog(args...)
-	if err != nil {
-		return errors.Wrap(err)
-	}
-
-	args = []string{
-		"mount",
-		"--bind",
-		"/sys",
-		mPointPath,
-	}
-
-	err = cmd.RunAndLog(args...)
-	if err != nil {
-		return errors.Wrap(err)
-	}
-
-	return nil
+	return mountFs("/sys", mPointPath, "sysfs", syscall.MS_BIND)
 }
 
 func mountProcFs(rootDir string) error {
 	mPointPath := filepath.Join(rootDir, "proc")
-	args := []string{
-		"mkdir",
-		"-v",
-		"-p",
-		mPointPath,
-	}
 
-	err := cmd.RunAndLog(args...)
-	if err != nil {
-		return errors.Wrap(err)
-	}
-
-	args = []string{
-		"mount",
-		"-t",
-		"proc",
-		"proc",
-		mPointPath,
-	}
-
-	err = cmd.RunAndLog(args...)
-	if err != nil {
-		return errors.Wrap(err)
-	}
-
-	return nil
+	return mountFs("/proc", mPointPath, "proc", syscall.MS_BIND)
 }
 
 func ext4MakePartCommand(bd *BlockDevice, start uint64, end uint64) (string, error) {
