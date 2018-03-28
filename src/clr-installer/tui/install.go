@@ -114,7 +114,6 @@ func newInstallPage(mi *Tui) (Page, error) {
 
 	page.rebootBtn = CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Reboot", Fixed)
 	page.rebootBtn.OnClick(func(ev clui.Event) {
-		// TODO implement the actual reboot
 		go clui.Stop()
 	})
 	page.rebootBtn.SetEnabled(false)

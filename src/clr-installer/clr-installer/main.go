@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"syscall"
 
+	"clr-installer/cmd"
 	"clr-installer/frontend"
 	"clr-installer/log"
 	"clr-installer/massinstall"
@@ -20,6 +21,7 @@ import (
 
 var (
 	version    bool
+	reboot     bool
 	logFile    string
 	configFile string
 	logLevel   int
@@ -30,6 +32,10 @@ var (
 func init() {
 	flag.BoolVar(
 		&version, "version", false, "Version of the Installer",
+	)
+
+	flag.BoolVar(
+		&reboot, "reboot", true, "Reboot after finishing",
 	)
 
 	flag.StringVar(
@@ -122,4 +128,10 @@ func main() {
 	}()
 
 	<-done
+
+	if reboot {
+		if err := cmd.RunAndLog("reboot"); err != nil {
+			fatal(err)
+		}
+	}
 }
