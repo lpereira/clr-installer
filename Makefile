@@ -48,21 +48,21 @@ coverage-html: coverage
 
 PHONY += install-linters
 install-linters:
-ifneq ($(shell gometalinter.v2 --version 2>/dev/null 1>&2 ; echo $$?),0)
-	@echo "Installing linters..."
-	@GOPATH=${orig_go_path} go get -u gopkg.in/alecthomas/gometalinter.v2 1>/dev/null
-	@GOPATH=${orig_go_path} gometalinter.v2 --install 1>/dev/null
-endif
+	@if ! gometalinter.v2 --version &>/dev/null; then \
+		echo "Installing linters..."; \
+		GOPATH=${orig_go_path} go get -u gopkg.in/alecthomas/gometalinter.v2; \
+		GOPATH=${orig_go_path} gometalinter.v2 --install; \
+	fi \
 
 PHONY += update-linters
 update-linters:
-ifeq ($(shell gometalinter.v2 --version 2>/dev/null 1>&2 ; echo $$?),0)
-	@echo "Updating linters..."
-	@GOPATH=${orig_go_path} gometalinter.v2 --update 1>/dev/null
-else
-	@echo "Linters not installed"
-	@exit 1
-endif
+	@if gometalinter.v2 --version &>/dev/null; then \
+		echo "Updating linters..."; \
+		GOPATH=${orig_go_path} gometalinter.v2 --update 1>/dev/null; \
+	else \
+		echo "Linters not installed"; \
+		exit 1; \
+	fi \
 
 PHONY += lint
 lint: install-linters
@@ -84,23 +84,23 @@ lint: install-linters
 
 PHONY += install-dep
 install-dep:
-ifneq ($(shell dep version 2>/dev/null 1>&2 ; echo $$?),0)
-	@echo "Installing dep..."
-	@mkdir -p ${orig_go_path}/bin
-	@curl https://raw.githubusercontent.com/golang/dep/master/install.sh 2>/dev/null \
-		| GOPATH=${orig_go_path} bash
-endif
+	@if ! dep version &>/dev/null; then \
+		echo "Installing dep..."; \
+		mkdir -p ${orig_go_path}/bin; \
+		curl https://raw.githubusercontent.com/golang/dep/master/install.sh 2>/dev/null \
+		| GOPATH=${orig_go_path} bash; \
+	fi \
 
 PHONY += update-dep
 update-dep:
-ifeq ($(shell dep version 2>/dev/null 1>&2 ; echo $$?),0)
-	@echo "Updating dep..."
-	@curl https://raw.githubusercontent.com/golang/dep/master/install.sh 2>/dev/null \
-		| GOPATH=${orig_go_path} bash
-else
-	@echo "Dep not installed"
-	@exit 1
-endif
+	@if dep version &>/dev/null; then \
+		echo "Updating dep..."; \
+		curl https://raw.githubusercontent.com/golang/dep/master/install.sh 2>/dev/null \
+		| GOPATH=${orig_go_path} bash; \
+	else \
+		echo "Dep not installed"; \
+		exit 1; \
+	fi \
 
 PHONY += update-vendor
 update-vendor: install-dep
@@ -108,23 +108,23 @@ update-vendor: install-dep
 
 PHONY += tag
 tag:
-ifeq ($(shell git diff-index --quiet HEAD; echo $$?),0)
-ifeq ($(shell git diff @{upstream}.. --quiet 2>/dev/null; echo $$?),0)
-	@VERSION=$$(git show HEAD:src/clr-installer/model/model.go | grep -e 'const Version' | cut -d '"' -f 2) ; \
-	if [ -z "$$VERSION" ]; then \
-		echo "Couldn't extract version number from the source code"; \
+	@if git diff-index --quiet HEAD &>/dev/null; then \
+		if git diff @{upstream}.. --quiet &>/dev/null; then \
+			VERSION=$$(git show HEAD:src/clr-installer/model/model.go | grep -e 'const Version' | cut -d '"' -f 2) ; \
+			if [ -z "$$VERSION" ]; then \
+				echo "Couldn't extract version number from the source code"; \
+				exit 1; \
+			fi; \
+			git tag $$VERSION; \
+			git push --tags; \
+		else \
+			echo "Unpushed changes; git push upstream and try again."; \
+			exit 1; \
+		fi \
+	else \
+		echo "Uncomiited changes; git commit and try again."; \
 		exit 1; \
-	fi; \
-	git tag $$VERSION; \
-	git push --tags
-else
-	@echo "Unpushed changes; git push upstream and try again."
-	@exit 1
-endif
-else
-	@echo "Uncomiited changes; git commit and try again."
-	@exit 1
-endif
+	fi \
 
 PHONY += clean
 clean:
@@ -133,14 +133,14 @@ clean:
 
 PHONY += distclean
 dist-clean: clean
-ifeq ($(git status -s),)
-	@git clean -fdxq
-	@git reset HEAD
-else
-	@echo "There are pending changes in the repository!"
-	@git status -s
-	@echo "Please check in changes or stash, and try again."
-endif
+	@if [ "$$(git status -s)" = "" ]; then \
+		git clean -fdxq; \
+		git reset HEAD; \
+	else \
+		echo "There are pending changes in the repository!"; \
+		git status -s; \
+		echo "Please check in changes or stash, and try again."; \
+	fi \
 
 all: build
 
