@@ -84,6 +84,7 @@ func (page *InstallPage) Activate() {
 
 		page.prgLabel.SetTitle("Installation complete")
 		page.rebootBtn.SetEnabled(true)
+		clui.ActivateControl(page.GetWindow(), page.rebootBtn)
 		clui.RefreshScreen()
 	}()
 }
