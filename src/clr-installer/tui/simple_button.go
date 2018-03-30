@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"fmt"
+
 	"github.com/VladimirMarkelov/clui"
 	xs "github.com/huandu/xstrings"
 	term "github.com/nsf/termbox-go"
@@ -12,6 +14,7 @@ import (
 // visual elements (i.e no shadows).
 type SimpleButton struct {
 	clui.BaseControl
+	style   string
 	pressed int32
 	onClick func(clui.Event)
 	visible bool
@@ -51,6 +54,17 @@ func CreateSimpleButton(parent clui.Control, width, height int, title string, sc
 	return b
 }
 
+func (b *SimpleButton) getColorName(suffix string) string {
+	return fmt.Sprintf("%s%s", b.style, suffix)
+}
+
+// SetStyle sets a button custom style derivative
+// a derivative is defined by a prefix i.e MenuButtonDisabledText where
+// the theme is ButtonDisabledText and the derivative is Menu*
+func (b *SimpleButton) SetStyle(style string) {
+	b.style = style
+}
+
 // Draw paints the button in the screen and adjust colors depending on the button state
 func (b *SimpleButton) Draw() {
 	if !b.visible {
@@ -66,16 +80,16 @@ func (b *SimpleButton) Draw() {
 	fg, bg := b.TextColor(), b.BackColor()
 
 	if !b.Enabled() {
-		fg = clui.RealColor(fg, clui.ColorButtonDisabledText)
-		bg = clui.RealColor(bg, clui.ColorButtonDisabledBack)
+		fg = clui.RealColor(fg, b.getColorName("ButtonDisabledText"))
+		bg = clui.RealColor(bg, b.getColorName("ButtonDisabledBack"))
 	} else if b.Active() {
 		fgActive, bgActive := b.ActiveColors()
 
-		fg = clui.RealColor(fgActive, clui.ColorButtonActiveText)
-		bg = clui.RealColor(bgActive, clui.ColorButtonActiveBack)
+		fg = clui.RealColor(fgActive, b.getColorName("ButtonActiveText"))
+		bg = clui.RealColor(bgActive, b.getColorName("ButtonActiveBack"))
 	} else {
-		fg = clui.RealColor(fg, clui.ColorButtonText)
-		bg = clui.RealColor(bg, clui.ColorButtonBack)
+		fg = clui.RealColor(fg, b.getColorName("ButtonText"))
+		bg = clui.RealColor(bg, b.getColorName("ButtonBack"))
 	}
 
 	clui.SetTextColor(fg)

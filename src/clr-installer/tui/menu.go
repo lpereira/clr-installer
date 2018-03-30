@@ -22,6 +22,7 @@ func (page *MenuPage) addMenuItem(item Page, activated bool) {
 
 	title := fmt.Sprintf(" %s %s", done, item.GetMenuTitle())
 	btn := CreateSimpleButton(page.content, AutoSize, AutoSize, title, Fixed)
+	btn.SetStyle("Menu")
 	btn.SetAlign(AlignLeft)
 
 	btn.OnClick(func(ev clui.Event) {

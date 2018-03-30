@@ -19,27 +19,33 @@ Back = blue
 Text = white
 
 // button control
-ButtonBack=blue
-ButtonText=white
+ButtonBack=white
+ButtonText=black
 ButtonActiveBack=cyan
 ButtonActiveText=black
 ButtonShadowBack=black
-ButtonDisabledText=black bold
-ButtonDisabledBack=white
+ButtonDisabledText=white bold
+ButtonDisabledBack=red
 
 // editable & listbox-like controls (interactive ones)
 EditBack       = white
 EditText       = black bold
-EditActiveBack = white
-EditActiveText = black bold
+EditActiveBack = magenta
+EditActiveText = white bold
 SelectionText  = white bold
 SelectionBack  = blue
+
+GrayBack = red
+GrayText = white bold
 
 // progressbar control
 ProgressBack       = blue
 ProgressText       = yellow
 ProgressActiveBack = cyan
 ProgressActiveText = yellow bold
+
+// checkbox
+ControlBack = blue
 
 //----------------- Objects -----------------
 SingleBorder=─│┌┐└┘
@@ -58,3 +64,11 @@ TableView=─│┼▼▲
 ManualPartitionBack = blue
 ErrorLabelBack = blue
 ErrorLabelText = red bold
+
+MenuButtonBack=blue
+MenuButtonText=white
+MenuButtonActiveBack=cyan
+MenuButtonActiveText=black
+MenuButtonShadowBack=black
+MenuButtonDisabledText=white bold
+MenuButtonDisabledBack=red
