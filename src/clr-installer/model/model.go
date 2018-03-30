@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"clr-installer/errors"
+	"clr-installer/network"
 	"clr-installer/storage"
 )
 
@@ -17,10 +18,11 @@ const Version = "0.1.0"
 // SystemInstall represents the system install "configuration", the target
 // medias, bundles to install and whatever state a install may require
 type SystemInstall struct {
-	TargetMedias []*storage.BlockDevice `yaml:"targetMedia"`
-	Keyboard     string                 `yaml:"keyboard,omitempty,flow"`
-	Language     string                 `yaml:"language,omitempty,flow"`
-	Bundles      []string               `yaml:"bundles,omitempty,flow"`
+	TargetMedias      []*storage.BlockDevice `yaml:"targetMedia"`
+	NetworkInterfaces []*network.Interface   `yaml:"networkInterfaces"`
+	Keyboard          string                 `yaml:"keyboard,omitempty,flow"`
+	Language          string                 `yaml:"language,omitempty,flow"`
+	Bundles           []string               `yaml:"bundles,omitempty,flow"`
 }
 
 // Validate checks the model for possible inconsistencies or "minimum required"
@@ -58,6 +60,15 @@ func (si *SystemInstall) AddTargetMedia(bd *storage.BlockDevice) {
 	}
 
 	si.TargetMedias = append(si.TargetMedias, bd)
+}
+
+// AddNetworkInterface adds an Interface instance to the list of NetworkInterfaces
+func (si *SystemInstall) AddNetworkInterface(iface *network.Interface) {
+	if si.NetworkInterfaces == nil {
+		si.NetworkInterfaces = []*network.Interface{}
+	}
+
+	si.NetworkInterfaces = append(si.NetworkInterfaces, iface)
 }
 
 // LoadFile loads a model from a yaml file pointed by path
