@@ -70,13 +70,13 @@ func (mi *MassInstall) MustRun() bool {
 
 // Run is part of the Frontend implementation and is the actual entry point for the
 // "mass installer" frontend
-func (mi *MassInstall) Run(rootDir string) error {
+func (mi *MassInstall) Run(rootDir string) (bool, error) {
 	progress.Set(mi)
 
 	log.Debug("Loading config file: %s", mi.configFile)
 	md, err := model.LoadFile(mi.configFile)
 	if err != nil {
-		return err
+		return true, err
 	}
 
 	log.Debug("Starting install")
@@ -91,5 +91,5 @@ func (mi *MassInstall) Run(rootDir string) error {
 	}
 	prg.Done()
 
-	return nil
+	return true, nil
 }

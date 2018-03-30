@@ -7,5 +7,5 @@ type Frontend interface {
 	MustRun() bool
 
 	// Run is the actual entry point
-	Run(rootDir string) error
+	Run(rootDir string) (bool, error)
 }

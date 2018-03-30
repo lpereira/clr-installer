@@ -16,12 +16,13 @@ import (
 // Tui is the main tui data struct and holds data about the higher level data for this
 // front end, it also implements the Frontend interface
 type Tui struct {
-	pages    []Page
-	currPage Page
-	prevPage Page
-	model    *model.SystemInstall
-	rootDir  string
-	paniced  chan error
+	pages     []Page
+	currPage  Page
+	prevPage  Page
+	model     *model.SystemInstall
+	rootDir   string
+	paniced   chan error
+	installed bool
 }
 
 var (
@@ -87,13 +88,13 @@ func lookupThemeDir() (string, error) {
 }
 
 // Run is part of the Frontend interface implementation and is the tui frontend main entry point
-func (mi *Tui) Run(rootDir string) error {
+func (mi *Tui) Run(rootDir string) (bool, error) {
 	clui.InitLibrary()
 	defer clui.DeinitLibrary()
 
 	themeDir, err := lookupThemeDir()
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	clui.SetThemePath(themeDir)
@@ -127,7 +128,7 @@ func (mi *Tui) Run(rootDir string) error {
 		var page Page
 
 		if page, err = menu.fc(mi); err != nil {
-			return err
+			return false, err
 		}
 
 		mi.pages = append(mi.pages, page)
@@ -160,7 +161,7 @@ func (mi *Tui) Run(rootDir string) error {
 		panic(strings.Join(errStack, "\n"))
 	}
 
-	return nil
+	return mi.installed, nil
 }
 
 func (mi *Tui) gotoPage(id int, currPage Page) {
