@@ -14,7 +14,7 @@ Back = blue
 Text = white
 
 // button control
-ButtonBack=red bold
+ButtonBack=blue bold
 ButtonText=white
 ButtonActiveBack=cyan bold
 ButtonActiveText=black
@@ -25,10 +25,10 @@ ButtonDisabledBack=white
 // editable & listbox-like controls (interactive ones)
 EditBack       = white
 EditText       = black bold
-EditActiveBack = cyan bold
+EditActiveBack = white bold
 EditActiveText = black bold
 SelectionText  = white bold
-SelectionBack  = red bold
+SelectionBack  = blue bold
 
 // progressbar control
 ProgressBack       = blue
