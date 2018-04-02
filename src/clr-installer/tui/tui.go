@@ -15,13 +15,13 @@ import (
 // Tui is the main tui data struct and holds data about the higher level data for this
 // front end, it also implements the Frontend interface
 type Tui struct {
-	pages     []Page
-	currPage  Page
-	prevPage  Page
-	model     *model.SystemInstall
-	rootDir   string
-	paniced   chan error
-	installed bool
+	pages         []Page
+	currPage      Page
+	prevPage      Page
+	model         *model.SystemInstall
+	rootDir       string
+	paniced       chan error
+	installReboot bool
 }
 
 var (
@@ -150,7 +150,7 @@ func (mi *Tui) Run(rootDir string) (bool, error) {
 		panic(paniced)
 	}
 
-	return mi.installed, nil
+	return mi.installReboot, nil
 }
 
 func (mi *Tui) gotoPage(id int, currPage Page) {

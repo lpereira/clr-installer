@@ -15,6 +15,7 @@ import (
 type InstallPage struct {
 	BasePage
 	rebootBtn *SimpleButton
+	exitBtn   *SimpleButton
 	prgBar    *clui.ProgressBar
 	prgLabel  *clui.Label
 	prgMax    int
@@ -84,10 +85,11 @@ func (page *InstallPage) Activate() {
 
 		page.prgLabel.SetTitle("Installation complete")
 		page.rebootBtn.SetEnabled(true)
+		page.exitBtn.SetEnabled(true)
 		clui.ActivateControl(page.GetWindow(), page.rebootBtn)
 		clui.RefreshScreen()
 
-		page.mi.installed = true
+		page.mi.installReboot = true
 	}()
 }
 
@@ -120,6 +122,13 @@ func newInstallPage(mi *Tui) (Page, error) {
 		go clui.Stop()
 	})
 	page.rebootBtn.SetEnabled(false)
+
+	page.exitBtn = CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Exit", Fixed)
+	page.exitBtn.OnClick(func(ev clui.Event) {
+		page.mi.installReboot = false
+		go clui.Stop()
+	})
+	page.exitBtn.SetEnabled(false)
 
 	return page, nil
 }

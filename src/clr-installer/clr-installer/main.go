@@ -104,7 +104,7 @@ func main() {
 		fatal(err)
 	}
 
-	installCompleted := false
+	installReboot := false
 
 	go func() {
 		for _, fe := range frontEndImpls {
@@ -112,7 +112,7 @@ func main() {
 				continue
 			}
 
-			installCompleted, err = fe.Run(rootDir)
+			installReboot, err = fe.Run(rootDir)
 			if err != nil {
 				fatal(err)
 			}
@@ -131,7 +131,7 @@ func main() {
 
 	<-done
 
-	if reboot && installCompleted {
+	if reboot && installReboot {
 		if err := cmd.RunAndLog("reboot"); err != nil {
 			fatal(err)
 		}
