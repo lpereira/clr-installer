@@ -1,6 +1,9 @@
 package tui
 
 import (
+	"os/user"
+	"path/filepath"
+
 	"clr-installer/model"
 	"github.com/VladimirMarkelov/clui"
 )
@@ -35,6 +38,10 @@ type Page interface {
 	Activate()
 	DeActivate()
 }
+
+var (
+	descFile string
+)
 
 const (
 	// AutoSize is shortcut for clui.AutoSize flag
@@ -148,6 +155,15 @@ func (page *BasePage) GetID() int {
 func (page *BasePage) setupMenu(mi *Tui, id int, menuTitle string, btns int) {
 	page.setup(mi, id, btns)
 	page.menuTitle = menuTitle
+}
+
+func init() {
+	usr, err := user.Current()
+	if err != nil {
+		panic(err)
+	}
+
+	descFile = filepath.Join(usr.HomeDir, "clr-installer.json")
 }
 
 func (page *BasePage) setup(mi *Tui, id int, btns int) {

@@ -1,8 +1,6 @@
 package tui
 
 import (
-	"os/user"
-	"path/filepath"
 	"time"
 
 	"clr-installer/controller"
@@ -19,7 +17,6 @@ type InstallPage struct {
 	prgBar    *clui.ProgressBar
 	prgLabel  *clui.Label
 	prgMax    int
-	descFile  string
 }
 
 var (
@@ -73,7 +70,7 @@ func (page *InstallPage) Activate() {
 			page.Panic(err)
 		}
 
-		if err := page.mi.model.WriteFile(page.descFile); err != nil {
+		if err := page.mi.model.WriteFile(descFile); err != nil {
 			page.Panic(err)
 		}
 
@@ -94,14 +91,8 @@ func (page *InstallPage) Activate() {
 }
 
 func newInstallPage(mi *Tui) (Page, error) {
-	usr, err := user.Current()
-	if err != nil {
-		return nil, err
-	}
-
 	page := &InstallPage{}
 	page.setup(mi, TuiPageInstall, NoButtons)
-	page.descFile = filepath.Join(usr.HomeDir, "clr-installer.json")
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Installing Clear Linux", Fixed)
 	lbl.SetPaddings(0, 2)
