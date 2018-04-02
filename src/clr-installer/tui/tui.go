@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"clr-installer/controller"
 	"clr-installer/errors"
 	"clr-installer/log"
 	"clr-installer/model"
@@ -147,18 +146,8 @@ func (mi *Tui) Run(rootDir string) (bool, error) {
 
 	clui.MainLoop()
 
-	errStack := []string{}
-	if err := controller.Cleanup(rootDir, false); err != nil {
-		errStack = append(errStack, err.Error())
-		log.ErrorError(err)
-	}
-
 	if paniced != nil {
-		errStack = append(errStack, paniced.Error())
-	}
-
-	if len(errStack) > 0 {
-		panic(strings.Join(errStack, "\n"))
+		panic(paniced)
 	}
 
 	return mi.installed, nil

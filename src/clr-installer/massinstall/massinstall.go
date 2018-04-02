@@ -71,25 +71,28 @@ func (mi *MassInstall) MustRun() bool {
 // Run is part of the Frontend implementation and is the actual entry point for the
 // "mass installer" frontend
 func (mi *MassInstall) Run(rootDir string) (bool, error) {
+	var instError error
+
 	progress.Set(mi)
 
 	log.Debug("Loading config file: %s", mi.configFile)
 	md, err := model.LoadFile(mi.configFile)
 	if err != nil {
-		return true, err
+		return false, err
 	}
 
 	log.Debug("Starting install")
-	err = controller.Install(rootDir, md)
-	if err != nil {
-		log.ErrorError(err)
+	instCompleted := true
+	instError = controller.Install(rootDir, md)
+	if instError != nil {
+		instCompleted = false
 	}
 
 	prg := progress.NewLoop("Cleaning up install environment")
-	if controller.Cleanup(rootDir, true) != nil {
+	if err := controller.Cleanup(rootDir, true); err != nil {
 		log.ErrorError(err)
 	}
 	prg.Done()
 
-	return true, nil
+	return instCompleted, instError
 }

@@ -189,8 +189,11 @@ func Cleanup(rootDir string, umount bool) error {
 	// Verify we are running as 'root' user which is required
 	// for most of the Cleanup commands
 	// We probably should not call clean-up if we didn't call Install
+	// If we're not running as 'root' then install could not be completed so, log it and
+	// consider we've nothing to cleanup
 	if err = verifyRootUser(); err != nil {
-		return err
+		log.Warning("Can't cleanup: %s", err)
+		return nil
 	}
 
 	log.Info("Cleaning up %s", rootDir)
