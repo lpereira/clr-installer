@@ -45,6 +45,12 @@ const (
 	// BlockDeviceTypeRom identifies a BlockDevice as a rom
 	BlockDeviceTypeRom
 
+	// BlockDeviceTypeLVM2Group indeitifies a BlockDevice as a lvm2 group
+	BlockDeviceTypeLVM2Group
+
+	// BlockDeviceTypeLVM2Volume identifies a BlockDevice as a lvm2 volume
+	BlockDeviceTypeLVM2Volume
+
 	// BlockDeviceTypeUnknown identifies a BlockDevice as unknown
 	BlockDeviceTypeUnknown
 
@@ -67,10 +73,12 @@ var (
 		BlockDeviceStateUnknown: "",
 	}
 	blockDeviceTypeMap = map[BlockDeviceType]string{
-		BlockDeviceTypeDisk:    "disk",
-		BlockDeviceTypePart:    "part",
-		BlockDeviceTypeRom:     "rom",
-		BlockDeviceTypeUnknown: "",
+		BlockDeviceTypeDisk:       "disk",
+		BlockDeviceTypePart:       "part",
+		BlockDeviceTypeRom:        "rom",
+		BlockDeviceTypeLVM2Group:  "LVM2_member",
+		BlockDeviceTypeLVM2Volume: "lvm",
+		BlockDeviceTypeUnknown:    "",
 	}
 )
 
@@ -415,7 +423,7 @@ func (bd *BlockDevice) UnmarshalJSON(b []byte) error {
 			bd.Children = []*BlockDevice{}
 			err := dec.Decode(&bd.Children)
 			if err != nil {
-				return errors.Errorf("Invalid \"children\" token")
+				return errors.Errorf("Invalid \"children\" token: %s", err)
 			}
 		}
 	}
