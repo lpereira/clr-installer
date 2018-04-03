@@ -13,6 +13,13 @@ export GOPATH=$(pkg_dir)
 export GO_PACKAGE_PREFIX := clr-installer
 export TESTS_DIR := $(top_srcdir)/tests/
 
+THEME_DIR=$(DESTDIR)/usr/share/clr-installer/themes/
+
+install:
+	@mkdir -p $(THEME_DIR)
+	@install -m 755 $(top_srcdir)/bin/clr-installer $(DESTDIR)/usr/bin/clr-installer
+	@install -m 644  $(top_srcdir)/themes/clr-installer.theme $(THEME_DIR)
+
 build:
 	go get -v ${GO_PACKAGE_PREFIX}/clr-installer
 	go install -v ${GO_PACKAGE_PREFIX}/clr-installer
