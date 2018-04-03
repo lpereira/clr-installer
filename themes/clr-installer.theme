@@ -1,4 +1,9 @@
-﻿//----------------- Theme properties -----------------
+﻿// 
+// Do not use 'bold' attribute on background colors
+// This results in flashing text on some terminals
+//
+
+//----------------- Theme properties -----------------
 title=Clear Linux Installer
 author=Leandro Dorileo
 version=0.1
@@ -14,9 +19,9 @@ Back = blue
 Text = white
 
 // button control
-ButtonBack=blue bold
+ButtonBack=blue
 ButtonText=white
-ButtonActiveBack=cyan bold
+ButtonActiveBack=cyan
 ButtonActiveText=black
 ButtonShadowBack=black
 ButtonDisabledText=black bold
@@ -25,15 +30,15 @@ ButtonDisabledBack=white
 // editable & listbox-like controls (interactive ones)
 EditBack       = white
 EditText       = black bold
-EditActiveBack = white bold
+EditActiveBack = white
 EditActiveText = black bold
 SelectionText  = white bold
-SelectionBack  = blue bold
+SelectionBack  = blue
 
 // progressbar control
 ProgressBack       = blue
 ProgressText       = yellow
-ProgressActiveBack = cyan bold
+ProgressActiveBack = cyan
 ProgressActiveText = yellow bold
 
 //----------------- Objects -----------------
