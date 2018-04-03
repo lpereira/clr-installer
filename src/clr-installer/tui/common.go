@@ -97,6 +97,9 @@ const (
 
 	// TuiPageNetwork is the id for network configuration page
 	TuiPageNetwork
+
+	// TuiPageInterface is the id for the network interface configuration page
+	TuiPageInterface
 )
 
 // DeActivate is a stub implementation for the DeActivate method of Page interface
