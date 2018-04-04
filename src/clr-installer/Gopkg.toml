@@ -25,6 +25,14 @@
 #   unused-packages = true
 
 
+required = [
+    # clui/edit_other.go requires clipboard
+    "github.com/atotto/clipboard",
+    # termbox-go/termbox_windows.go requires runewidth
+    # termbox-go/api.go requires runewidth
+    "github.com/mattn/go-runewidth"
+]
+
 [[constraint]]
   name = "github.com/VladimirMarkelov/clui"
   revision = "8d3cd97d8ead25113787bfadb816a2f975beef60"
