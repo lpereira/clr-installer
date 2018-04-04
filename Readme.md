@@ -1,5 +1,12 @@
 # Clear Linux Installer
 
+## Dependencies
+The following bundles are required in order to run clr-installer:
+
++ sysadmin-basic (for kbd)
++ storage-utils
++ network-basic
+
 ## How to test?
 Make sure you have any extra storage device, an USB memory stick should work fine, the installer will detect and use it if you choose.
 
