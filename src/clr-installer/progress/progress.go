@@ -65,8 +65,6 @@ func MultiStep(total int, desc string) Progress {
 }
 
 func runStepLoop(prg *Loop, dur time.Duration) {
-	prg.done = make(chan bool)
-
 	for {
 		select {
 		case <-prg.done:
@@ -85,6 +83,7 @@ func NewLoop(desc string) Progress {
 	}
 
 	prg := &Loop{}
+	prg.done = make(chan bool)
 
 	impl.Desc(desc)
 	go runStepLoop(prg, impl.LoopWaitDuration())

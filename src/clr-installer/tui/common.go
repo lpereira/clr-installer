@@ -98,6 +98,9 @@ const (
 	// TuiPageNetwork is the id for network configuration page
 	TuiPageNetwork
 
+	// TuiPageNetworkValidate is the id for the network validation page
+	TuiPageNetworkValidate
+
 	// TuiPageInterface is the id for the network interface configuration page
 	TuiPageInterface
 )
