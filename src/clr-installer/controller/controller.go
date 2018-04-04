@@ -14,6 +14,7 @@ import (
 	"clr-installer/errors"
 	"clr-installer/log"
 	"clr-installer/model"
+	"clr-installer/network"
 	"clr-installer/progress"
 	"clr-installer/storage"
 )
@@ -79,6 +80,16 @@ func Install(rootDir string, model *model.SystemInstall) error {
 	err = model.Validate()
 	if err != nil {
 		return err
+	}
+
+	if model.NetworkInterfaces != nil && len(model.NetworkInterfaces) > 0 {
+		if err := network.Apply("/", model.NetworkInterfaces); err != nil {
+			return err
+		}
+
+		if err := network.Restart(); err != nil {
+			return err
+		}
 	}
 
 	mountPoints := []*storage.BlockDevice{}
