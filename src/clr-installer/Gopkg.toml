@@ -30,12 +30,20 @@
   revision = "8d3cd97d8ead25113787bfadb816a2f975beef60"
 
 [[constraint]]
+  name = "github.com/atotto/clipboard"
+  revision = "bc5958e1c8339112fc3347a89f3c482f416a69d3"
+
+[[constraint]]
   name = "github.com/huandu/xstrings"
   version = "1.0.0"
 
 [[constraint]]
-  branch = "master"
+  name = "github.com/mattn/go-runewidth"
+  version = "v0.0.2"
+
+[[constraint]]
   name = "github.com/nsf/termbox-go"
+  revision = "e2050e41c8847748ec5288741c0b19a8cb26d084"
 
 [[constraint]]
   name = "github.com/spf13/pflag"
