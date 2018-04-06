@@ -116,6 +116,7 @@ func (mi *Tui) Run(rootDir string) (bool, error) {
 		{"keyboard", newKeyboardPage},
 		{"disk menu", newDiskPage},
 		{"network", newNetworkPage},
+		{"proxy", newProxyPage},
 		{"network validate", newNetworkValidatePage},
 		{"network interface", newNetworkInterfacePage},
 		{"main menu", newMenuPage},

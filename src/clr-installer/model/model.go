@@ -23,6 +23,7 @@ type SystemInstall struct {
 	Keyboard          string                 `yaml:"keyboard,omitempty,flow"`
 	Language          string                 `yaml:"language,omitempty,flow"`
 	Bundles           []string               `yaml:"bundles,omitempty,flow"`
+	HTTPSProxy        string                 `yaml:"httpsProxy,omitempty,flow"`
 }
 
 // Validate checks the model for possible inconsistencies or "minimum required"
