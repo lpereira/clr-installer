@@ -163,7 +163,7 @@ func init() {
 		panic(err)
 	}
 
-	descFile = filepath.Join(usr.HomeDir, "clr-installer.json")
+	descFile = filepath.Join(usr.HomeDir, "clr-installer.yaml")
 }
 
 func (page *BasePage) setup(mi *Tui, id int, btns int) {

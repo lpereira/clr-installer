@@ -38,7 +38,7 @@ Currently the installer supports 2 modes (a third one is on the way):
 In order to use the Mass Installer provide a ```--config```, such as:
 
 ```
-sudo ./bin/clr-installer --config ~/my-install.json
+sudo ./bin/clr-installer --config ~/my-install.yaml
 ```
 
 ## Using TUI
@@ -58,5 +58,5 @@ sudo ./bin/clr-installer --reboot=false
 or if using the Mass Installer mode:
 
 ```
-sudo ./bin/clr-installer --config=~/my-install.json --reboot=false
+sudo ./bin/clr-installer --config=~/my-install.yaml --reboot=false
 ```

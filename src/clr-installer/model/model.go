@@ -1,9 +1,10 @@
 package model
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"os"
+
+	"gopkg.in/yaml.v2"
 
 	"clr-installer/errors"
 	"clr-installer/storage"
@@ -11,15 +12,15 @@ import (
 
 // Version of Clear Installer.
 // Also used by the Makefile for releases.
-const Version = "0.0.1"
+const Version = "0.1.0"
 
 // SystemInstall represents the system install "configuration", the target
 // medias, bundles to install and whatever state a install may require
 type SystemInstall struct {
-	TargetMedias []*storage.BlockDevice
-	Keyboard     string
-	Language     string
-	Bundles      []string
+	TargetMedias []*storage.BlockDevice `yaml:"targetMedia"`
+	Keyboard     string                 `yaml:"keyboard,omitempty,flow"`
+	Language     string                 `yaml:"language,omitempty,flow"`
+	Bundles      []string               `yaml:"bundles,omitempty,flow"`
 }
 
 // Validate checks the model for possible inconsistencies or "minimum required"
@@ -59,7 +60,7 @@ func (si *SystemInstall) AddTargetMedia(bd *storage.BlockDevice) {
 	si.TargetMedias = append(si.TargetMedias, bd)
 }
 
-// LoadFile loads a model from a json file pointed by path
+// LoadFile loads a model from a yaml file pointed by path
 func LoadFile(path string) (*SystemInstall, error) {
 	var result SystemInstall
 
@@ -69,7 +70,7 @@ func LoadFile(path string) (*SystemInstall, error) {
 			return nil, errors.Wrap(err)
 		}
 
-		err = json.Unmarshal(configStr, &result)
+		err = yaml.Unmarshal(configStr, &result)
 		if err != nil {
 			return nil, errors.Wrap(err)
 		}
@@ -78,7 +79,7 @@ func LoadFile(path string) (*SystemInstall, error) {
 	return &result, nil
 }
 
-// WriteFile writes a json formated representation of si into the provided file path
+// WriteFile writes a yaml formatted representation of si into the provided file path
 func (si *SystemInstall) WriteFile(path string) error {
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
@@ -89,7 +90,13 @@ func (si *SystemInstall) WriteFile(path string) error {
 		_ = f.Close()
 	}()
 
-	b, err := json.MarshalIndent(si, "", " ")
+	b, err := yaml.Marshal(si)
+	if err != nil {
+		return err
+	}
+
+	// Write our header
+	_, err = f.WriteString("#clear-linux-config\n")
 	if err != nil {
 		return err
 	}

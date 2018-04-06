@@ -20,11 +20,12 @@ func TestLoadFile(t *testing.T) {
 		file  string
 		valid bool
 	}{
-		{"basic-valid-descriptor.json", true},
-		{"basic-invalid-descriptor.json", false},
-		{"malformed-descriptor.json", false},
-		{"no-bootable-descriptor.json", false},
-		{"no-root-partition-descriptor.json", false},
+		{"basic-valid-descriptor.yaml", true},
+		{"basic-invalid-descriptor.yaml", false},
+		{"malformed-descriptor.yaml", false},
+		{"no-bootable-descriptor.yaml", false},
+		{"no-root-partition-descriptor.yaml", false},
+		{"real-example.yaml", true},
 	}
 
 	for _, curr := range tests {
@@ -32,12 +33,12 @@ func TestLoadFile(t *testing.T) {
 		model, err := LoadFile(path)
 
 		if curr.valid && err != nil {
-			t.Fatalf("%s is a valid tests and shouldn't return an error", curr.file)
+			t.Fatalf("%s is a valid tests and shouldn't return an error: %v", curr.file, err)
 		}
 
 		err = model.Validate()
 		if curr.valid && err != nil {
-			t.Fatalf("%s is a valid tests and shouldn't return an error", curr.file)
+			t.Fatalf("%s is a valid tests and shouldn't return an error: %v", curr.file, err)
 		}
 	}
 }

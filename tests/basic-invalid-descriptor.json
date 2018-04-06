@@ -1,7 +1,0 @@
-{
-  "bundles": [
-    "os-core",
-    "os-core-update",
-    "kernel-native"
-  ]
-}

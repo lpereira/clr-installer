@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -21,12 +22,28 @@ type BlockDevice struct {
 	FsType          string           // filesystem type
 	UUID            string           // filesystem uuid
 	MountPoint      string           // where the device is mounted
-	Size            float64          // size of the device
+	Size            uint64           // size of the device
 	Type            BlockDeviceType  // device type
 	State           BlockDeviceState // device state (running, live etc)
 	ReadOnly        bool             // read-only device
 	RemovableDevice bool             // removable device
 	Children        []*BlockDevice   // children devices/partitions
+}
+
+// Version used for reading and writing YAML
+type blockDeviceYAMLMarshal struct {
+	Name            string         `yaml:"name,omitempty"`
+	Model           string         `yaml:"model,omitempty"`
+	MajorMinor      string         `yaml:"majMin,omitempty"`
+	FsType          string         `yaml:"fstype,omitempty"`
+	UUID            string         `yaml:"uuid,omitempty"`
+	MountPoint      string         `yaml:"mountpoint,omitempty"`
+	Size            string         `yaml:"size,omitempty"`
+	ReadOnly        string         `yaml:"ro,omitempty"`
+	RemovableDevice string         `yaml:"rm,omitempty"`
+	Type            string         `yaml:"type,omitempty"`
+	State           string         `yaml:"state,omitempty"`
+	Children        []*BlockDevice `yaml:"children,omitempty"`
 }
 
 // BlockDeviceState is the representation of a block device state (live, running, etc)
@@ -166,10 +183,10 @@ func (bd *BlockDevice) AddChild(child *BlockDevice) {
 
 // HumanReadableSize converts the size representation in bytes to the closest
 // human readable format i.e 10M, 1G, 2T etc
-func HumanReadableSize(size float64) (string, error) {
+func HumanReadableSize(size uint64) (string, error) {
 	sizes := []struct {
 		unit string
-		mask float64
+		mask uint64
 	}{
 		{"P", 1 << 50},
 		{"T", 1 << 40},
@@ -184,7 +201,7 @@ func HumanReadableSize(size float64) (string, error) {
 			continue
 		}
 
-		return fmt.Sprintf("%.2f%s", csize, curr.unit), nil
+		return fmt.Sprintf("%v%s", csize, curr.unit), nil
 	}
 
 	return "", fmt.Errorf("Could not format desk/partition size")
@@ -192,12 +209,12 @@ func HumanReadableSize(size float64) (string, error) {
 
 // FreeSpace returns the block device available/free space considering the currently
 // configured partition table
-func (bd *BlockDevice) FreeSpace() (float64, error) {
+func (bd *BlockDevice) FreeSpace() (uint64, error) {
 	if bd.Type != BlockDeviceTypeDisk {
 		return 0, errors.Errorf("FreeSpace() must only be called with a disk block device")
 	}
 
-	var total float64
+	var total uint64
 	for _, curr := range bd.Children {
 		total = total + curr.Size
 	}
@@ -273,38 +290,43 @@ func getNextBoolToken(dec *json.Decoder, name string) (bool, error) {
 
 // ParseVolumeSize will parse a string formated (1M, 10G, 2T) size and return its representation
 // in bytes
-func ParseVolumeSize(str string) (float64, error) {
+func ParseVolumeSize(str string) (uint64, error) {
+	var size uint64
+
 	str = strings.ToLower(str)
 
 	if !storageExp.MatchString(str) {
-		return strconv.ParseFloat(str, 64)
+		return strconv.ParseUint(str, 0, 64)
 	}
 
 	unit := storageExp.ReplaceAllString(str, `$3`)
-	size, err := strconv.ParseFloat(storageExp.ReplaceAllString(str, `$1`), 64)
+	fsize, err := strconv.ParseFloat(storageExp.ReplaceAllString(str, `$1`), 64)
 	if err != nil {
 		return 0, errors.Wrap(err)
 	}
 
 	switch unit {
 	case "k":
-		size = size * (1 << 10)
+		fsize = fsize * (1 << 10)
 	case "m":
-		size = size * (1 << 20)
+		fsize = fsize * (1 << 20)
 	case "g":
-		size = size * (1 << 30)
+		fsize = fsize * (1 << 30)
 	case "t":
-		size = size * (1 << 40)
+		fsize = fsize * (1 << 40)
 	case "p":
-		size = size * (1 << 50)
+		fsize = fsize * (1 << 50)
 	}
+
+	size = uint64(math.Round(fsize))
 
 	return size, nil
 }
 
-// UnmarshalJSON decodes a BlockDevice, targered to integrate with json
+// UnmarshalJSON decodes a BlockDevice, targeted to integrate with json
 // decoding framework
 func (bd *BlockDevice) UnmarshalJSON(b []byte) error {
+
 	dec := json.NewDecoder(bytes.NewReader(b))
 
 	for {
@@ -431,43 +453,91 @@ func (bd *BlockDevice) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func marshalBool(value bool) string {
-	if value {
-		return "1"
-	}
-	return "0"
+// MarshalYAML is the yaml Marshaller implementation
+func (bd *BlockDevice) MarshalYAML() (interface{}, error) {
+
+	var bdm blockDeviceYAMLMarshal
+
+	bdm.Name = bd.Name
+	bdm.Model = bd.Model
+	bdm.MajorMinor = bd.MajorMinor
+	bdm.FsType = bd.FsType
+	bdm.UUID = bd.UUID
+	bdm.MountPoint = bd.MountPoint
+	bdm.Size = strconv.FormatUint(bd.Size, 10)
+	bdm.ReadOnly = strconv.FormatBool(bd.ReadOnly)
+	bdm.RemovableDevice = strconv.FormatBool(bd.RemovableDevice)
+	bdm.Type = bd.Type.String()
+	bdm.State = bd.State.String()
+	bdm.Children = bd.Children
+
+	return bdm, nil
 }
 
-// MarshalJSON is the json Marshaller implementation
-func (bd *BlockDevice) MarshalJSON() ([]byte, error) {
-	type BlockDeviceMarshal struct {
-		Name            string         `json:"name,omitempty"`
-		Model           string         `json:"model,omitempty"`
-		MajorMinor      string         `json:"maj:min,omitempty"`
-		FsType          string         `json:"fstype,omitempty"`
-		UUID            string         `json:"uuid,omitempty"`
-		MountPoint      string         `json:"mountpoint,omitempty"`
-		Size            float64        `json:"size,string,omitempty"`
-		ReadOnly        string         `json:"ro,omitempty"`
-		RemovableDevice string         `json:"rm,omitempty"`
-		Type            string         `json:"type,omitempty"`
-		State           string         `json:"state,omitempty"`
-		Children        []*BlockDevice `json:"children,omitempty"`
+// UnmarshalYAML is the yaml Unmarshaller implementation
+func (bd *BlockDevice) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var unmarshBlockDevice blockDeviceYAMLMarshal
+
+	if err := unmarshal(&unmarshBlockDevice); err != nil {
+		return err
 	}
-	return json.MarshalIndent(&BlockDeviceMarshal{
-		Name:            bd.Name,
-		Model:           bd.Model,
-		MajorMinor:      bd.MajorMinor,
-		FsType:          bd.FsType,
-		UUID:            bd.UUID,
-		MountPoint:      bd.MountPoint,
-		Size:            bd.Size,
-		ReadOnly:        marshalBool(bd.ReadOnly),
-		RemovableDevice: marshalBool(bd.RemovableDevice),
-		Type:            bd.Type.String(),
-		State:           bd.State.String(),
-		Children:        bd.Children,
-	}, "", " ")
+
+	// Copy the unmarshaled data
+	bd.Name = unmarshBlockDevice.Name
+	bd.Model = unmarshBlockDevice.Model
+	bd.MajorMinor = unmarshBlockDevice.MajorMinor
+	bd.FsType = unmarshBlockDevice.FsType
+	bd.UUID = unmarshBlockDevice.UUID
+	bd.MountPoint = unmarshBlockDevice.MountPoint
+	bd.Children = unmarshBlockDevice.Children
+	// Convert String to Uint64
+	if unmarshBlockDevice.Size != "" {
+		uSize, err := ParseVolumeSize(unmarshBlockDevice.Size)
+		if err != nil {
+			return err
+		}
+		bd.Size = uSize
+	}
+
+	// Map the BlockDeviceType
+	if unmarshBlockDevice.Type != "" {
+		iType, err := parseBlockDeviceType(unmarshBlockDevice.Type)
+		if err != nil {
+			return errors.Errorf("Device: %s: %v", unmarshBlockDevice.Name, err)
+		}
+		if iType < 0 || iType > BlockDeviceTypeUnknown {
+		}
+		bd.Type = iType
+	}
+
+	// Map the BlockDeviceState
+	if unmarshBlockDevice.State != "" {
+		iState, err := parseBlockDeviceState(unmarshBlockDevice.State)
+		if err != nil {
+			return errors.Errorf("Device: %s: %v", unmarshBlockDevice.Name, err)
+		}
+		bd.State = iState
+	}
+
+	// Map the ReanOnly bool
+	if unmarshBlockDevice.ReadOnly != "" {
+		bReadOnly, err := strconv.ParseBool(unmarshBlockDevice.ReadOnly)
+		if err != nil {
+			return err
+		}
+		bd.ReadOnly = bReadOnly
+	}
+
+	// Map the RemovableDevice bool
+	if unmarshBlockDevice.RemovableDevice != "" {
+		bRemovableDevice, err := strconv.ParseBool(unmarshBlockDevice.RemovableDevice)
+		if err != nil {
+			return err
+		}
+		bd.RemovableDevice = bRemovableDevice
+	}
+
+	return nil
 }
 
 // SupportedFileSystems exposes the currently supported file system
@@ -478,9 +548,9 @@ func SupportedFileSystems() []string {
 // NewStandardPartitions will return a list of BlockDevice representing a
 // default set of partitions required for an installation
 func NewStandardPartitions(disk *BlockDevice) []*BlockDevice {
-	bootSize := float64(150 * (1 << 20))
-	swapSize := float64(2 * (1 << 30))
-	rootSize := float64(disk.Size - bootSize - swapSize)
+	bootSize := uint64(150 * (1 << 20))
+	swapSize := uint64(2 * (1 << 30))
+	rootSize := uint64(disk.Size - bootSize - swapSize)
 
 	// TODO review this standard partition schema (maybe add a default configuration)
 	return []*BlockDevice{

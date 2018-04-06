@@ -20,7 +20,7 @@ type ManualPartPage struct {
 type SelectedBlockDevice struct {
 	bd        *storage.BlockDevice
 	part      *storage.BlockDevice
-	freeSpace float64
+	freeSpace uint64
 }
 
 const (

@@ -82,23 +82,23 @@ func TestSizeUnits(t *testing.T) {
 }`
 
 	tests := []struct {
-		size  float64
+		size  uint64
 		Value string
 	}{
 		{1024, `"size": "1k"`},
-		{1331.2, `"size": "1.3k"`},
+		{1331, `"size": "1.3k"`},
 		{1536, `"size": "1.5k"`},
 		{1048576, `"size": "1m"`},
-		{1363148.8, `"size": "1.3m"`},
+		{1363149, `"size": "1.3m"`},
 		{1572864, `"size": "1.5m"`},
 		{1073741824, `"size": "1g"`},
-		{1395864371.2, `"size": "1.3g"`},
+		{1395864371, `"size": "1.3g"`},
 		{1610612736, `"size": "1.5g"`},
 		{1099511627776, `"size": "1t"`},
-		{1429365116108.8, `"size": "1.3t"`},
+		{1429365116109, `"size": "1.3t"`},
 		{1649267441664, `"size": "1.5t"`},
 		{1125899906842624, `"size": "1p"`},
-		{1463669878895411.2, `"size": "1.3p"`},
+		{1463669878895411, `"size": "1.3p"`},
 		{1688849860263936, `"size": "1.5p"`},
 	}
 
@@ -117,7 +117,7 @@ func TestSizeUnits(t *testing.T) {
 
 		bd, _ := parseBlockDevicesDescriptor(w.Bytes())
 		if bd[0].Size != curr.size {
-			t.Fatalf("Parsed size: %f doesn't match the expected size: %f",
+			t.Fatalf("Parsed size: %d doesn't match the expected size: %d",
 				bd[0].Size, curr.size)
 		}
 	}
@@ -214,7 +214,7 @@ func TestParseBlockDevicesDescriptor(t *testing.T) {
 	}
 
 	if bd0.Size != 8053063680 {
-		t.Fatalf("Block device 0, expected size: 8053063680 - had: %f", bd0.Size)
+		t.Fatalf("Block device 0, expected size: 8053063680 - had: %d", bd0.Size)
 	}
 
 	if bd0.ReadOnly != false {
@@ -248,7 +248,7 @@ func TestParseBlockDevicesDescriptor(t *testing.T) {
 	}
 
 	if p0.Size != 934281216 {
-		t.Fatalf("Partition 0, expected size: 934281216 - had: %f", p0.Size)
+		t.Fatalf("Partition 0, expected size: 934281216 - had: %d", p0.Size)
 	}
 
 	if p0.ReadOnly != false {
@@ -278,7 +278,7 @@ func TestParseBlockDevicesDescriptor(t *testing.T) {
 	}
 
 	if p1.Size != 524288000 {
-		t.Fatalf("Partition 1, expected size: 524288000 - had: %f", p1.Size)
+		t.Fatalf("Partition 1, expected size: 524288000 - had: %d", p1.Size)
 	}
 
 	if p1.ReadOnly != false {
