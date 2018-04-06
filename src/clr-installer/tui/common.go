@@ -243,3 +243,7 @@ func (page *BasePage) newDoneButton(mi *Tui) {
 	})
 	page.doneBtn = btn
 }
+
+func (page *BasePage) getModel() *model.SystemInstall {
+	return page.mi.model
+}

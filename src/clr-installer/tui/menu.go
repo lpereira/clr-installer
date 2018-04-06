@@ -71,7 +71,7 @@ func (page *MenuPage) Activate() {
 		}
 	}
 
-	if page.mi.model != nil && page.mi.model.Validate() == nil {
+	if page.getModel() != nil && page.getModel().Validate() == nil {
 		page.installBtn.SetEnabled(true)
 	}
 }
@@ -90,7 +90,7 @@ func newMenuPage(mi *Tui) (Page, error) {
 
 	saveBtn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Save & Exit", Fixed)
 	saveBtn.OnClick(func(ev clui.Event) {
-		if err := page.mi.model.WriteFile(descFile); err != nil {
+		if err := page.getModel().WriteFile(descFile); err != nil {
 			page.Panic(err)
 		}
 		go clui.Stop()

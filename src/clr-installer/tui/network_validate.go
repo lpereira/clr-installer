@@ -98,7 +98,7 @@ func newNetworkValidatePage(mi *Tui) (Page, error) {
 			progress.Set(page)
 
 			prg := progress.NewLoop("Applying network settings")
-			if err := network.Apply("/", page.mi.model.NetworkInterfaces); err != nil {
+			if err := network.Apply("/", page.getModel().NetworkInterfaces); err != nil {
 				page.Panic(err)
 			}
 			prg.Done()

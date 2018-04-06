@@ -20,7 +20,7 @@ target instalattion disk.`
 
 // SetDone adds a new target media to installation model and sets the previous' page done flag
 func (page *GuidedPartPage) SetDone(done bool) bool {
-	page.mi.model.AddTargetMedia(page.bd)
+	page.getModel().AddTargetMedia(page.bd)
 	diskPage := page.mi.getPage(TuiPageDiskMenu)
 	diskPage.SetDone(done)
 	page.mi.gotoPage(TuiPageMenu, diskPage)

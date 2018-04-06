@@ -65,12 +65,12 @@ func (page *InstallPage) Activate() {
 	go func() {
 		progress.Set(page)
 
-		err := controller.Install(page.mi.rootDir, page.mi.model)
+		err := controller.Install(page.mi.rootDir, page.getModel())
 		if err != nil {
 			page.Panic(err)
 		}
 
-		if err := page.mi.model.WriteFile(descFile); err != nil {
+		if err := page.getModel().WriteFile(descFile); err != nil {
 			page.Panic(err)
 		}
 

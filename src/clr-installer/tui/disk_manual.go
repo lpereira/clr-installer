@@ -133,7 +133,7 @@ func (page *ManualPartPage) Activate() {
 // as done
 func (page *ManualPartPage) SetDone(done bool) bool {
 	if sel, ok := page.data.(*SelectedBlockDevice); ok {
-		page.mi.model.AddTargetMedia(sel.bd)
+		page.getModel().AddTargetMedia(sel.bd)
 	}
 
 	diskPage := page.mi.getPage(TuiPageDiskMenu)

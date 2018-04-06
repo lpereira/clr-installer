@@ -233,7 +233,7 @@ func newNetworkInterfacePage(mi *Tui) (Page, error) {
 			sel.DHCP = DHCP
 			sel.Gateway = Gateway
 			sel.DNS = DNS
-			page.mi.model.AddNetworkInterface(sel)
+			page.getModel().AddNetworkInterface(sel)
 		}
 
 		mi.gotoPage(TuiPageNetwork, mi.currPage)

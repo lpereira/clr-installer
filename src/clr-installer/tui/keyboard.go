@@ -15,7 +15,7 @@ type KeyboardPage struct {
 // SetDone sets the keyboard page flag done, and sets back the configuration to the data model
 func (page *KeyboardPage) SetDone(done bool) bool {
 	page.done = done
-	page.mi.model.Keyboard = page.kbdListBox.SelectedItemText()
+	page.getModel().Keyboard = page.kbdListBox.SelectedItemText()
 	return true
 }
 
