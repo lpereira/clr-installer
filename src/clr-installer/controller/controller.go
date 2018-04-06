@@ -143,10 +143,13 @@ func Install(rootDir string, model *model.SystemInstall) error {
 
 func contentInstall(rootDir string, version string, bundles []string) error {
 	prg := progress.NewLoop("Installing the base system")
+
+	stateDir := filepath.Join(rootDir, "/var/lib/swupd")
 	args := []string{
 		"swupd",
 		"verify",
 		fmt.Sprintf("--path=%s", rootDir),
+		fmt.Sprintf("--statedir=%s", stateDir),
 		"--install",
 		"-m",
 		version,
@@ -166,6 +169,7 @@ func contentInstall(rootDir string, version string, bundles []string) error {
 			"swupd",
 			"bundle-add",
 			fmt.Sprintf("--path=%s", rootDir),
+			fmt.Sprintf("--statedir=%s", stateDir),
 			bundle,
 		}
 
