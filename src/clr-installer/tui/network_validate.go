@@ -1,9 +1,10 @@
 package tui
 
 import (
+	"fmt"
 	"time"
 
-	"clr-installer/network"
+	"clr-installer/controller"
 	"clr-installer/progress"
 	"github.com/VladimirMarkelov/clui"
 )
@@ -59,7 +60,7 @@ func (page *NetworkValidatePage) LoopWaitDuration() time.Duration {
 
 // Activate resets the page state
 func (page *NetworkValidatePage) Activate() {
-	page.doneBtn.SetEnabled(false)
+	page.doneBtn.SetVisible(false)
 	page.prgLabel.SetTitle("")
 	page.prgBar.SetValue(0)
 }
@@ -85,10 +86,8 @@ func newNetworkValidatePage(mi *Tui) (Page, error) {
 	page.prgMax, _ = page.prgBar.Size()
 	page.prgBar.SetLimits(0, page.prgMax)
 
-	page.doneBtn = CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Done", Fixed)
-	page.doneBtn.SetEnabled(false)
-
-	page.doneBtn.OnClick(func(ev clui.Event) {
+	cancelBtn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Cancel", Fixed)
+	cancelBtn.OnClick(func(ev clui.Event) {
 		page.mi.gotoPage(TuiPageMenu, page.mi.currPage)
 	})
 
@@ -97,30 +96,23 @@ func newNetworkValidatePage(mi *Tui) (Page, error) {
 		go func() {
 			progress.Set(page)
 
-			prg := progress.NewLoop("Applying network settings")
-			if err := network.Apply("/", page.getModel().NetworkInterfaces); err != nil {
-				page.Panic(err)
-			}
-			prg.Done()
-
-			prg = progress.NewLoop("Restarting network interfaces")
-			if err := network.Restart(); err != nil {
-				page.Panic(err)
-			}
-			prg.Done()
-
-			prg = progress.NewLoop("Testing connectivity")
-			if err := network.Test(); err != nil {
-				page.prgLabel.SetTitle("Failed, network is not working.")
+			if err := controller.ConfigureNetwork(page.getModel()); err != nil {
+				page.prgLabel.SetTitle(fmt.Sprintf("%s", err))
 			} else {
 				page.prgLabel.SetTitle("Success.")
+				page.doneBtn.SetVisible(true)
+				clui.ActivateControl(mi.currPage.GetWindow(), page.doneBtn)
 			}
-			prg.Done()
 
-			page.doneBtn.SetEnabled(true)
-			clui.ActivateControl(mi.currPage.GetWindow(), page.doneBtn)
 			clui.RefreshScreen()
 		}()
+	})
+
+	page.doneBtn = CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Done", Fixed)
+	page.doneBtn.SetVisible(false)
+
+	page.doneBtn.OnClick(func(ev clui.Event) {
+		page.mi.gotoPage(TuiPageMenu, page.mi.currPage)
 	})
 
 	page.activated = btn

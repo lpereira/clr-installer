@@ -78,19 +78,12 @@ func Install(rootDir string, model *model.SystemInstall) error {
 	log.Debug("Clear Linux version: %s", version)
 
 	// do we have the minimum required to install a system?
-	err = model.Validate()
-	if err != nil {
+	if err = model.Validate(); err != nil {
 		return err
 	}
 
-	if model.NetworkInterfaces != nil && len(model.NetworkInterfaces) > 0 {
-		if err := network.Apply("/", model.NetworkInterfaces); err != nil {
-			return err
-		}
-
-		if err := network.Restart(); err != nil {
-			return err
-		}
+	if err = ConfigureNetwork(model); err != nil {
+		return err
 	}
 
 	mountPoints := []*storage.BlockDevice{}
@@ -98,16 +91,14 @@ func Install(rootDir string, model *model.SystemInstall) error {
 	// prepare all the target block devices
 	for _, curr := range model.TargetMedias {
 		// based on the description given, write the partition table
-		err = curr.WritePartitionTable()
-		if err != nil {
+		if err = curr.WritePartitionTable(); err != nil {
 			return err
 		}
 
 		// prepare the blockdevice's partitions filesystem
 		for _, ch := range curr.Children {
 			prg := progress.NewLoop("Writing %s file system to %s", ch.FsType, ch.Name)
-			err = ch.MakeFs()
-			if err != nil {
+			if err = ch.MakeFs(); err != nil {
 				return err
 			}
 			prg.Done()
@@ -123,8 +114,7 @@ func Install(rootDir string, model *model.SystemInstall) error {
 	for _, curr := range sortMountPoint(mountPoints) {
 		log.Info("Mounting: %s", curr.MountPoint)
 
-		err = curr.Mount(rootDir)
-		if err != nil {
+		if err = curr.Mount(rootDir); err != nil {
 			return err
 		}
 	}
@@ -177,6 +167,29 @@ func contentInstall(rootDir string, version string, bundles []string) error {
 	err := cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
+	}
+	prg.Done()
+
+	return nil
+}
+
+// ConfigureNetwork applies the model/configured network interfaces
+func ConfigureNetwork(model *model.SystemInstall) error {
+	prg := progress.NewLoop("Applying network settings")
+	if err := network.Apply("/", model.NetworkInterfaces); err != nil {
+		return err
+	}
+	prg.Done()
+
+	prg = progress.NewLoop("Restarting network interfaces")
+	if err := network.Restart(); err != nil {
+		return err
+	}
+	prg.Done()
+
+	prg = progress.NewLoop("Testing connectivity")
+	if err := network.Test(); err != nil {
+		return errors.Errorf("Failed, network is not working.")
 	}
 	prg.Done()
 
