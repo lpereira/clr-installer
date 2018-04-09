@@ -17,6 +17,7 @@ import (
 	"clr-installer/network"
 	"clr-installer/progress"
 	"clr-installer/storage"
+	"clr-installer/swupd"
 )
 
 func sortMountPoint(bds []*storage.BlockDevice) []*storage.BlockDevice {
@@ -141,53 +142,39 @@ func Install(rootDir string, model *model.SystemInstall) error {
 	return nil
 }
 
+// use the current host's version to bootstrap the sysroot, then update to the
+// latest one and start adding new bundles
+// for the bootstrap we huse the hosts's swupd and the following operations are
+// executed using the target swupd
 func contentInstall(rootDir string, version string, bundles []string) error {
-	prg := progress.NewLoop("Installing the base system")
+	sw := swupd.New(rootDir)
 
-	stateDir := filepath.Join(rootDir, "/var/lib/swupd")
-	args := []string{
-		"swupd",
-		"verify",
-		fmt.Sprintf("--path=%s", rootDir),
-		fmt.Sprintf("--statedir=%s", stateDir),
-		"--install",
-		"-m",
-		version,
-		"--force",
-		"--no-scripts",
+	prg := progress.NewLoop("Installing the base system")
+	if err := sw.Verify(version); err != nil {
+		return err
 	}
 
-	err := cmd.RunAndLog(args...)
-	if err != nil {
-		return errors.Wrap(err)
+	if err := sw.Update(); err != nil {
+		return err
 	}
 	prg.Done()
 
 	for _, bundle := range bundles {
 		prg = progress.NewLoop("Installing bundle: %s", bundle)
-		args = []string{
-			"swupd",
-			"bundle-add",
-			fmt.Sprintf("--path=%s", rootDir),
-			fmt.Sprintf("--statedir=%s", stateDir),
-			bundle,
-		}
-
-		err = cmd.RunAndLog(args...)
-		if err != nil {
-			return errors.Wrap(err)
+		if err := sw.BundleAdd(bundle); err != nil {
+			return err
 		}
 		prg.Done()
 	}
 
 	prg = progress.NewLoop("Installing boot loader")
-	args = []string{
+	args := []string{
 		fmt.Sprintf("%s/usr/bin/clr-boot-manager", rootDir),
 		"update",
 		fmt.Sprintf("--path=%s", rootDir),
 	}
 
-	err = cmd.RunAndLog(args...)
+	err := cmd.RunAndLog(args...)
 	if err != nil {
 		return errors.Wrap(err)
 	}
