@@ -104,7 +104,7 @@ func Install(rootDir string, model *model.SystemInstall) error {
 
 		// prepare the blockdevice's partitions filesystem
 		for _, ch := range curr.Children {
-			prg := progress.NewLoop(fmt.Sprintf("Writing %s file system to %s", ch.FsType, ch.Name))
+			prg := progress.NewLoop("Writing %s file system to %s", ch.FsType, ch.Name)
 			err = ch.MakeFs()
 			if err != nil {
 				return err
@@ -164,7 +164,7 @@ func contentInstall(rootDir string, version string, bundles []string) error {
 	prg.Done()
 
 	for _, bundle := range bundles {
-		prg = progress.NewLoop(fmt.Sprintf("Installing bundle: %s", bundle))
+		prg = progress.NewLoop("Installing bundle: %s", bundle)
 		args = []string{
 			"swupd",
 			"bundle-add",

@@ -1,6 +1,7 @@
 package progress
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -54,11 +55,12 @@ func Set(pi Client) {
 }
 
 // MultiStep creates a new MultiStep implementation
-func MultiStep(total int, desc string) Progress {
+func MultiStep(total int, format string, a ...interface{}) Progress {
 	if impl == nil {
 		panic("No progress implementation was configured. Use progress.Set() before using progress.")
 	}
 
+	desc := fmt.Sprintf(format, a...)
 	prg := &BaseProgress{total: total}
 	impl.Desc(desc)
 	return prg
@@ -77,11 +79,12 @@ func runStepLoop(prg *Loop, dur time.Duration) {
 }
 
 // NewLoop creates a new Loop based progress implementation
-func NewLoop(desc string) Progress {
+func NewLoop(format string, a ...interface{}) Progress {
 	if impl == nil {
 		panic("No progress implementation was configured. Use progress.Set() before using progress.")
 	}
 
+	desc := fmt.Sprintf(format, a...)
 	prg := &Loop{}
 	prg.done = make(chan bool)
 
