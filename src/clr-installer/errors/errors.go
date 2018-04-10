@@ -8,10 +8,6 @@ import (
 	"time"
 )
 
-var (
-	fakeExternalTrace = false
-)
-
 // TraceableError is an internal error used to carry trace details
 // to be shared across the multiple layers and reporting facilities
 type TraceableError struct {
@@ -20,42 +16,49 @@ type TraceableError struct {
 	What  string
 }
 
-func getTraceIdx(idx int) (string, int) {
+func getTraceIdx(idx int) (string, string, int) {
 	pc := make([]uintptr, 10)
 	runtime.Callers(2, pc)
 	f := runtime.FuncForPC(pc[idx+1])
 	file, line := f.FileLine(pc[idx+1])
+	return f.Name(), file, line
+}
 
-	if fakeExternalTrace {
-		file = "/external/source/file.go"
+func formatTraceIdx(idx int) (string, string) {
+	funcName, file, line := getTraceIdx(idx)
+	fileName := filepath.Base(file)
+
+	fn := strings.Split(funcName, "clr-installer/")
+
+	if len(fn) > 1 {
+		funcName = fn[1]
+	} else {
+		funcName = fn[0]
 	}
 
-	return file, line
+	dir := strings.Split(filepath.Dir(file), "/src/clr-installer/")
+	var dirName string
+	if len(dir) > 1 {
+		dirName = dir[1]
+	} else {
+		dirName = dir[0]
+	}
+
+	return funcName, fmt.Sprintf("%s/%s:%d", dirName, fileName, line)
 }
 
 func getTrace() string {
-	split := "/src/"
-	file, line := getTraceIdx(1)
+	cfName, cTrace := formatTraceIdx(3)
+	caller := fmt.Sprintf("%s()\n     %s\n", cfName, cTrace)
 
-	if !strings.Contains(file, split) {
-		idx := 2
+	rfName, rTrace := formatTraceIdx(2)
+	raiser := fmt.Sprintf("%s()\n     %s\n", rfName, rTrace)
 
-		if fakeExternalTrace {
-			idx = 1
-			split = ""
-		}
-
-		file, line = getTraceIdx(idx)
-	}
-
-	dir := strings.Split(filepath.Dir(file), split)
-	fName := filepath.Base(file)
-
-	return fmt.Sprintf("%s/%s:%d", dir[1], fName, line)
+	return fmt.Sprintf("\n\nError Trace:\n%s%s", raiser, caller)
 }
 
 func (e TraceableError) Error() string {
-	return e.What
+	return fmt.Sprintf("%s%s", e.What, e.Trace)
 }
 
 // Errorf Returns a new error with the stack information

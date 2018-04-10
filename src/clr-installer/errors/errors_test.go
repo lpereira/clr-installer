@@ -2,6 +2,7 @@ package errors
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -17,8 +18,8 @@ func testErrorf(t *testing.T) {
 		t.Fatal("Traceable error should contain trace info")
 	}
 
-	if e.Error() != e.What {
-		t.Fatal("Error() should return the content of What member")
+	if !strings.Contains(e.Error(), e.Trace) && strings.Contains(e.Error(), e.What) {
+		t.Fatal("Error() should return the content of Trace and What member")
 	}
 }
 
@@ -38,13 +39,7 @@ func TestWrapp(t *testing.T) {
 		t.Fatal("Traceable error should contain trace info")
 	}
 
-	if e.Error() != e.What {
-		t.Fatal("Error() should return the content of What member")
+	if !strings.Contains(e.Error(), e.Trace) && strings.Contains(e.Error(), e.What) {
+		t.Fatal("Error() should return the content of Trace and What member")
 	}
-}
-
-func TestFakeExternalTrace(t *testing.T) {
-	fakeExternalTrace = true
-	testErrorf(t)
-	fakeExternalTrace = false
 }

@@ -126,7 +126,7 @@ func TestLogTraceableError(t *testing.T) {
 	ErrorError(errors.Errorf("Traceable error"))
 
 	if !strings.Contains(w.String(), "log_test.go") {
-		t.Fatal("Traceable should contains the source name")
+		t.Fatal("Traceable should contain the source name")
 	}
 }
 
