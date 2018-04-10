@@ -40,7 +40,7 @@ func newKeyboardPage(mi *Tui) (Page, error) {
 	for idx, curr := range page.avKeymaps {
 		page.kbdListBox.AddItem(curr.Code)
 
-		if curr.IsDefault() {
+		if curr.Code == mi.model.Keyboard {
 			defKeyboard = idx
 		}
 	}

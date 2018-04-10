@@ -12,11 +12,6 @@ type Keymap struct {
 	Code string
 }
 
-// IsDefault returns true if a given keymap is the default one
-func (l *Keymap) IsDefault() bool {
-	return l.Code == "us"
-}
-
 // LoadKeymaps loads the system's available keymaps
 func LoadKeymaps() ([]*Keymap, error) {
 	result := []*Keymap{}

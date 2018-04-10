@@ -40,7 +40,7 @@ func newLanguagePage(mi *Tui) (Page, error) {
 	for idx, curr := range page.avLanguages {
 		page.langListBox.AddItem(curr.String())
 
-		if curr.IsDefault() {
+		if curr.Code == mi.model.Language {
 			defLanguage = idx
 		}
 	}

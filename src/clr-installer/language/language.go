@@ -20,11 +20,6 @@ func (l *Language) String() string {
 	return display.English.Tags().Name(l.Tag)
 }
 
-// IsDefault returns true if a given language is the default one
-func (l *Language) IsDefault() bool {
-	return l.Tag == language.AmericanEnglish
-}
-
 // Load uses localectl to load the currently available locales/Languages
 func Load() ([]*Language, error) {
 	result := []*Language{}
