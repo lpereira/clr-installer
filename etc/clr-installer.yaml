@@ -1,0 +1,4 @@
+---
+bundles: [os-core, os-core-update, kernel-native]
+keyboard: us
+language: en_US.UTF-8

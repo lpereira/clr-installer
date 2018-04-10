@@ -8,6 +8,7 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
+	"strings"
 	"syscall"
 
 	"clr-installer/cmd"
@@ -66,9 +67,25 @@ func fatal(err error) {
 
 func initFrontendList() {
 	frontEndImpls = []frontend.Frontend{
-		massinstall.New(configFile),
+		massinstall.New(configFile != ""),
 		tui.New(),
 	}
+}
+
+func lookupDefaultConfig() (string, error) {
+	config := "/usr/share/defaults/clr-installer/clr-installer.yaml"
+
+	src, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		return "", err
+	}
+
+	// use the config from source code's etc dir
+	if strings.Contains(src, "/clr-installer/bin") {
+		config = filepath.Join(strings.Replace(src, "bin", "etc", 1), "clr-installer.yaml")
+	}
+
+	return config, nil
 }
 
 func main() {
@@ -104,6 +121,20 @@ func main() {
 		fatal(err)
 	}
 
+	var md *model.SystemInstall
+	cf := configFile
+
+	if configFile == "" {
+		if cf, err = lookupDefaultConfig(); err != nil {
+			fatal(err)
+		}
+	}
+
+	log.Debug("Loading config file: %s", cf)
+	if md, err = model.LoadFile(cf); err != nil {
+		fatal(err)
+	}
+
 	installReboot := false
 
 	go func() {
@@ -112,7 +143,7 @@ func main() {
 				continue
 			}
 
-			installReboot, err = fe.Run(rootDir)
+			installReboot, err = fe.Run(md, rootDir)
 			if err != nil {
 				fatal(err)
 			}

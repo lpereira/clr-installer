@@ -13,14 +13,14 @@ import (
 // MassInstall is the frontend implementation for the "mass installer" it also
 // implements the progress interface: progress.Client
 type MassInstall struct {
-	configFile string
+	configFile bool
 	prgDesc    string
 	prgIndex   int
 }
 
 // New creates a new instance of MassInstall frontend implementation
-func New(config string) *MassInstall {
-	return &MassInstall{configFile: config}
+func New(configFile bool) *MassInstall {
+	return &MassInstall{configFile: configFile}
 }
 
 // Step is the progress step implementation for progress.Client interface
@@ -65,21 +65,15 @@ func (mi *MassInstall) Done() {
 // MustRun is part of the Frontend implementation and tells the core implementation that this
 // frontend wants or should be executed
 func (mi *MassInstall) MustRun() bool {
-	return mi.configFile != ""
+	return mi.configFile
 }
 
 // Run is part of the Frontend implementation and is the actual entry point for the
 // "mass installer" frontend
-func (mi *MassInstall) Run(rootDir string) (bool, error) {
+func (mi *MassInstall) Run(md *model.SystemInstall, rootDir string) (bool, error) {
 	var instError error
 
 	progress.Set(mi)
-
-	log.Debug("Loading config file: %s", mi.configFile)
-	md, err := model.LoadFile(mi.configFile)
-	if err != nil {
-		return false, err
-	}
 
 	log.Debug("Starting install")
 	instCompleted := true

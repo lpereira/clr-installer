@@ -34,16 +34,7 @@ var (
 
 // New creates a new Tui frontend instance
 func New() *Tui {
-	return &Tui{
-		pages: []Page{},
-		model: &model.SystemInstall{
-			Bundles: []string{
-				"os-core",
-				"os-core-update",
-				"kernel-native",
-			},
-		},
-	}
+	return &Tui{pages: []Page{}}
 }
 
 // MustRun is part of the Frontend interface implementation and tells the core that this
@@ -87,10 +78,11 @@ func lookupThemeDir() (string, error) {
 }
 
 // Run is part of the Frontend interface implementation and is the tui frontend main entry point
-func (mi *Tui) Run(rootDir string) (bool, error) {
+func (mi *Tui) Run(md *model.SystemInstall, rootDir string) (bool, error) {
 	clui.InitLibrary()
 	defer clui.DeinitLibrary()
 
+	mi.model = md
 	themeDir, err := lookupThemeDir()
 	if err != nil {
 		return false, err
