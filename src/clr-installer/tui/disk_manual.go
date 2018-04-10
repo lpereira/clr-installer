@@ -156,7 +156,7 @@ func newManualPartitionPage(mi *Tui) (Page, error) {
 	lbl = clui.CreateLabel(page.content, 70, 3, manualDesc, Fixed)
 	lbl.SetMultiline(true)
 
-	page.bds, err = storage.ListBlockDevices()
+	page.bds, err = storage.ListBlockDevices(page.getModel().TargetMedias)
 	if err != nil {
 		return nil, err
 	}

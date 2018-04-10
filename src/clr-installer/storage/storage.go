@@ -28,6 +28,7 @@ type BlockDevice struct {
 	ReadOnly        bool             // read-only device
 	RemovableDevice bool             // removable device
 	Children        []*BlockDevice   // children devices/partitions
+	userDefined     bool             // was this value set by user?
 }
 
 // Version used for reading and writing YAML
@@ -184,6 +185,11 @@ func (bd *BlockDevice) AddChild(child *BlockDevice) {
 // HumanReadableSize converts the size representation in bytes to the closest
 // human readable format i.e 10M, 1G, 2T etc
 func HumanReadableSize(size uint64) (string, error) {
+
+	if size == 0 {
+		return fmt.Sprintf("0"), nil
+	}
+
 	sizes := []struct {
 		unit string
 		mask uint64
@@ -204,7 +210,7 @@ func HumanReadableSize(size uint64) (string, error) {
 		return fmt.Sprintf("%v%s", csize, curr.unit), nil
 	}
 
-	return "", fmt.Errorf("Could not format desk/partition size")
+	return "", errors.Errorf("Could not format desk/partition size")
 }
 
 // FreeSpace returns the block device available/free space considering the currently
@@ -229,19 +235,52 @@ func (bd *BlockDevice) HumanReadableSize() (string, error) {
 }
 
 // ListBlockDevices Lists all available/attached block devices
-func ListBlockDevices() ([]*BlockDevice, error) {
+// userDefined will be inserted in the resulting list reather the loaded ones
+func ListBlockDevices(userDefined []*BlockDevice) ([]*BlockDevice, error) {
 	w := bytes.NewBuffer(nil)
 	err := cmd.Run(w, lsblkBinary, "-J", "-b", "-O")
 	if err != nil {
 		return nil, fmt.Errorf("%s", w.String())
 	}
 
-	bd, err := parseBlockDevicesDescriptor(w.Bytes())
+	bds, err := parseBlockDevicesDescriptor(w.Bytes())
 	if err != nil {
 		return nil, err
 	}
 
-	return bd, nil
+	if userDefined == nil || len(userDefined) == 0 {
+		return bds, nil
+	}
+
+	merged := []*BlockDevice{}
+	for _, loaded := range bds {
+		added := false
+
+		for _, udef := range userDefined {
+			if !loaded.Equals(udef) {
+				continue
+			}
+
+			merged = append(merged, udef)
+			added = true
+			break
+		}
+
+		if !added {
+			merged = append(merged, loaded)
+		}
+	}
+
+	return merged, nil
+}
+
+// Equals compares two BlockDevice instances
+func (bd *BlockDevice) Equals(cmp *BlockDevice) bool {
+	if cmp == nil {
+		return false
+	}
+
+	return bd.Name == cmp.Name && bd.Model == cmp.Model && bd.MajorMinor == cmp.MajorMinor
 }
 
 func parseBlockDevicesDescriptor(data []byte) ([]*BlockDevice, error) {
@@ -483,6 +522,7 @@ func (bd *BlockDevice) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	// Copy the unmarshaled data
+	bd.userDefined = false
 	bd.Name = unmarshBlockDevice.Name
 	bd.Model = unmarshBlockDevice.Model
 	bd.MajorMinor = unmarshBlockDevice.MajorMinor

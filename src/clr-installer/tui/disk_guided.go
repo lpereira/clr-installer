@@ -97,7 +97,7 @@ func newGuidedPartitionPage(mi *Tui) (Page, error) {
 	lbl = clui.CreateLabel(page.content, 70, 3, guidedDesc, Fixed)
 	lbl.SetMultiline(true)
 
-	bds, err := storage.ListBlockDevices()
+	bds, err := storage.ListBlockDevices(page.getModel().TargetMedias)
 	if err != nil {
 		return nil, err
 	}

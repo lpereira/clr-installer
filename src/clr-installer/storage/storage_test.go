@@ -9,7 +9,7 @@ import (
 func TestFailListBlockDevices(t *testing.T) {
 	lsblkBinary = "lsblkX"
 
-	_, err := ListBlockDevices()
+	_, err := ListBlockDevices(nil)
 	if err == nil {
 		t.Fatalf("Should have failed to liste block devices")
 	}
@@ -124,7 +124,7 @@ func TestSizeUnits(t *testing.T) {
 }
 
 func TestListBlockDevices(t *testing.T) {
-	bd, err := ListBlockDevices()
+	bd, err := ListBlockDevices(nil)
 	if err != nil {
 		t.Fatalf("Should have listed block devices: %s", err)
 	}
