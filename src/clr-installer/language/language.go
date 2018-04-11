@@ -16,6 +16,12 @@ type Language struct {
 	userDefined bool
 }
 
+// IsUserDefined returns true if the configuration was interactively
+// defined by the user
+func (l *Language) IsUserDefined() bool {
+	return l.userDefined
+}
+
 // String converts a Language to string, namely it returns the tag's name - or the language desc
 func (l *Language) String() string {
 	return display.English.Tags().Name(l.Tag)

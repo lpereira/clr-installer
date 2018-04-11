@@ -18,11 +18,21 @@ import (
 
 // Interface is a network interface representation and wraps the net' package Interface struct
 type Interface struct {
-	Name    string
-	Addrs   []*Addr
-	DHCP    bool
-	Gateway string
-	DNS     string
+	Name        string
+	Addrs       []*Addr
+	DHCP        bool
+	Gateway     string
+	DNS         string
+	userDefined bool
+}
+
+// Version used for reading and writing YAML
+type interfaceYAMLMarshal struct {
+	Name    string  `yaml:"name,omitempty"`
+	Addrs   []*Addr `yaml:"addrs,omitempty"`
+	DHCP    string  `yaml:"dhcp,omitempty"`
+	Gateway string  `yaml:"gateway,omitempty"`
+	DNS     string  `yaml:"dns,omitempty"`
 }
 
 // Addr wraps the net' package Addr struct
@@ -46,6 +56,51 @@ var (
 	gwExp  = regexp.MustCompile(`(default via )(.*)( dev.*)`)
 	dnsExp = regexp.MustCompile("(nameserver) (.*)")
 )
+
+// IsUserDefined returns true if the configuration was interactively
+// defined by the user
+func (i *Interface) IsUserDefined() bool {
+	return i.userDefined
+}
+
+// MarshalYAML marshals Interface into YAML format
+func (i *Interface) MarshalYAML() (interface{}, error) {
+	var im interfaceYAMLMarshal
+
+	im.Name = i.Name
+	im.Addrs = i.Addrs
+	im.DHCP = strconv.FormatBool(i.DHCP)
+	im.Gateway = i.Gateway
+	im.DNS = i.DNS
+
+	return im, nil
+}
+
+// UnmarshalYAML unmarshals Interface from YAML format
+func (i *Interface) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var im interfaceYAMLMarshal
+
+	if err := unmarshal(&im); err != nil {
+		return err
+	}
+
+	i.Name = im.Name
+	i.Addrs = im.Addrs
+	i.Gateway = im.Gateway
+	i.DNS = im.DNS
+	i.userDefined = false
+
+	if im.DHCP != "" {
+		dhcp, err := strconv.ParseBool(im.DHCP)
+		if err != nil {
+			return err
+		}
+
+		i.DHCP = dhcp
+	}
+
+	return nil
+}
 
 // AddAddr adds a new interface set with the provided arguments to a given Interface
 func (i *Interface) AddAddr(IP string, NetMask string, Version int) {

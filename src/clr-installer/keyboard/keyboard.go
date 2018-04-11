@@ -13,6 +13,12 @@ type Keymap struct {
 	userDefined bool
 }
 
+// IsUserDefined returns true if the configuration was interactively
+// defined by the user
+func (k *Keymap) IsUserDefined() bool {
+	return k.userDefined
+}
+
 // MarshalYAML marshals Keymap into YAML format
 func (k *Keymap) MarshalYAML() (interface{}, error) {
 	return k.Code, nil

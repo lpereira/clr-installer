@@ -128,6 +128,12 @@ func parseBlockDeviceState(bds string) (BlockDeviceState, error) {
 	return BlockDeviceStateUnknown, errors.Errorf("Unrecognized block device state: %s", bds)
 }
 
+// IsUserDefined returns true if the configuration was interactively
+// defined by the user
+func (bd *BlockDevice) IsUserDefined() bool {
+	return bd.userDefined
+}
+
 // Validate checks if the minimal requirements for a installation is met
 func (bd *BlockDevice) Validate() error {
 	bootPartition := false
