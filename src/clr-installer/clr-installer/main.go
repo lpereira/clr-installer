@@ -21,30 +21,29 @@ import (
 )
 
 var (
-	version    bool
-	reboot     bool
-	logFile    string
-	configFile string
-	logLevel   int
-
 	frontEndImpls []frontend.Frontend
+	args          frontend.Args
 )
 
 func init() {
 	flag.BoolVar(
-		&version, "version", false, "Version of the Installer",
+		&args.Version, "version", false, "Version of the Installer",
 	)
 
 	flag.BoolVar(
-		&reboot, "reboot", true, "Reboot after finishing",
+		&args.Reboot, "reboot", true, "Reboot after finishing",
+	)
+
+	flag.BoolVar(
+		&args.ForceTUI, "tui", false, "Use TUI frontend",
 	)
 
 	flag.StringVar(
-		&configFile, "config", "", "Installation configuration file",
+		&args.ConfigFile, "config", "", "Installation configuration file",
 	)
 
 	flag.IntVar(
-		&logLevel,
+		&args.LogLevel,
 		"log-level",
 		log.LogLevelDebug,
 		fmt.Sprintf("%d (debug), %d (info), %d (warning), %d (error)",
@@ -57,7 +56,7 @@ func init() {
 	}
 
 	defaultLogFile := filepath.Join(usr.HomeDir, "clr-installer.log")
-	flag.StringVar(&logFile, "log-file", defaultLogFile, "The log file path")
+	flag.StringVar(&args.LogFile, "log-file", defaultLogFile, "The log file path")
 }
 
 func fatal(err error) {
@@ -67,7 +66,7 @@ func fatal(err error) {
 
 func initFrontendList() {
 	frontEndImpls = []frontend.Frontend{
-		massinstall.New(configFile != ""),
+		massinstall.New(),
 		tui.New(),
 	}
 }
@@ -91,16 +90,16 @@ func lookupDefaultConfig() (string, error) {
 func main() {
 	flag.Parse()
 
-	if err := log.SetLogLevel(logLevel); err != nil {
+	if err := log.SetLogLevel(args.LogLevel); err != nil {
 		fatal(err)
 	}
 
-	if version {
+	if args.Version {
 		fmt.Println(path.Base(os.Args[0]) + ": " + model.Version)
 		return
 	}
 
-	f, err := os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	f, err := os.OpenFile(args.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		fatal(err)
 	}
@@ -122,9 +121,9 @@ func main() {
 	}
 
 	var md *model.SystemInstall
-	cf := configFile
+	cf := args.ConfigFile
 
-	if configFile == "" {
+	if args.ConfigFile == "" {
 		if cf, err = lookupDefaultConfig(); err != nil {
 			fatal(err)
 		}
@@ -139,7 +138,7 @@ func main() {
 
 	go func() {
 		for _, fe := range frontEndImpls {
-			if !fe.MustRun() {
+			if !fe.MustRun(&args) {
 				continue
 			}
 
@@ -162,7 +161,7 @@ func main() {
 
 	<-done
 
-	if reboot && installReboot {
+	if args.Reboot && installReboot {
 		if err := cmd.RunAndLog("reboot"); err != nil {
 			fatal(err)
 		}

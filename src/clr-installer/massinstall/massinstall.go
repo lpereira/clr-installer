@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"clr-installer/controller"
+	"clr-installer/frontend"
 	"clr-installer/log"
 	"clr-installer/model"
 	"clr-installer/progress"
@@ -13,14 +14,13 @@ import (
 // MassInstall is the frontend implementation for the "mass installer" it also
 // implements the progress interface: progress.Client
 type MassInstall struct {
-	configFile bool
-	prgDesc    string
-	prgIndex   int
+	prgDesc  string
+	prgIndex int
 }
 
 // New creates a new instance of MassInstall frontend implementation
-func New(configFile bool) *MassInstall {
-	return &MassInstall{configFile: configFile}
+func New() *MassInstall {
+	return &MassInstall{}
 }
 
 // Step is the progress step implementation for progress.Client interface
@@ -64,8 +64,8 @@ func (mi *MassInstall) Done() {
 
 // MustRun is part of the Frontend implementation and tells the core implementation that this
 // frontend wants or should be executed
-func (mi *MassInstall) MustRun() bool {
-	return mi.configFile
+func (mi *MassInstall) MustRun(args *frontend.Args) bool {
+	return args.ConfigFile != "" && !args.ForceTUI
 }
 
 // Run is part of the Frontend implementation and is the actual entry point for the

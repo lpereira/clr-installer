@@ -6,8 +6,10 @@ import (
 	"strings"
 
 	"clr-installer/errors"
+	"clr-installer/frontend"
 	"clr-installer/log"
 	"clr-installer/model"
+
 	"github.com/VladimirMarkelov/clui"
 	"github.com/nsf/termbox-go"
 )
@@ -39,7 +41,7 @@ func New() *Tui {
 
 // MustRun is part of the Frontend interface implementation and tells the core that this
 // frontend wants/must run.
-func (mi *Tui) MustRun() bool {
+func (mi *Tui) MustRun(args *frontend.Args) bool {
 	return true
 }
 
