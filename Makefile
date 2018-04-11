@@ -14,11 +14,14 @@ export GO_PACKAGE_PREFIX := clr-installer
 export TESTS_DIR := $(top_srcdir)/tests/
 
 THEME_DIR=$(DESTDIR)/usr/share/clr-installer/themes/
+CONFIG_DIR=$(DESTDIR)/usr/share/defaults/clr-installer/clr-installer.yaml
 
 install:
 	@mkdir -p $(THEME_DIR)
+	@mkdir -p $(CONFIG_DIR)
 	@install -m 755 $(top_srcdir)/bin/clr-installer $(DESTDIR)/usr/bin/clr-installer
 	@install -m 644  $(top_srcdir)/themes/clr-installer.theme $(THEME_DIR)
+	@install -m 644  $(top_srcdir)/etc/clr-installer.yaml $(CONFIG_DIR)
 
 build:
 	go get -v ${GO_PACKAGE_PREFIX}/clr-installer
