@@ -15,7 +15,7 @@ type KeyboardPage struct {
 // SetDone sets the keyboard page flag done, and sets back the configuration to the data model
 func (page *KeyboardPage) SetDone(done bool) bool {
 	page.done = done
-	page.getModel().Keyboard = page.kbdListBox.SelectedItemText()
+	page.getModel().Keyboard = page.avKeymaps[page.kbdListBox.SelectedItem()]
 	return true
 }
 
@@ -40,7 +40,7 @@ func newKeyboardPage(mi *Tui) (Page, error) {
 	for idx, curr := range page.avKeymaps {
 		page.kbdListBox.AddItem(curr.Code)
 
-		if curr.Code == mi.model.Keyboard {
+		if curr.Equals(page.getModel().Keyboard) {
 			defKeyboard = idx
 		}
 	}

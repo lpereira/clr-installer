@@ -9,7 +9,35 @@ import (
 
 // Keymap represents a system' keymap
 type Keymap struct {
-	Code string
+	Code        string
+	userDefined bool
+}
+
+// MarshalYAML marshals Keymap into YAML format
+func (k *Keymap) MarshalYAML() (interface{}, error) {
+	return k.Code, nil
+}
+
+// UnmarshalYAML unmarshals Keymap from YAML format
+func (k *Keymap) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var code string
+
+	if err := unmarshal(&code); err != nil {
+		return err
+	}
+
+	k.Code = code
+	k.userDefined = false
+	return nil
+}
+
+// Equals compares tow Keymap instances
+func (k *Keymap) Equals(comp *Keymap) bool {
+	if comp == nil {
+		return false
+	}
+
+	return k.Code == comp.Code
 }
 
 // LoadKeymaps loads the system's available keymaps
