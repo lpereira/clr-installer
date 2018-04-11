@@ -15,7 +15,7 @@ type LanguagePage struct {
 // SetDone sets the keyboard page flag done, and sets back the configuration to the data model
 func (page *LanguagePage) SetDone(done bool) bool {
 	page.done = done
-	page.getModel().Language = page.avLanguages[page.langListBox.SelectedItem()].Code
+	page.getModel().Language = page.avLanguages[page.langListBox.SelectedItem()]
 	return true
 }
 
@@ -40,7 +40,7 @@ func newLanguagePage(mi *Tui) (Page, error) {
 	for idx, curr := range page.avLanguages {
 		page.langListBox.AddItem(curr.String())
 
-		if curr.Code == mi.model.Language {
+		if curr.Equals(page.getModel().Language) {
 			defLanguage = idx
 		}
 	}

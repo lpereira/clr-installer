@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"clr-installer/errors"
+	"clr-installer/language"
 	"clr-installer/network"
 	"clr-installer/storage"
 )
@@ -21,7 +22,7 @@ type SystemInstall struct {
 	TargetMedias      []*storage.BlockDevice `yaml:"targetMedia"`
 	NetworkInterfaces []*network.Interface   `yaml:"networkInterfaces"`
 	Keyboard          string                 `yaml:"keyboard,omitempty,flow"`
-	Language          string                 `yaml:"language,omitempty,flow"`
+	Language          *language.Language     `yaml:"language,omitempty,flow"`
 	Bundles           []string               `yaml:"bundles,omitempty,flow"`
 	HTTPSProxy        string                 `yaml:"httpsProxy,omitempty,flow"`
 }
@@ -47,7 +48,7 @@ func (si *SystemInstall) Validate() error {
 		return errors.Errorf("Keyboard not set")
 	}
 
-	if si.Language == "" {
+	if si.Language == nil {
 		return errors.Errorf("System Language not set")
 	}
 

@@ -11,13 +11,41 @@ import (
 
 // Language represents a system language, containing the locale code and lang tag representation
 type Language struct {
-	Code string
-	Tag  language.Tag
+	Code        string
+	Tag         language.Tag
+	userDefined bool
 }
 
 // String converts a Language to string, namely it returns the tag's name - or the language desc
 func (l *Language) String() string {
 	return display.English.Tags().Name(l.Tag)
+}
+
+// MarshalYAML marshals Language into YAML format
+func (l *Language) MarshalYAML() (interface{}, error) {
+	return l.Code, nil
+}
+
+// UnmarshalYAML unmarshals Language from YAML format
+func (l *Language) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var code string
+
+	if err := unmarshal(&code); err != nil {
+		return err
+	}
+
+	l.Code = code
+	l.userDefined = false
+	return nil
+}
+
+// Equals compares tow Language instances
+func (l *Language) Equals(comp *Language) bool {
+	if comp == nil {
+		return false
+	}
+
+	return l.Code == comp.Code
 }
 
 // Load uses localectl to load the currently available locales/Languages
