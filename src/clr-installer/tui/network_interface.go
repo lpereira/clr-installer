@@ -237,6 +237,7 @@ func newNetworkInterfacePage(mi *Tui) (Page, error) {
 		}
 
 		mi.gotoPage(TuiPageNetwork, mi.currPage)
+		page.mi.getPage(TuiPageNetwork).SetDone(true)
 	})
 
 	return page, nil

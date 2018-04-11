@@ -16,6 +16,24 @@ type NetworkPage struct {
 	interfaces []*network.Interface
 }
 
+// GetConfigDefinition returns if the config was interactively defined by the user,
+// was loaded from a config file or if the config is not set.
+func (page *NetworkPage) GetConfigDefinition() int {
+	ifaces := page.getModel().NetworkInterfaces
+
+	if ifaces == nil || len(ifaces) == 0 {
+		return ConfigNotDefined
+	}
+
+	for _, curr := range ifaces {
+		if !curr.IsUserDefined() {
+			return ConfigDefinedByConfig
+		}
+	}
+
+	return ConfigDefinedByUser
+}
+
 func (page *NetworkPage) showLabel(frm *clui.Frame, txt string) {
 	label := clui.CreateLabel(frm, AutoSize, 1, txt, Fixed)
 	page.labels = append(page.labels, label)

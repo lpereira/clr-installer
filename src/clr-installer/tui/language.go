@@ -12,6 +12,20 @@ type LanguagePage struct {
 	langListBox *clui.ListBox
 }
 
+// GetConfigDefinition returns if the config was interactively defined by the user,
+// was loaded from a config file or if the config is not set.
+func (page *LanguagePage) GetConfigDefinition() int {
+	lang := page.getModel().Language
+
+	if lang == nil {
+		return ConfigNotDefined
+	} else if lang.IsUserDefined() {
+		return ConfigDefinedByUser
+	}
+
+	return ConfigDefinedByConfig
+}
+
 // SetDone sets the keyboard page flag done, and sets back the configuration to the data model
 func (page *LanguagePage) SetDone(done bool) bool {
 	page.done = done

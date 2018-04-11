@@ -14,6 +14,30 @@ const (
 can manually set your own.`
 )
 
+// GetConfigDefinition returns if the config was interactively defined by the user,
+// was loaded from a config file or if the config is not set.
+func (page *DiskMenuPage) GetConfigDefinition() int {
+	tm := page.getModel().TargetMedias
+
+	if tm == nil {
+		return ConfigNotDefined
+	}
+
+	for _, bd := range tm {
+		if !bd.IsUserDefined() {
+			return ConfigDefinedByConfig
+		}
+
+		for _, ch := range bd.Children {
+			if !ch.IsUserDefined() {
+				return ConfigDefinedByConfig
+			}
+		}
+	}
+
+	return ConfigDefinedByUser
+}
+
 // The disk page gives the user the option so select how to set the storage device,
 // if to manually configure it or a guided standard partition schema
 func newDiskPage(mi *Tui) (Page, error) {

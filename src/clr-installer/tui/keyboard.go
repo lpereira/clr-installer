@@ -12,6 +12,20 @@ type KeyboardPage struct {
 	kbdListBox *clui.ListBox
 }
 
+// GetConfigDefinition returns if the config was interactively defined by the user,
+// was loaded from a config file or if the config is not set.
+func (page *KeyboardPage) GetConfigDefinition() int {
+	kbd := page.getModel().Keyboard
+
+	if kbd == nil {
+		return ConfigNotDefined
+	} else if kbd.IsUserDefined() {
+		return ConfigDefinedByUser
+	}
+
+	return ConfigDefinedByConfig
+}
+
 // SetDone sets the keyboard page flag done, and sets back the configuration to the data model
 func (page *KeyboardPage) SetDone(done bool) bool {
 	page.done = done
