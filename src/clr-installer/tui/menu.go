@@ -18,6 +18,8 @@ func (page *MenuPage) addMenuItem(item Page, activated bool) {
 
 	if item.GetDone() {
 		done = "[+]"
+	} else if item.GetConfigDefinition() == ConfigDefinedByConfig {
+		done = "[-]"
 	}
 
 	title := fmt.Sprintf(" %s %s", done, item.GetMenuTitle())

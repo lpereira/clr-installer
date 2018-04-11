@@ -37,6 +37,7 @@ type Page interface {
 	GetDone() bool
 	Activate()
 	DeActivate()
+	GetConfigDefinition() int
 }
 
 var (
@@ -106,7 +107,27 @@ const (
 
 	// TuiPageInterface is the id for the network interface configuration page
 	TuiPageInterface
+
+	// ConfigDefinedByUser is used to determine a configuration was interactively
+	// defined by the user
+	ConfigDefinedByUser = iota
+
+	// ConfigDefinedByConfig is used to determine a configuration was defined by
+	// a configuration file
+	ConfigDefinedByConfig
+
+	// ConfigNotDefined is used to determine no configuration was provided yet
+	ConfigNotDefined
 )
+
+// GetConfigDefinition is a stub implementation
+// the real implementation must check with the model and return:
+//    + ConfigDefinedByUser: if the configuration was interactively defined by the user
+//    + ConfigDefinedByConfig: if the configuration was provided by a config file
+//    + ConfigNotDefined: if none of the above apply
+func (page *BasePage) GetConfigDefinition() int {
+	return ConfigNotDefined
+}
 
 // DeActivate is a stub implementation for the DeActivate method of Page interface
 func (page *BasePage) DeActivate() {}
