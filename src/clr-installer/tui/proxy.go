@@ -51,7 +51,7 @@ func newProxyPage(mi *Tui) (Page, error) {
 
 	confirmBtn := CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Confirm", Fixed)
 	confirmBtn.OnClick(func(ev clui.Event) {
-		mi.model.HTTPSProxy = httpsProxyEdit.Title()
+		page.getModel().HTTPSProxy = httpsProxyEdit.Title()
 		page.SetDone(true)
 		mi.gotoPage(TuiPageMenu, mi.currPage)
 	})

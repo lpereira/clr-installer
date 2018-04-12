@@ -67,3 +67,11 @@ func LoadKeymaps() ([]*Keymap, error) {
 
 	return result, nil
 }
+
+// Apply apply the k keymap to the running system
+func Apply(k *Keymap) error {
+	if err := cmd.RunAndLog("localectl", "set-keymap", k.Code); err != nil {
+		return err
+	}
+	return nil
+}

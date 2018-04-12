@@ -100,16 +100,7 @@ func newFieldLabel(frame *clui.Frame, text string) *clui.Label {
 	return lbl
 }
 
-func newEditField(frame *clui.Frame) *clui.EditField {
-	iframe := clui.CreateFrame(frame, 5, 2, BorderNone, Fixed)
-	iframe.SetPack(clui.Vertical)
-	edit := clui.CreateEditField(iframe, 1, "", Fixed)
-	edit.OnKeyPress(validateEdit)
-
-	return edit
-}
-
-func validateEdit(k term.Key, ch rune) bool {
+func validateIPEdit(k term.Key, ch rune) bool {
 	validKeys := []rune{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'}
 
 	if k == term.KeyBackspace || k == term.KeyBackspace2 {
@@ -151,10 +142,10 @@ func newNetworkInterfacePage(mi *Tui) (Page, error) {
 	page.ifaceLbl = clui.CreateLabel(ifaceFrm, AutoSize, 2, "", Fixed)
 	page.ifaceLbl.SetAlign(AlignLeft)
 
-	page.IPEdit = newEditField(fldFrm)
-	page.NetMaskEdit = newEditField(fldFrm)
-	page.GatewayEdit = newEditField(fldFrm)
-	page.DNSEdit = newEditField(fldFrm)
+	page.IPEdit = newEditField(fldFrm, validateIPEdit)
+	page.NetMaskEdit = newEditField(fldFrm, validateIPEdit)
+	page.GatewayEdit = newEditField(fldFrm, validateIPEdit)
+	page.DNSEdit = newEditField(fldFrm, validateIPEdit)
 
 	dhcpFrm := clui.CreateFrame(fldFrm, 5, 2, BorderNone, Fixed)
 	dhcpFrm.SetPack(clui.Vertical)

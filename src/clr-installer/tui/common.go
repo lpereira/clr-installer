@@ -5,7 +5,9 @@ import (
 	"path/filepath"
 
 	"clr-installer/model"
+
 	"github.com/VladimirMarkelov/clui"
+	term "github.com/nsf/termbox-go"
 )
 
 // BasePage is the common implementation for the TUI frontend
@@ -267,4 +269,16 @@ func (page *BasePage) newDoneButton(mi *Tui) {
 
 func (page *BasePage) getModel() *model.SystemInstall {
 	return page.mi.model
+}
+
+func newEditField(frame *clui.Frame, cb func(k term.Key, ch rune) bool) *clui.EditField {
+	iframe := clui.CreateFrame(frame, 5, 2, BorderNone, Fixed)
+	iframe.SetPack(clui.Vertical)
+	edit := clui.CreateEditField(iframe, 1, "", Fixed)
+
+	if cb != nil {
+		edit.OnKeyPress(cb)
+	}
+
+	return edit
 }
