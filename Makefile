@@ -14,7 +14,7 @@ export GO_PACKAGE_PREFIX := clr-installer
 export TESTS_DIR := $(top_srcdir)/tests/
 
 THEME_DIR=$(DESTDIR)/usr/share/clr-installer/themes/
-CONFIG_DIR=$(DESTDIR)/usr/share/defaults/clr-installer/clr-installer.yaml
+CONFIG_DIR=$(DESTDIR)/usr/share/defaults/clr-installer/
 
 install:
 	@mkdir -p $(THEME_DIR)
