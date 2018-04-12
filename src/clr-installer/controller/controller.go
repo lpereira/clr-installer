@@ -82,6 +82,10 @@ func Install(rootDir string, model *model.SystemInstall) error {
 		return err
 	}
 
+	if model.HTTPSProxy != "" {
+		cmd.SetHTTPSProxy(model.HTTPSProxy)
+	}
+
 	if err = ConfigureNetwork(model); err != nil {
 		return err
 	}

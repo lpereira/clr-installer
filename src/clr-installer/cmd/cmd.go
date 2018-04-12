@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -9,6 +11,15 @@ import (
 )
 
 type runLogger struct{}
+
+var (
+	httpsProxy string
+)
+
+// SetHTTPSProxy defines the HTTPS_PROXY env var value for all the cmd executions
+func SetHTTPSProxy(addr string) {
+	httpsProxy = addr
+}
 
 func (rl runLogger) Write(p []byte) (n int, err error) {
 	for _, curr := range strings.Split(string(p), "\n") {
@@ -39,6 +50,10 @@ func Run(writer io.Writer, args ...string) error {
 	cmdArgs = args[1:]
 
 	cmd := exec.Command(exe, cmdArgs...)
+
+	if httpsProxy != "" {
+		cmd.Env = append(os.Environ(), fmt.Sprintf("https_proxy=%s", httpsProxy))
+	}
 
 	cmd.Stdout = writer
 	cmd.Stderr = writer
