@@ -35,7 +35,7 @@ required = [
 
 [[constraint]]
   name = "github.com/VladimirMarkelov/clui"
-  revision = "ecc435355dda0097ec7b0df7ab00208a6d5140da"
+  revision = "483948365ca8ff0518d3e86a9534edd3605ceb35"
 
 [[constraint]]
   name = "github.com/atotto/clipboard"

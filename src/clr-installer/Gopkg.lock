@@ -4,7 +4,7 @@
 [[projects]]
   name = "github.com/VladimirMarkelov/clui"
   packages = ["."]
-  revision = "ecc435355dda0097ec7b0df7ab00208a6d5140da"
+  revision = "483948365ca8ff0518d3e86a9534edd3605ceb35"
 
 [[projects]]
   name = "github.com/atotto/clipboard"
@@ -31,8 +31,8 @@
 [[projects]]
   name = "github.com/spf13/pflag"
   packages = ["."]
-  revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
-  version = "v1.0.0"
+  revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
+  version = "v1.0.1"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -56,6 +56,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bebe283d07beda60ba6108f30a0ce25172166a9c3f23ed6b7180a113562f5952"
+  inputs-digest = "da48ee06817be450bfeee17518ee2be7df84c6a78c54d21c95d0c9b5091b8120"
   solver-name = "gps-cdcl"
   solver-version = 1
