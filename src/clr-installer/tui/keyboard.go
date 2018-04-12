@@ -4,7 +4,6 @@ import (
 	"clr-installer/keyboard"
 
 	"github.com/VladimirMarkelov/clui"
-	"github.com/nsf/termbox-go"
 )
 
 // KeyboardPage is the Page implementation for the keyboard configuration page
@@ -12,12 +11,6 @@ type KeyboardPage struct {
 	BasePage
 	avKeymaps  []*keyboard.Keymap
 	kbdListBox *clui.ListBox
-}
-
-// DeActivate is called when the window is "hidden" and hides the cursor
-func (page *KeyboardPage) DeActivate() {
-	// TODO clui is not hiding cursor for this case - fix it on clui side
-	termbox.HideCursor()
 }
 
 // GetConfigDefinition returns if the config was interactively defined by the user,

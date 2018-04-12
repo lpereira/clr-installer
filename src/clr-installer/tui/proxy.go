@@ -2,18 +2,11 @@ package tui
 
 import (
 	"github.com/VladimirMarkelov/clui"
-	"github.com/nsf/termbox-go"
 )
 
 // ProxyPage is the Page implementation for the proxy configuration page
 type ProxyPage struct {
 	BasePage
-}
-
-// DeActivate is called when the window is "hidden" and hides the cursor
-func (page *ProxyPage) DeActivate() {
-	// TODO clui is not hiding cursor for this case - fix it on clui side
-	termbox.HideCursor()
 }
 
 func newProxyPage(mi *Tui) (Page, error) {

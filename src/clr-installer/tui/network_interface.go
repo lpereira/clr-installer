@@ -2,8 +2,8 @@ package tui
 
 import (
 	"clr-installer/network"
+
 	"github.com/VladimirMarkelov/clui"
-	"github.com/nsf/termbox-go"
 	term "github.com/nsf/termbox-go"
 )
 
@@ -36,12 +36,6 @@ func (page *NetworkInterfacePage) getSelectedInterface() *network.Interface {
 	}
 
 	return iface
-}
-
-// DeActivate is called when the window is "hidden" and hides the cursor
-func (page *NetworkInterfacePage) DeActivate() {
-	// TODO clui is not hiding cursor for this case - fix it on clui side
-	termbox.HideCursor()
 }
 
 // Activate will set the fields with the selected interface info

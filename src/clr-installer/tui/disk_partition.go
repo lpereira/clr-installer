@@ -3,7 +3,6 @@ package tui
 import (
 	"clr-installer/storage"
 	"github.com/VladimirMarkelov/clui"
-	"github.com/nsf/termbox-go"
 )
 
 // DiskPartitionPage is the Page implementation for partition configuration page
@@ -82,12 +81,6 @@ func (page *DiskPartitionPage) getSelectedBlockDevice() *SelectedBlockDevice {
 	}
 
 	return sel
-}
-
-// DeActivate is called when the window is "hidden" and hides the cursor
-func (page *DiskPartitionPage) DeActivate() {
-	// TODO clui is not hiding cursor for this case - fix it on clui side
-	termbox.HideCursor()
 }
 
 // Activate is called when the window is "shown", this implementation adjusts

@@ -154,6 +154,9 @@ func (mi *Tui) gotoPage(id int, currPage Page) {
 	if mi.currPage != nil {
 		mi.currPage.GetWindow().SetVisible(false)
 		mi.currPage.DeActivate()
+
+		// TODO clui is not hiding cursor when we hide/destroy an edit widget
+		termbox.HideCursor()
 	}
 
 	mi.currPage = mi.getPage(id)
