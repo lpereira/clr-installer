@@ -4,7 +4,7 @@
 [[projects]]
   name = "github.com/VladimirMarkelov/clui"
   packages = ["."]
-  revision = "483948365ca8ff0518d3e86a9534edd3605ceb35"
+  revision = "4f279ead6b1e032d5169bda01326e5fbe1180233"
 
 [[projects]]
   name = "github.com/atotto/clipboard"
@@ -56,6 +56,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "da48ee06817be450bfeee17518ee2be7df84c6a78c54d21c95d0c9b5091b8120"
+  inputs-digest = "a54d0049e1beda4d7c5371e7c77ce4f7c052a74bc5e50d94538416ff8065935d"
   solver-name = "gps-cdcl"
   solver-version = 1
