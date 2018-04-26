@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"fmt"
 	"time"
 
 	"clr-installer/controller"
@@ -97,7 +96,7 @@ func newNetworkValidatePage(mi *Tui) (Page, error) {
 			progress.Set(page)
 
 			if err := controller.ConfigureNetwork(page.getModel()); err != nil {
-				page.prgLabel.SetTitle(fmt.Sprintf("%s", err))
+				page.prgLabel.SetTitle("Failed. Network is not working.")
 			} else {
 				page.prgLabel.SetTitle("Success.")
 				page.doneBtn.SetVisible(true)
@@ -112,6 +111,7 @@ func newNetworkValidatePage(mi *Tui) (Page, error) {
 	page.doneBtn.SetVisible(false)
 
 	page.doneBtn.OnClick(func(ev clui.Event) {
+		page.SetDone(true)
 		page.mi.gotoPage(TuiPageMenu, page.mi.currPage)
 	})
 

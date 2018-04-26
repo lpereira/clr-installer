@@ -82,10 +82,6 @@ func Install(rootDir string, model *model.SystemInstall) error {
 		return err
 	}
 
-	if model.HTTPSProxy != "" {
-		cmd.SetHTTPSProxy(model.HTTPSProxy)
-	}
-
 	if err = ConfigureNetwork(model); err != nil {
 		return err
 	}
@@ -179,25 +175,38 @@ func contentInstall(rootDir string, version string, bundles []string) error {
 
 // ConfigureNetwork applies the model/configured network interfaces
 func ConfigureNetwork(model *model.SystemInstall) error {
+	prg, err := configureNetwork(model)
+	if err != nil {
+		prg.Done()
+		return err
+	}
+	return nil
+}
+
+func configureNetwork(model *model.SystemInstall) (progress.Progress, error) {
 	prg := progress.NewLoop("Applying network settings")
 	if err := network.Apply("/", model.NetworkInterfaces); err != nil {
-		return err
+		return prg, err
 	}
 	prg.Done()
 
 	prg = progress.NewLoop("Restarting network interfaces")
 	if err := network.Restart(); err != nil {
-		return err
+		return prg, err
 	}
 	prg.Done()
+
+	if model.HTTPSProxy != "" {
+		cmd.SetHTTPSProxy(model.HTTPSProxy)
+	}
 
 	prg = progress.NewLoop("Testing connectivity")
 	if err := network.Test(); err != nil {
-		return errors.Errorf("Failed, network is not working.")
+		return prg, errors.Errorf("Failed, network is not working.")
 	}
 	prg.Done()
 
-	return nil
+	return nil, nil
 }
 
 // Cleanup executes post-install cleanups i.e unmount partition, remove
