@@ -28,6 +28,41 @@ type SystemInstall struct {
 	HTTPSProxy        string                 `yaml:"httpsProxy,omitempty,flow"`
 }
 
+// ContainsBundle returns true if the data model has a bundle and false otherwise
+func (si *SystemInstall) ContainsBundle(bundle string) bool {
+	for _, curr := range si.Bundles {
+		if curr == bundle {
+			return true
+		}
+	}
+
+	return false
+}
+
+// RemoveBundle removes a bundle from the data model
+func (si *SystemInstall) RemoveBundle(bundle string) {
+	bundles := []string{}
+
+	for _, curr := range si.Bundles {
+		if curr != bundle {
+			bundles = append(bundles, curr)
+		}
+	}
+
+	si.Bundles = bundles
+}
+
+// AddBundle adds a new bundle to the data model, we make sure to not duplicate entries
+func (si *SystemInstall) AddBundle(bundle string) {
+	for _, curr := range si.Bundles {
+		if curr == bundle {
+			return
+		}
+	}
+
+	si.Bundles = append(si.Bundles, bundle)
+}
+
 // Validate checks the model for possible inconsistencies or "minimum required"
 // information
 func (si *SystemInstall) Validate() error {

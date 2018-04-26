@@ -110,6 +110,9 @@ const (
 	// TuiPageInterface is the id for the network interface configuration page
 	TuiPageInterface
 
+	// TuiPageBundle is the id for the bundle selection page
+	TuiPageBundle
+
 	// ConfigDefinedByUser is used to determine a configuration was interactively
 	// defined by the user
 	ConfigDefinedByUser = iota
