@@ -124,8 +124,9 @@ func Install(rootDir string, model *model.SystemInstall) error {
 		return err
 	}
 
-	err = contentInstall(rootDir, version, model.Bundles)
+	prg, err := contentInstall(rootDir, version, model.Bundles)
 	if err != nil {
+		prg.Done()
 		return err
 	}
 
@@ -136,23 +137,23 @@ func Install(rootDir string, model *model.SystemInstall) error {
 // latest one and start adding new bundles
 // for the bootstrap we huse the hosts's swupd and the following operations are
 // executed using the target swupd
-func contentInstall(rootDir string, version string, bundles []string) error {
+func contentInstall(rootDir string, version string, bundles []string) (progress.Progress, error) {
 	sw := swupd.New(rootDir)
 
 	prg := progress.NewLoop("Installing the base system")
 	if err := sw.Verify(version); err != nil {
-		return err
+		return prg, err
 	}
 
 	if err := sw.Update(); err != nil {
-		return err
+		return prg, err
 	}
 	prg.Done()
 
 	for _, bundle := range bundles {
 		prg = progress.NewLoop("Installing bundle: %s", bundle)
 		if err := sw.BundleAdd(bundle); err != nil {
-			return err
+			return prg, err
 		}
 		prg.Done()
 	}
@@ -166,11 +167,11 @@ func contentInstall(rootDir string, version string, bundles []string) error {
 
 	err := cmd.RunAndLog(args...)
 	if err != nil {
-		return errors.Wrap(err)
+		return prg, errors.Wrap(err)
 	}
 	prg.Done()
 
-	return nil
+	return nil, nil
 }
 
 // ConfigureNetwork applies the model/configured network interfaces
