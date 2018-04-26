@@ -60,7 +60,7 @@ func (s *SoftwareUpdater) Update() error {
 		filepath.Join(s.rootDir, "/usr/bin/swupd"),
 		"update",
 		fmt.Sprintf("--path=%s", s.rootDir),
-		fmt.Sprintf("--statedir %s", s.stateDir),
+		fmt.Sprintf("--statedir=%s", s.stateDir),
 	}
 
 	err := cmd.RunAndLog(args...)
