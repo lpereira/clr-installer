@@ -7,6 +7,12 @@ import (
 // ProxyPage is the Page implementation for the proxy configuration page
 type ProxyPage struct {
 	BasePage
+	httpsProxyEdit *clui.EditField
+}
+
+// Activate sets the https proxy with the current model's value
+func (pp *ProxyPage) Activate() {
+	pp.httpsProxyEdit.SetTitle(pp.getModel().HTTPSProxy)
 }
 
 func newProxyPage(mi *Tui) (Page, error) {
@@ -30,7 +36,7 @@ func newProxyPage(mi *Tui) (Page, error) {
 	iframe := clui.CreateFrame(fldFrm, 5, 2, BorderNone, Fixed)
 	iframe.SetPack(clui.Vertical)
 
-	httpsProxyEdit := clui.CreateEditField(iframe, 1, "", Fixed)
+	page.httpsProxyEdit = clui.CreateEditField(iframe, 1, "", Fixed)
 
 	btnFrm := clui.CreateFrame(fldFrm, 30, 1, BorderNone, Fixed)
 	btnFrm.SetPack(clui.Horizontal)
@@ -44,10 +50,12 @@ func newProxyPage(mi *Tui) (Page, error) {
 
 	confirmBtn := CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Confirm", Fixed)
 	confirmBtn.OnClick(func(ev clui.Event) {
-		page.getModel().HTTPSProxy = httpsProxyEdit.Title()
+		page.getModel().HTTPSProxy = page.httpsProxyEdit.Title()
 		page.SetDone(true)
 		mi.gotoPage(TuiPageMenu, mi.currPage)
 	})
+
+	page.activated = page.httpsProxyEdit
 
 	return page, nil
 }
