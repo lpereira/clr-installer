@@ -72,3 +72,12 @@ MenuButtonActiveText=black
 MenuButtonShadowBack=black
 MenuButtonDisabledText=white bold
 MenuButtonDisabledBack=red
+
+
+PartButtonBack=blue
+PartButtonText=white
+PartButtonActiveBack=cyan
+PartButtonActiveText=black
+PartButtonShadowBack=black
+PartButtonDisabledText=white bold
+PartButtonDisabledBack=red

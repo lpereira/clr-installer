@@ -85,6 +85,7 @@ func (page *ManualPartPage) showManualDisk(bd *storage.BlockDevice, frame *clui.
 
 func (page *ManualPartPage) newPartBtn(frame *clui.Frame, label string) *SimpleButton {
 	btn := CreateSimpleButton(frame, AutoSize, AutoSize, label, Fixed)
+	btn.SetStyle("Part")
 	btn.SetAlign(AlignLeft)
 	btn.SetBackColor(partBtnBg)
 
