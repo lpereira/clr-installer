@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"time"
 
 	"clr-installer/cmd"
 	"clr-installer/errors"
@@ -185,26 +186,41 @@ func ConfigureNetwork(model *model.SystemInstall) error {
 }
 
 func configureNetwork(model *model.SystemInstall) (progress.Progress, error) {
-	prg := progress.NewLoop("Applying network settings")
-	if err := network.Apply("/", model.NetworkInterfaces); err != nil {
-		return prg, err
-	}
-	prg.Done()
-
-	prg = progress.NewLoop("Restarting network interfaces")
-	if err := network.Restart(); err != nil {
-		return prg, err
-	}
-	prg.Done()
-
 	if model.HTTPSProxy != "" {
 		cmd.SetHTTPSProxy(model.HTTPSProxy)
 	}
 
-	prg = progress.NewLoop("Testing connectivity")
-	if err := network.Test(); err != nil {
+	if len(model.NetworkInterfaces) > 0 {
+		prg := progress.NewLoop("Applying network settings")
+		if err := network.Apply("/", model.NetworkInterfaces); err != nil {
+			return prg, err
+		}
+		prg.Done()
+
+		prg = progress.NewLoop("Restarting network interfaces")
+		if err := network.Restart(); err != nil {
+			return prg, err
+		}
+		prg.Done()
+	}
+
+	prg := progress.NewLoop("Testing connectivity")
+	ok := false
+
+	// 3 attempts to test conectivity
+	for i := 0; i < 3; i++ {
+		time.Sleep(2 * time.Second)
+
+		if err := network.Test(); err == nil {
+			ok = true
+			break
+		}
+	}
+
+	if !ok {
 		return prg, errors.Errorf("Failed, network is not working.")
 	}
+
 	prg.Done()
 
 	return nil, nil
