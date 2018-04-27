@@ -237,6 +237,8 @@ func (page *BasePage) newWindow() {
 
 	page.window = clui.AddWindow(x, y, 80, 24, " [Clear Linux Installer ("+model.Version+")] ")
 	page.window.SetTitleButtons(0)
+	page.window.SetSizable(false)
+	page.window.SetMovable(false)
 
 	page.window.OnScreenResize(func(evt clui.Event) {
 		ww, wh := page.window.Size()
