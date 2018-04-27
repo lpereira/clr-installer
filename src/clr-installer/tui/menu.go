@@ -78,11 +78,18 @@ func (page *MenuPage) Activate() {
 	}
 }
 
+const (
+	menuHelp = `Choose the next steps. Use <Tab> or arrow keys (up and down) to navigate
+between the elements.
+`
+)
+
 func newMenuPage(mi *Tui) (Page, error) {
 	page := &MenuPage{}
 	page.setup(mi, TuiPageMenu, NoButtons)
 
-	lbl := clui.CreateLabel(page.content, 2, 2, "Choose the next steps:", Fixed)
+	lbl := clui.CreateLabel(page.content, 2, 3, menuHelp, Fixed)
+	lbl.SetMultiline(true)
 	lbl.SetPaddings(0, 2)
 
 	cancelBtn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Cancel", Fixed)
