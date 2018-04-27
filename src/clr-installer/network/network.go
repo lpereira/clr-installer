@@ -371,7 +371,7 @@ func Restart() error {
 
 // Test tests if the network configuration is working
 func Test() error {
-	err := cmd.RunAndLog("timeout", "--kill-after=1m", "1m", "swupd", "search",
+	err := cmd.RunAndLog("timeout", "--kill-after=3s", "3s", "swupd", "search",
 		"systemd-bootchart-config")
 	if err != nil {
 		return errors.Wrap(err)
