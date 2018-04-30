@@ -10,24 +10,40 @@ cov_dir = $(top_srcdir)/.coverage
 
 orig_go_path = $(shell go env GOPATH)
 export GOPATH=$(pkg_dir)
-export GO_PACKAGE_PREFIX := clr-installer
+export GO_PACKAGE_PREFIX := github.com/clearlinux/clr-installer
 export TESTS_DIR := $(top_srcdir)/tests/
 
 THEME_DIR=$(DESTDIR)/usr/share/clr-installer/themes/
 CONFIG_DIR=$(DESTDIR)/usr/share/defaults/clr-installer/
 
-install:
+.PHONY: gopath
+
+ifeq (,$(findstring ${GO_PACKAGE_PREFIX},${CURDIR}))
+LOCAL_GOPATH := ${CURDIR}/.gopath
+export GOPATH := ${LOCAL_GOPATH}
+gopath:
+	@rm -rf ${LOCAL_GOPATH}/src
+	@mkdir -p ${LOCAL_GOPATH}/src/${GO_PACKAGE_PREFIX}
+	@cp -af * ${LOCAL_GOPATH}/src/${GO_PACKAGE_PREFIX}
+else
+LOCAL_GOPATH :=
+GOPATH ?= ${HOME}/go
+gopath:
+	@echo "Code already in existing GOPATH=${GOPATH}"
+endif
+
+install: build
 	@mkdir -p $(THEME_DIR)
 	@mkdir -p $(CONFIG_DIR)
 	@install -m 755 $(top_srcdir)/bin/clr-installer $(DESTDIR)/usr/bin/clr-installer
 	@install -m 644  $(top_srcdir)/themes/clr-installer.theme $(THEME_DIR)
 	@install -m 644  $(top_srcdir)/etc/clr-installer.yaml $(CONFIG_DIR)
 
-build:
+build: gopath
 	go get -v ${GO_PACKAGE_PREFIX}/clr-installer
 	go install -v ${GO_PACKAGE_PREFIX}/clr-installer
 
-check:
+check: gopath
 	go test -cover ${GO_PACKAGE_PREFIX}/...
 
 PHONY += coverage
@@ -69,6 +85,8 @@ update-linters:
 
 PHONY += lint
 lint: install-linters
+	@rm -rf ${LOCAL_GOPATH}/src/${GO_PACKAGE_PREFIX}/vendor
+	@cp -af vendor/* ${LOCAL_GOPATH}/src/
 	@gometalinter.v2 --deadline=10m --tests --vendor \
 	--exclude=vendor --disable-all \
 	--enable=misspell \
