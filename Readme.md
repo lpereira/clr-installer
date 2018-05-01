@@ -22,10 +22,28 @@ git clone https://github.intel.com/iclr/clr-installer.git
 cd clr-installer && make
 ```
 
-## Run as root
+## Install (installing the installer)
+
+If you want to actually install the clr-installer to your system (it's not necessary but possible), run:
 
 ```
-sudo ./bin/clr-installer
+make install
+```
+
+It's possible to specify a ```DESTDIR``` environment variable and change the root directory for your install, i.e:
+
+```
+make DESTDIR=/opt/my-root/ install
+```
+
+## Run as root
+
+In order to execute an install the user must run clr-installer as root. It's always possible to tweak configurations and only __save__ the configuration for future use, in that case it's not required to run as root.
+
+Having said that, to run a install do:
+
+```
+sudo .gopath/bin/clr-installer
 ```
 
 # Multiple Installer Modes
@@ -38,25 +56,25 @@ Currently the installer supports 2 modes (a third one is on the way):
 In order to use the Mass Installer provide a ```--config```, such as:
 
 ```
-sudo ./bin/clr-installer --config ~/my-install.yaml
+sudo .gopath/bin/clr-installer --config ~/my-install.yaml
 ```
 
 ## Using TUI
 Call the clr-installer executable without any additional flags, such as:
 
 ```
-sudo ./bin/clr-installer
+sudo .gopath/bin/clr-installer
 ```
 
 ## Reboot
 If you're running the installer on a development machine you may not want to reboot the system after the install completion, for that use the ```--reboot=false``` flag, such as:
 
 ```
-sudo ./bin/clr-installer --reboot=false
+sudo .gopath/bin/clr-installer --reboot=false
 ```
 
 or if using the Mass Installer mode:
 
 ```
-sudo ./bin/clr-installer --config=~/my-install.yaml --reboot=false
+sudo .gopath/bin/clr-installer --config=~/my-install.yaml --reboot=false
 ```
