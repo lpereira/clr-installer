@@ -66,6 +66,7 @@ func (si *SystemInstall) AddBundle(bundle string) {
 // Validate checks the model for possible inconsistencies or "minimum required"
 // information
 func (si *SystemInstall) Validate() error {
+	// si will be nil if we fail to unmarshal (coverage tests has a case for that)
 	if si == nil {
 		return errors.Errorf("model is nil")
 	}
