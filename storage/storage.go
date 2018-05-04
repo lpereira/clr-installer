@@ -81,11 +81,14 @@ const (
 
 	// BlockDeviceStateLive identifies a BlockDevice as live
 	BlockDeviceStateLive
+
+	// MinimumPartitionSize is smallest size for any partition
+	MinimumPartitionSize = 1048576
 )
 
 var (
 	lsblkBinary         = "lsblk"
-	storageExp          = regexp.MustCompile(`([0-9](\.)?[0-9]*)?([m,g,t,k,p])`)
+	storageExp          = regexp.MustCompile(`^([0-9]*(\.)?[0-9]*)([mgtkp]{1})$`)
 	blockDeviceStateMap = map[BlockDeviceState]string{
 		BlockDeviceStateRunning: "running",
 		BlockDeviceStateLive:    "live",
@@ -373,6 +376,24 @@ func getNextBoolToken(dec *json.Decoder, name string) (bool, error) {
 	}
 
 	return false, errors.Errorf("Unknown ro value: %s", str)
+}
+
+// IsValidSize returns true if size is suffixed with K, M, G, T, P
+func IsValidSize(str string) (bool, string) {
+	str = strings.ToLower(str)
+
+	if !storageExp.MatchString(str) {
+		return false, "Invalid size, must be suffixed by: K, M, G, T or P"
+	}
+
+	size, err := ParseVolumeSize(str)
+	if err != nil {
+		return false, "Invalid size"
+	} else if size < MinimumPartitionSize {
+		return false, "Size too small"
+	}
+
+	return true, ""
 }
 
 // ParseVolumeSize will parse a string formated (1M, 10G, 2T) size and return its representation
