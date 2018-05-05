@@ -225,6 +225,10 @@ func newDiskPartitionPage(mi *Tui) (Page, error) {
 		if sel.part != nil {
 			sel.part.FsType = page.fsList.SelectedItemText()
 			sel.part.MountPoint = page.mPointEdit.Title()
+			size, err := storage.ParseVolumeSize(page.sizeEdit.Title())
+			if err == nil {
+				sel.part.Size = size
+			}
 		}
 
 		mi.gotoPage(TuiPageManualPart, mi.currPage)
