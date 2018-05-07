@@ -588,7 +588,13 @@ func (bd *BlockDevice) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // SupportedFileSystems exposes the currently supported file system
 func SupportedFileSystems() []string {
-	return []string{"ext4", "vfat", "swap"}
+	res := []string{}
+
+	for key := range bdOps {
+		res = append(res, key)
+	}
+
+	return res
 }
 
 // NewStandardPartitions will return a list of BlockDevice representing a

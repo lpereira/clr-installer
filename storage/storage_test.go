@@ -6,6 +6,28 @@ import (
 	"text/template"
 )
 
+func TestSupportedFileSystem(t *testing.T) {
+	expected := []string{"ext4", "swap", "vfat"}
+	supported := SupportedFileSystems()
+	tot := 0
+
+	if len(expected) != len(supported) {
+		t.Fatal("supported file system list don't match the expected")
+	}
+
+	for _, value := range supported {
+		for _, curr := range expected {
+			if curr == value {
+				tot = tot + 1
+			}
+		}
+	}
+
+	if tot != len(expected) {
+		t.Fatal("supported file system list don't match the expected")
+	}
+}
+
 func TestFailListBlockDevices(t *testing.T) {
 	lsblkBinary = "lsblkX"
 
