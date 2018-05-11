@@ -25,6 +25,12 @@ var (
 	args          frontend.Args
 )
 
+const (
+	sourcePath        = "src/github.com/clearlinux/clr-installer"
+	defaultConfigDir  = "/usr/share/defaults/clr-installer"
+	defaultConfigFile = "clr-installer.yaml"
+)
+
 func init() {
 	flag.BoolVar(
 		&args.Version, "version", false, "Version of the Installer",
@@ -72,16 +78,21 @@ func initFrontendList() {
 }
 
 func lookupDefaultConfig() (string, error) {
-	config := "/usr/share/defaults/clr-installer/clr-installer.yaml"
+
+	config := filepath.Join(defaultConfigDir, defaultConfigFile)
 
 	src, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
 		return "", err
 	}
 
-	// use the config from source code's etc dir
-	if strings.Contains(src, "/clr-installer/bin") {
-		config = filepath.Join(strings.Replace(src, "bin", "etc", 1), "clr-installer.yaml")
+	// use the config from source code's etc dir if not installed binary
+	if !strings.HasPrefix(src, "/usr/bin") {
+		if strings.Contains(src, "/bin") {
+			config = filepath.Join(
+				strings.Replace(src, "bin", filepath.Join(sourcePath, "etc"), 1),
+				defaultConfigFile)
+		}
 	}
 
 	return config, nil
