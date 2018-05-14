@@ -13,6 +13,7 @@ import (
 
 	"github.com/clearlinux/clr-installer/cmd"
 	"github.com/clearlinux/clr-installer/frontend"
+	"github.com/clearlinux/clr-installer/keyboard"
 	"github.com/clearlinux/clr-installer/log"
 	"github.com/clearlinux/clr-installer/massinstall"
 	"github.com/clearlinux/clr-installer/model"
@@ -143,6 +144,12 @@ func main() {
 	log.Debug("Loading config file: %s", cf)
 	if md, err = model.LoadFile(cf); err != nil {
 		fatal(err)
+	}
+
+	if md.Keyboard != nil {
+		if err := keyboard.Apply(md.Keyboard); err != nil {
+			fatal(err)
+		}
 	}
 
 	installReboot := false
