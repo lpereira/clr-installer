@@ -50,6 +50,8 @@ const (
 	IPv6
 
 	configDir = "/etc/systemd/network/"
+
+	versionURLPath = "/usr/share/defaults/swupd/contenturl"
 )
 
 var (
@@ -371,10 +373,24 @@ func Restart() error {
 
 // Test tests if the network configuration is working
 func Test() error {
-	err := cmd.RunAndLog("timeout", "--kill-after=3s", "3s", "swupd", "search",
-		"systemd-bootchart-config")
-	if err != nil {
+	var versionURL []byte
+	var err error
+
+	if versionURL, err = ioutil.ReadFile(versionURLPath); err != nil {
+		return errors.Errorf("Read version file %s: %v", versionURLPath, err)
+	}
+
+	args := []string{
+		"timeout",
+		"--kill-after=10s",
+		"10s",
+		"curl",
+		string(versionURL),
+	}
+
+	if err := cmd.Run(nil, args...); err != nil {
 		return errors.Wrap(err)
 	}
+
 	return nil
 }
