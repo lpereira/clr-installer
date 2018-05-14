@@ -138,6 +138,10 @@ func Gateway() (string, error) {
 	}
 
 	result := w.String()
+	if result == "" {
+		return "", nil
+	}
+
 	if !gwExp.MatchString(result) {
 		return "", errors.Errorf("Could not parse gateway configuration")
 	}
