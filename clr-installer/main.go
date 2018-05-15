@@ -8,10 +8,10 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
-	"strings"
 	"syscall"
 
 	"github.com/clearlinux/clr-installer/cmd"
+	"github.com/clearlinux/clr-installer/conf"
 	"github.com/clearlinux/clr-installer/frontend"
 	"github.com/clearlinux/clr-installer/keyboard"
 	"github.com/clearlinux/clr-installer/log"
@@ -24,12 +24,6 @@ import (
 var (
 	frontEndImpls []frontend.Frontend
 	args          frontend.Args
-)
-
-const (
-	sourcePath        = "src/github.com/clearlinux/clr-installer"
-	defaultConfigDir  = "/usr/share/defaults/clr-installer"
-	defaultConfigFile = "clr-installer.yaml"
 )
 
 func init() {
@@ -78,27 +72,6 @@ func initFrontendList() {
 	}
 }
 
-func lookupDefaultConfig() (string, error) {
-
-	config := filepath.Join(defaultConfigDir, defaultConfigFile)
-
-	src, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	if err != nil {
-		return "", err
-	}
-
-	// use the config from source code's etc dir if not installed binary
-	if !strings.HasPrefix(src, "/usr/bin") {
-		if strings.Contains(src, "/bin") {
-			config = filepath.Join(
-				strings.Replace(src, "bin", filepath.Join(sourcePath, "etc"), 1),
-				defaultConfigFile)
-		}
-	}
-
-	return config, nil
-}
-
 func main() {
 	flag.Parse()
 
@@ -136,7 +109,7 @@ func main() {
 	cf := args.ConfigFile
 
 	if args.ConfigFile == "" {
-		if cf, err = lookupDefaultConfig(); err != nil {
+		if cf, err = conf.LookupDefaultConfig(); err != nil {
 			fatal(err)
 		}
 	}
