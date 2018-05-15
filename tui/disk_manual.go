@@ -96,10 +96,6 @@ func (page *ManualPartPage) newPartBtn(frame *clui.Frame, label string) *SimpleB
 
 func (page *ManualPartPage) showManualStorageList() error {
 	for _, bd := range page.bds {
-		if bd.State == storage.BlockDeviceStateLive {
-			continue
-		}
-
 		if err := page.showManualDisk(bd, page.content); err != nil {
 			return err
 		}
@@ -158,7 +154,7 @@ func newManualPartitionPage(mi *Tui) (Page, error) {
 	lbl = clui.CreateLabel(page.content, 70, 3, manualDesc, Fixed)
 	lbl.SetMultiline(true)
 
-	page.bds, err = storage.ListBlockDevices(page.getModel().TargetMedias)
+	page.bds, err = storage.ListAvailableBlockDevices(page.getModel().TargetMedias)
 	if err != nil {
 		return nil, err
 	}

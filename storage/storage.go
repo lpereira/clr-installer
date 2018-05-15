@@ -29,6 +29,7 @@ type BlockDevice struct {
 	RemovableDevice bool             // removable device
 	Children        []*BlockDevice   // children devices/partitions
 	userDefined     bool             // was this value set by user?
+	available       bool             // was it mounted the moment we loaded?
 }
 
 // Version used for reading and writing YAML
@@ -132,6 +133,11 @@ func parseBlockDeviceState(bds string) (BlockDeviceState, error) {
 // defined by the user
 func (bd *BlockDevice) IsUserDefined() bool {
 	return bd.userDefined
+}
+
+// IsAvailable returns true if the media is not a installer media, returns false otherwise
+func (bd *BlockDevice) IsAvailable() bool {
+	return bd.available
 }
 
 // Validate checks if the minimal requirements for a installation is met
@@ -240,9 +246,7 @@ func (bd *BlockDevice) HumanReadableSize() (string, error) {
 	return HumanReadableSize(bd.Size)
 }
 
-// ListBlockDevices Lists all available/attached block devices
-// userDefined will be inserted in the resulting list reather the loaded ones
-func ListBlockDevices(userDefined []*BlockDevice) ([]*BlockDevice, error) {
+func listBlockDevices(userDefined []*BlockDevice) ([]*BlockDevice, error) {
 	w := bytes.NewBuffer(nil)
 	err := cmd.Run(w, lsblkBinary, "-J", "-b", "-O")
 	if err != nil {
@@ -280,6 +284,33 @@ func ListBlockDevices(userDefined []*BlockDevice) ([]*BlockDevice, error) {
 	return merged, nil
 }
 
+// ListAvailableBlockDevices Lists only available block devices
+// where available means block devices not mounted or not in use by the host system
+// userDefined will be inserted in the resulting list reather the loaded ones
+func ListAvailableBlockDevices(userDefined []*BlockDevice) ([]*BlockDevice, error) {
+	bds, err := listBlockDevices(userDefined)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*BlockDevice{}
+	for _, curr := range bds {
+		if !curr.IsAvailable() {
+			continue
+		}
+
+		result = append(result, curr)
+	}
+
+	return result, nil
+}
+
+// ListBlockDevices Lists all block devices
+// userDefined will be inserted in the resulting list reather the loaded ones
+func ListBlockDevices(userDefined []*BlockDevice) ([]*BlockDevice, error) {
+	return listBlockDevices(userDefined)
+}
+
 // Equals compares two BlockDevice instances
 func (bd *BlockDevice) Equals(cmp *BlockDevice) bool {
 	if cmp == nil {
@@ -297,6 +328,17 @@ func parseBlockDevicesDescriptor(data []byte) ([]*BlockDevice, error) {
 	err := json.Unmarshal(data, &root)
 	if err != nil {
 		return nil, errors.Wrap(err)
+	}
+
+	for _, bd := range root.BlockDevices {
+		bd.available = true
+
+		for _, ch := range bd.Children {
+			if ch.MountPoint != "" {
+				bd.available = false
+				break
+			}
+		}
 	}
 
 	return root.BlockDevices, nil

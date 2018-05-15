@@ -98,16 +98,12 @@ func newGuidedPartitionPage(mi *Tui) (Page, error) {
 	lbl = clui.CreateLabel(page.content, 70, 3, guidedDesc, Fixed)
 	lbl.SetMultiline(true)
 
-	bds, err := storage.ListBlockDevices(page.getModel().TargetMedias)
+	bds, err := storage.ListAvailableBlockDevices(page.getModel().TargetMedias)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, bd := range bds {
-		if bd.State == storage.BlockDeviceStateLive {
-			continue
-		}
-
 		if err = page.showGuidedDisk(bd); err != nil {
 			page.Panic(err)
 		}
