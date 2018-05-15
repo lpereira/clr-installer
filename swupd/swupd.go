@@ -1,10 +1,13 @@
 package swupd
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"path/filepath"
 
 	"github.com/clearlinux/clr-installer/cmd"
+	"github.com/clearlinux/clr-installer/conf"
 	"github.com/clearlinux/clr-installer/errors"
 )
 
@@ -12,6 +15,12 @@ import (
 type SoftwareUpdater struct {
 	rootDir  string
 	stateDir string
+}
+
+// Bundle maps a map name and description with the actual checkbox
+type Bundle struct {
+	Name string // Name the bundle name or id
+	Desc string // Desc is the bundle long description
 }
 
 // New creates a new instance of SoftwareUpdater with the rootDir properly adjusted
@@ -87,4 +96,27 @@ func (s *SoftwareUpdater) BundleAdd(bundle string) error {
 	}
 
 	return nil
+}
+
+// LoadBundleList loads the bundle definitions
+func LoadBundleList() ([]*Bundle, error) {
+	path, err := conf.LookupBundleListFile()
+	if err != nil {
+		return nil, err
+	}
+
+	root := struct {
+		Bundles []*Bundle `json:"bundles"`
+	}{}
+
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, errors.Wrap(err)
+	}
+
+	if err = json.Unmarshal(data, &root); err != nil {
+		return nil, errors.Wrap(err)
+	}
+
+	return root.Bundles, nil
 }

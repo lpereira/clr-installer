@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/VladimirMarkelov/clui"
+	"github.com/clearlinux/clr-installer/swupd"
 )
 
 // BundlePage is the Page implementation for the proxy configuration page
@@ -11,20 +12,14 @@ type BundlePage struct {
 	BasePage
 }
 
-// Bundle maps a map name and description with the actual checkbox
-type Bundle struct {
-	name  string
-	desc  string
-	check *clui.CheckBox
+// BundleCheck maps a map name and description with the actual checkbox
+type BundleCheck struct {
+	bundle *swupd.Bundle
+	check  *clui.CheckBox
 }
 
 var (
-	bundles = []*Bundle{
-		{"editors", "Popular text editors (terminal-based)", nil},
-		{"user-basic", "Captures most console work flows", nil},
-		{"desktop-autostart", "UI that automatically starts on boot", nil},
-		{"dev-utils", "Utilities to assist application development", nil},
-	}
+	bundles = []*BundleCheck{}
 )
 
 // Activate marks the checkbox selections based on the data model
@@ -34,7 +29,7 @@ func (bp *BundlePage) Activate() {
 	for _, curr := range bundles {
 		state := 0
 
-		if model.ContainsBundle(curr.name) {
+		if model.ContainsBundle(curr.bundle.Name) {
 			state = 1
 		}
 
@@ -43,6 +38,15 @@ func (bp *BundlePage) Activate() {
 }
 
 func newBundlePage(mi *Tui) (Page, error) {
+	bdls, err := swupd.LoadBundleList()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, curr := range bdls {
+		bundles = append(bundles, &BundleCheck{curr, nil})
+	}
+
 	page := &BundlePage{}
 	page.setupMenu(mi, TuiPageBundle, "Bundle Selection", NoButtons)
 
@@ -56,7 +60,7 @@ func newBundlePage(mi *Tui) (Page, error) {
 	lblFrm.SetPaddings(2, 0)
 
 	for _, curr := range bundles {
-		lbl := fmt.Sprintf("%s: %s", curr.name, curr.desc)
+		lbl := fmt.Sprintf("%s: %s", curr.bundle.Name, curr.bundle.Desc)
 		curr.check = clui.CreateCheckBox(lblFrm, AutoSize, lbl, AutoSize)
 		curr.check.SetPack(clui.Horizontal)
 	}
@@ -73,9 +77,9 @@ func newBundlePage(mi *Tui) (Page, error) {
 	confirmBtn.OnClick(func(ev clui.Event) {
 		for _, curr := range bundles {
 			if curr.check.State() == 1 {
-				page.getModel().AddBundle(curr.name)
+				page.getModel().AddBundle(curr.bundle.Name)
 			} else {
-				page.getModel().RemoveBundle(curr.name)
+				page.getModel().RemoveBundle(curr.bundle.Name)
 			}
 		}
 
