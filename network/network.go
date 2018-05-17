@@ -55,8 +55,9 @@ const (
 )
 
 var (
-	gwExp  = regexp.MustCompile(`(default via )(.*)( dev.*)`)
-	dnsExp = regexp.MustCompile("(nameserver) (.*)")
+	validIPExp = regexp.MustCompile(`^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.{1})){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?){1}$`)
+	gwExp      = regexp.MustCompile(`(default via )(.*)( dev.*)`)
+	dnsExp     = regexp.MustCompile("(nameserver) (.*)")
 )
 
 // IsUserDefined returns true if the configuration was interactively
@@ -397,4 +398,13 @@ func Test() error {
 	}
 
 	return nil
+}
+
+// IsValidIP returns empty string if IP address is valid
+func IsValidIP(str string) string {
+	if !validIPExp.MatchString(str) {
+		return "Invalid"
+	}
+
+	return ""
 }

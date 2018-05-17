@@ -10,12 +10,17 @@ import (
 // NetworkInterfacePage is the Page implementation for the network configuration page
 type NetworkInterfacePage struct {
 	BasePage
-	IPEdit      *clui.EditField
-	NetMaskEdit *clui.EditField
-	GatewayEdit *clui.EditField
-	DNSEdit     *clui.EditField
-	ifaceLbl    *clui.Label
-	DHCPCheck   *clui.CheckBox
+	IPEdit         *clui.EditField
+	IPWarning      *clui.Label
+	NetMaskEdit    *clui.EditField
+	NetMaskWarning *clui.Label
+	GatewayEdit    *clui.EditField
+	GatewayWarning *clui.Label
+	DNSEdit        *clui.EditField
+	DNSWarning     *clui.Label
+	ifaceLbl       *clui.Label
+	DHCPCheck      *clui.CheckBox
+	confirmBtn     *SimpleButton
 
 	defaultValues struct {
 		IP      string
@@ -38,6 +43,15 @@ func (page *NetworkInterfacePage) getSelectedInterface() *network.Interface {
 	return iface
 }
 
+func (page *NetworkInterfacePage) clearAllWarnings() {
+	page.IPWarning.SetTitle("")
+	page.NetMaskWarning.SetTitle("")
+	page.GatewayWarning.SetTitle("")
+	page.DNSWarning.SetTitle("")
+
+	page.setConfirmButton()
+}
+
 // Activate will set the fields with the selected interface info
 func (page *NetworkInterfacePage) Activate() {
 	sel := page.getSelectedInterface()
@@ -47,6 +61,7 @@ func (page *NetworkInterfacePage) Activate() {
 	page.NetMaskEdit.SetTitle("")
 	page.GatewayEdit.SetTitle(sel.Gateway)
 	page.DNSEdit.SetTitle(sel.DNS)
+	page.clearAllWarnings()
 
 	page.defaultValues.Gateway = sel.Gateway
 	page.defaultValues.DNS = sel.DNS
@@ -67,6 +82,22 @@ func (page *NetworkInterfacePage) Activate() {
 	}
 
 	page.setDHCP(sel.DHCP)
+}
+
+func (page *NetworkInterfacePage) setConfirmButton() {
+	if page.IPWarning.Title() == "" && page.NetMaskWarning.Title() == "" &&
+		page.GatewayWarning.Title() == "" && page.DNSWarning.Title() == "" {
+		page.confirmBtn.SetEnabled(true)
+	} else {
+		page.confirmBtn.SetEnabled(false)
+	}
+}
+
+func (page *NetworkInterfacePage) validateIPField(editField *clui.EditField, warnLabel *clui.Label) {
+
+	warnLabel.SetTitle(network.IsValidIP(editField.Title()))
+
+	page.setConfirmButton()
 }
 
 func (page *NetworkInterfacePage) getDHCP() bool {
@@ -91,6 +122,14 @@ func (page *NetworkInterfacePage) setDHCP(DHCP bool) {
 func newFieldLabel(frame *clui.Frame, text string) *clui.Label {
 	lbl := clui.CreateLabel(frame, AutoSize, 2, text, Fixed)
 	lbl.SetAlign(AlignRight)
+	return lbl
+}
+func newErrorLabel(frame *clui.Frame) *clui.Label {
+	lbl := clui.CreateLabel(frame, AutoSize, 2, "", Fixed)
+	lbl.SetAlign(AlignLeft)
+	lbl.SetMultiline(false)
+	lbl.SetBackColor(errorLabelBg)
+	lbl.SetTextColor(errorLabelFg)
 	return lbl
 }
 
@@ -141,6 +180,29 @@ func newNetworkInterfacePage(mi *Tui) (Page, error) {
 	page.GatewayEdit = newEditField(fldFrm, validateIPEdit)
 	page.DNSEdit = newEditField(fldFrm, validateIPEdit)
 
+	eLblFrm := clui.CreateFrame(frm, 20, AutoSize, BorderNone, Fixed)
+	eLblFrm.SetPack(clui.Vertical)
+	eLblFrm.SetPaddings(1, 0)
+
+	newErrorLabel(eLblFrm) // ignore the interface
+	page.IPWarning = newErrorLabel(eLblFrm)
+	page.NetMaskWarning = newErrorLabel(eLblFrm)
+	page.GatewayWarning = newErrorLabel(eLblFrm)
+	page.DNSWarning = newErrorLabel(eLblFrm)
+
+	page.IPEdit.OnChange(func(ev clui.Event) {
+		page.validateIPField(page.IPEdit, page.IPWarning)
+	})
+	page.NetMaskEdit.OnChange(func(ev clui.Event) {
+		page.validateIPField(page.NetMaskEdit, page.NetMaskWarning)
+	})
+	page.GatewayEdit.OnChange(func(ev clui.Event) {
+		page.validateIPField(page.GatewayEdit, page.GatewayWarning)
+	})
+	page.DNSEdit.OnChange(func(ev clui.Event) {
+		page.validateIPField(page.DNSEdit, page.DNSWarning)
+	})
+
 	dhcpFrm := clui.CreateFrame(fldFrm, 5, 2, BorderNone, Fixed)
 	dhcpFrm.SetPack(clui.Vertical)
 
@@ -151,6 +213,12 @@ func newNetworkInterfacePage(mi *Tui) (Page, error) {
 
 		if ev == 1 {
 			enable = false
+			page.clearAllWarnings()
+		} else {
+			page.validateIPField(page.IPEdit, page.IPWarning)
+			page.validateIPField(page.NetMaskEdit, page.NetMaskWarning)
+			page.validateIPField(page.GatewayEdit, page.GatewayWarning)
+			page.validateIPField(page.DNSEdit, page.DNSWarning)
 		}
 
 		page.IPEdit.SetEnabled(enable)
@@ -169,8 +237,8 @@ func newNetworkInterfacePage(mi *Tui) (Page, error) {
 		mi.gotoPage(TuiPageNetwork, mi.currPage)
 	})
 
-	confirmBtn := CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Confirm", Fixed)
-	confirmBtn.OnClick(func(ev clui.Event) {
+	page.confirmBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Confirm", Fixed)
+	page.confirmBtn.OnClick(func(ev clui.Event) {
 
 		IP := page.IPEdit.Title()
 		NetMask := page.NetMaskEdit.Title()
