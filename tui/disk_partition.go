@@ -170,8 +170,8 @@ func newDiskPartitionPage(mi *Tui) (Page, error) {
 
 	page.sizeEdit = clui.CreateEditField(sizeFrm, 3, "", Fixed)
 	page.sizeEdit.OnChange(func(ev clui.Event) {
-
-		page.sizeWarning.SetTitle(storage.IsValidSize(page.sizeEdit.Title()))
+		sel := page.getSelectedBlockDevice()
+		page.sizeWarning.SetTitle(sel.part.IsValidSize(page.sizeEdit.Title()))
 
 		page.setConfirmButton()
 	})
@@ -202,8 +202,7 @@ func newDiskPartitionPage(mi *Tui) (Page, error) {
 
 	page.addBtn.OnClick(func(ev clui.Event) {
 		sel := page.getSelectedBlockDevice()
-
-		page.sizeWarning.SetTitle(storage.IsValidSize(page.sizeEdit.Title()))
+		page.sizeWarning.SetTitle(sel.part.IsValidSize(page.sizeEdit.Title()))
 		if page.sizeWarning.Title() != "" {
 			return
 		}

@@ -28,6 +28,7 @@ type BlockDevice struct {
 	ReadOnly        bool             // read-only device
 	RemovableDevice bool             // removable device
 	Children        []*BlockDevice   // children devices/partitions
+	Parent          *BlockDevice     // Parent block device; nil for disk
 	userDefined     bool             // was this value set by user?
 	available       bool             // was it mounted the moment we loaded?
 }
@@ -175,6 +176,7 @@ func (bd *BlockDevice) RemoveChild(child *BlockDevice) {
 
 	for _, curr := range bd.Children {
 		if curr == child {
+			child.Parent = nil
 			continue
 		}
 
@@ -190,6 +192,7 @@ func (bd *BlockDevice) AddChild(child *BlockDevice) {
 		bd.Children = []*BlockDevice{}
 	}
 
+	child.Parent = bd
 	bd.Children = append(bd.Children, child)
 
 	if child.Name == "" {
@@ -339,6 +342,7 @@ func parseBlockDevicesDescriptor(data []byte) ([]*BlockDevice, error) {
 		bd.available = true
 
 		for _, ch := range bd.Children {
+			ch.Parent = bd
 			if ch.MountPoint != "" {
 				bd.available = false
 				break
@@ -380,8 +384,11 @@ func getNextBoolToken(dec *json.Decoder, name string) (bool, error) {
 	return false, errors.Errorf("Unknown ro value: %s", str)
 }
 
-// IsValidSize returns an empty string if size is suffixed with B, K, M, G, T, P
-func IsValidSize(str string) string {
+// IsValidSize returns an empty string if
+// -- size is suffixed with B, K, M, G, T, P
+// -- size is greater than MinimumPartitionSize
+// -- size is less than (or euqal to) current size + free space
+func (bd *BlockDevice) IsValidSize(str string) string {
 	str = strings.ToLower(str)
 
 	if !storageExp.MatchString(str) {
@@ -393,6 +400,17 @@ func IsValidSize(str string) string {
 		return "Invalid size"
 	} else if size < MinimumPartitionSize {
 		return "Size too small"
+	}
+
+	if bd.Parent != nil {
+		free, err := bd.Parent.FreeSpace()
+		if err != nil {
+			return "Unknown free space"
+		} else if size > (bd.Size + free) {
+			return "Size too large"
+		}
+	} else {
+		return "Can not locate disk data"
 	}
 
 	return ""
