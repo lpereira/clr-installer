@@ -384,10 +384,25 @@ func getNextBoolToken(dec *json.Decoder, name string) (bool, error) {
 	return false, errors.Errorf("Unknown ro value: %s", str)
 }
 
+// MaxParitionSize returns largest size the partition
+// can be in bytes. Return 0 if there is an error; in theory
+// the maximum size should at least be the current size.
+func (bd *BlockDevice) MaxParitionSize() uint64 {
+
+	if bd.Parent != nil {
+		free, err := bd.Parent.FreeSpace()
+		if err == nil {
+			return (bd.Size + free)
+		}
+	}
+
+	return 0
+}
+
 // IsValidSize returns an empty string if
 // -- size is suffixed with B, K, M, G, T, P
 // -- size is greater than MinimumPartitionSize
-// -- size is less than (or euqal to) current size + free space
+// -- size is less than (or equal to) current size + free space
 func (bd *BlockDevice) IsValidSize(str string) string {
 	str = strings.ToLower(str)
 
@@ -402,15 +417,11 @@ func (bd *BlockDevice) IsValidSize(str string) string {
 		return "Size too small"
 	}
 
-	if bd.Parent != nil {
-		free, err := bd.Parent.FreeSpace()
-		if err != nil {
-			return "Unknown free space"
-		} else if size > (bd.Size + free) {
-			return "Size too large"
-		}
-	} else {
-		return "Can not locate disk data"
+	maxPartSize := bd.MaxParitionSize()
+	if maxPartSize == 0 {
+		return "Unknown free space"
+	} else if size > maxPartSize {
+		return "Size too large"
 	}
 
 	return ""

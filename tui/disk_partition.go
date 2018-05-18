@@ -1,9 +1,13 @@
 package tui
 
 import (
+	"fmt"
+
 	"github.com/clearlinux/clr-installer/storage"
 
 	"github.com/VladimirMarkelov/clui"
+
+	term "github.com/nsf/termbox-go"
 )
 
 // DiskPartitionPage is the Page implementation for partition configuration page
@@ -17,6 +21,7 @@ type DiskPartitionPage struct {
 	addBtn      *SimpleButton
 	confirmBtn  *SimpleButton
 	sizeWarning *clui.Label
+	sizeInfo    *clui.Label
 }
 
 const (
@@ -96,6 +101,7 @@ func (page *DiskPartitionPage) Activate() {
 
 	page.mPointEdit.SetTitle("")
 	page.sizeEdit.SetTitle("")
+	page.sizeInfo.SetTitle("Use '+' or '=' to set Maximum size")
 	page.sizeWarning.SetTitle("")
 
 	if sel.part != nil {
@@ -175,8 +181,22 @@ func newDiskPartitionPage(mi *Tui) (Page, error) {
 
 		page.setConfirmButton()
 	})
+	page.sizeEdit.OnKeyPress(func(k term.Key, ch rune) bool {
+		maxSizeKeys := []rune{'=', '+'}
+		for _, curr := range maxSizeKeys {
+			if curr == ch {
+				sel := page.getSelectedBlockDevice()
+				page.sizeEdit.SetTitle(fmt.Sprintf("%vb", sel.part.MaxParitionSize()))
+				return true
+			}
+		}
 
-	page.sizeWarning = clui.CreateLabel(sizeFrm, 1, 2, "", Fixed)
+		return false
+	})
+
+	page.sizeInfo = clui.CreateLabel(sizeFrm, 1, 1, "", Fixed)
+	page.sizeInfo.SetMultiline(false)
+	page.sizeWarning = clui.CreateLabel(sizeFrm, 1, 3, "", Fixed)
 	page.sizeWarning.SetMultiline(true)
 	page.sizeWarning.SetBackColor(errorLabelBg)
 	page.sizeWarning.SetTextColor(errorLabelFg)
