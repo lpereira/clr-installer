@@ -13,15 +13,16 @@ import (
 // DiskPartitionPage is the Page implementation for partition configuration page
 type DiskPartitionPage struct {
 	BasePage
-	fsList      *clui.ListBox
-	mPointEdit  *clui.EditField
-	sizeEdit    *clui.EditField
-	cancelBtn   *SimpleButton
-	deleteBtn   *SimpleButton
-	addBtn      *SimpleButton
-	confirmBtn  *SimpleButton
-	sizeWarning *clui.Label
-	sizeInfo    *clui.Label
+	fsList        *clui.ListBox
+	mPointEdit    *clui.EditField
+	mPointWarning *clui.Label
+	sizeEdit      *clui.EditField
+	cancelBtn     *SimpleButton
+	deleteBtn     *SimpleButton
+	addBtn        *SimpleButton
+	confirmBtn    *SimpleButton
+	sizeWarning   *clui.Label
+	sizeInfo      *clui.Label
 }
 
 const (
@@ -65,6 +66,7 @@ func (page *DiskPartitionPage) setPartitionForm(part *storage.BlockDevice) {
 		page.mPointEdit.SetEnabled(false)
 	} else {
 		page.mPointEdit.SetTitle(part.MountPoint)
+		page.validateMountPoint()
 	}
 
 	size, err := part.HumanReadableSize()
@@ -100,6 +102,7 @@ func (page *DiskPartitionPage) Activate() {
 	}
 
 	page.mPointEdit.SetTitle("")
+	page.mPointWarning.SetTitle("")
 	page.sizeEdit.SetTitle("")
 	page.sizeInfo.SetTitle("Use '+' or '=' to set Maximum size")
 	page.sizeWarning.SetTitle("")
@@ -113,11 +116,17 @@ func (page *DiskPartitionPage) Activate() {
 }
 
 func (page *DiskPartitionPage) setConfirmButton() {
-	if page.sizeWarning.Title() == "" {
+	if page.mPointWarning.Title() == "" && page.sizeWarning.Title() == "" {
 		page.confirmBtn.SetEnabled(true)
 	} else {
 		page.confirmBtn.SetEnabled(false)
 	}
+}
+
+func (page *DiskPartitionPage) validateMountPoint() {
+	page.mPointWarning.SetTitle(storage.IsValidMount(page.mPointEdit.Title()))
+
+	page.setConfirmButton()
 }
 
 func newDiskPartitionPage(mi *Tui) (Page, error) {
@@ -140,7 +149,7 @@ func newDiskPartitionPage(mi *Tui) (Page, error) {
 	lbl = clui.CreateLabel(lblFrm, AutoSize, 3, "File System:", Fixed)
 	lbl.SetAlign(AlignRight)
 
-	lbl = clui.CreateLabel(lblFrm, AutoSize, 2, "Mount Point:", Fixed)
+	lbl = clui.CreateLabel(lblFrm, AutoSize, 3, "Mount Point:", Fixed)
 	lbl.SetAlign(AlignRight)
 
 	lbl = clui.CreateLabel(lblFrm, AutoSize, 2, "Size:", Fixed)
@@ -162,12 +171,22 @@ func newDiskPartitionPage(mi *Tui) (Page, error) {
 	mPointFrm.SetPaddings(0, 1)
 
 	page.mPointEdit = clui.CreateEditField(mPointFrm, 3, "", Fixed)
+	page.mPointEdit.OnChange(func(ev clui.Event) {
+		page.validateMountPoint()
+	})
+
+	page.mPointWarning = clui.CreateLabel(mPointFrm, 1, 1, "", Fixed)
+	page.mPointWarning.SetMultiline(true)
+	page.mPointWarning.SetBackColor(errorLabelBg)
+	page.mPointWarning.SetTextColor(errorLabelFg)
 
 	page.fsList.OnSelectItem(func(evt clui.Event) {
 		page.mPointEdit.SetEnabled(true)
 
 		if page.fsList.SelectedItemText() == "swap" {
 			page.mPointEdit.SetEnabled(false)
+			page.mPointEdit.SetTitle("")
+			page.mPointWarning.SetTitle("")
 		}
 	})
 

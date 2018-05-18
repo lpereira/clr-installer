@@ -90,6 +90,7 @@ const (
 var (
 	lsblkBinary         = "lsblk"
 	storageExp          = regexp.MustCompile(`^([0-9]*(\.)?[0-9]*)([bkmgtp]{1})$`)
+	mountExp            = regexp.MustCompile(`^(/|(/[[:word:]-+_]+)+)$`)
 	blockDeviceStateMap = map[BlockDeviceState]string{
 		BlockDeviceStateRunning: "running",
 		BlockDeviceStateLive:    "live",
@@ -397,6 +398,15 @@ func (bd *BlockDevice) MaxParitionSize() uint64 {
 	}
 
 	return 0
+}
+
+// IsValidMount returns empty string if mount point is a valid directory for mounting
+func IsValidMount(str string) string {
+	if !mountExp.MatchString(str) {
+		return "Invalid mount point"
+	}
+
+	return ""
 }
 
 // IsValidSize returns an empty string if
