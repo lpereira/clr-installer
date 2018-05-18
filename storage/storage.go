@@ -88,7 +88,7 @@ const (
 
 var (
 	lsblkBinary         = "lsblk"
-	storageExp          = regexp.MustCompile(`^([0-9]*(\.)?[0-9]*)([mgtkp]{1})$`)
+	storageExp          = regexp.MustCompile(`^([0-9]*(\.)?[0-9]*)([bkmgtp]{1})$`)
 	blockDeviceStateMap = map[BlockDeviceState]string{
 		BlockDeviceStateRunning: "running",
 		BlockDeviceStateLive:    "live",
@@ -207,25 +207,27 @@ func HumanReadableSize(size uint64) (string, error) {
 
 	sizes := []struct {
 		unit string
-		mask uint64
+		mask float32
 	}{
-		{"P", 1 << 50},
-		{"T", 1 << 40},
-		{"G", 1 << 30},
-		{"M", 1 << 20},
-		{"K", 1 << 10},
+		{"P", 1.0 << 50},
+		{"T", 1.0 << 40},
+		{"G", 1.0 << 30},
+		{"M", 1.0 << 20},
+		{"K", 1.0 << 10},
+		{"B", 1.0 << 0},
 	}
 
+	value := float32(size)
 	for _, curr := range sizes {
-		csize := size / curr.mask
+		csize := value / curr.mask
 		if csize < 1 {
 			continue
 		}
 
-		return fmt.Sprintf("%v%s", csize, curr.unit), nil
+		return fmt.Sprintf("%.1f%s", csize, curr.unit), nil
 	}
 
-	return "", errors.Errorf("Could not format desk/partition size")
+	return "", errors.Errorf("Could not format disk/partition size")
 }
 
 // FreeSpace returns the block device available/free space considering the currently
@@ -378,25 +380,25 @@ func getNextBoolToken(dec *json.Decoder, name string) (bool, error) {
 	return false, errors.Errorf("Unknown ro value: %s", str)
 }
 
-// IsValidSize returns true if size is suffixed with K, M, G, T, P
-func IsValidSize(str string) (bool, string) {
+// IsValidSize returns an empty string if size is suffixed with B, K, M, G, T, P
+func IsValidSize(str string) string {
 	str = strings.ToLower(str)
 
 	if !storageExp.MatchString(str) {
-		return false, "Invalid size, must be suffixed by: K, M, G, T or P"
+		return "Invalid size, must be suffixed by: B, K, M, G, T or P"
 	}
 
 	size, err := ParseVolumeSize(str)
 	if err != nil {
-		return false, "Invalid size"
+		return "Invalid size"
 	} else if size < MinimumPartitionSize {
-		return false, "Size too small"
+		return "Size too small"
 	}
 
-	return true, ""
+	return ""
 }
 
-// ParseVolumeSize will parse a string formated (1M, 10G, 2T) size and return its representation
+// ParseVolumeSize will parse a string formatted (1M, 10G, 2T) size and return its representation
 // in bytes
 func ParseVolumeSize(str string) (uint64, error) {
 	var size uint64
@@ -414,6 +416,8 @@ func ParseVolumeSize(str string) (uint64, error) {
 	}
 
 	switch unit {
+	case "b":
+		fsize = fsize * (1 << 0)
 	case "k":
 		fsize = fsize * (1 << 10)
 	case "m":
