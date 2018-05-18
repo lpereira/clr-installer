@@ -47,6 +47,7 @@ func (page *DiskPartitionPage) setPartitionButtonsVisible(visible bool, mask int
 
 	if mask&partConfirmBtn == partConfirmBtn {
 		page.confirmBtn.SetVisible(visible)
+		page.setConfirmButton()
 	}
 }
 
@@ -102,6 +103,14 @@ func (page *DiskPartitionPage) Activate() {
 	} else if sel.bd != nil && sel.freeSpace != 0 {
 		page.setPartitionButtonsVisible(false, partAllBtns)
 		page.setPartitionButtonsVisible(true, partAddBtn)
+	}
+}
+
+func (page *DiskPartitionPage) setConfirmButton() {
+	if page.sizeWarning.Title() == "" {
+		page.confirmBtn.SetEnabled(true)
+	} else {
+		page.confirmBtn.SetEnabled(false)
 	}
 }
 
@@ -163,6 +172,8 @@ func newDiskPartitionPage(mi *Tui) (Page, error) {
 	page.sizeEdit.OnChange(func(ev clui.Event) {
 
 		page.sizeWarning.SetTitle(storage.IsValidSize(page.sizeEdit.Title()))
+
+		page.setConfirmButton()
 	})
 
 	page.sizeWarning = clui.CreateLabel(sizeFrm, 1, 2, "", Fixed)
