@@ -89,7 +89,7 @@ const (
 
 var (
 	lsblkBinary         = "lsblk"
-	storageExp          = regexp.MustCompile(`^([0-9]*(\.)?[0-9]*)([bkmgtp]{1})$`)
+	storageExp          = regexp.MustCompile(`^([0-9]*(\.)?[0-9]*)([bkmgtp]{1}){0,1}$`)
 	mountExp            = regexp.MustCompile(`^(/|(/[[:word:]-+_]+)+)$`)
 	blockDeviceStateMap = map[BlockDeviceState]string{
 		BlockDeviceStateRunning: "running",
@@ -201,37 +201,77 @@ func (bd *BlockDevice) AddChild(child *BlockDevice) {
 	}
 }
 
-// HumanReadableSize converts the size representation in bytes to the closest
-// human readable format i.e 10M, 1G, 2T etc
-func HumanReadableSize(size uint64) (string, error) {
+// HumanReadableSizeWithUnitAndPrecision converts the size representation in bytes to the
+// closest human readable format i.e 10M, 1G, 2T etc with a forced unit and precision
+func HumanReadableSizeWithUnitAndPrecision(size uint64, unit string, precision int) (string, error) {
+	unit = strings.ToUpper(unit)
 
 	if size == 0 {
 		return fmt.Sprintf("0"), nil
 	}
 
 	sizes := []struct {
-		unit string
-		mask float32
+		unit      string
+		mask      float64
+		precision int
 	}{
-		{"P", 1.0 << 50},
-		{"T", 1.0 << 40},
-		{"G", 1.0 << 30},
-		{"M", 1.0 << 20},
-		{"K", 1.0 << 10},
-		{"B", 1.0 << 0},
+		{"P", 1.0 << 50, 5},
+		{"T", 1.0 << 40, 4},
+		{"G", 1.0 << 30, 3},
+		{"M", 1.0 << 20, 2},
+		{"K", 1.0 << 10, 1},
+		{"B", 1.0 << 0, 0},
 	}
 
-	value := float32(size)
+	value := float64(size)
 	for _, curr := range sizes {
 		csize := value / curr.mask
-		if csize < 1 {
+
+		// No unit request, use default based on size
+		if unit == "" {
+			if csize < 1 {
+				continue
+			}
+		} else if unit != curr.unit {
 			continue
 		}
 
-		return fmt.Sprintf("%.1f%s", csize, curr.unit), nil
+		unit = curr.unit
+
+		// No precision request, use default based on size
+		if precision < 0 {
+			precision = curr.precision
+		}
+
+		formatted := strconv.FormatFloat(csize, 'f', precision, 64)
+		// Remove trailing zeroes (and unused decimal)
+		formatted = strings.TrimRight(strings.TrimRight(formatted, "0"), ".")
+		if unit != "" && unit != "B" {
+			formatted += unit
+		}
+
+		return formatted, nil
 	}
 
 	return "", errors.Errorf("Could not format disk/partition size")
+}
+
+// HumanReadableSizeWithPrecision converts the size representation in bytes to the
+// closest human readable format i.e 10M, 1G, 2T etc with a forced precision
+func HumanReadableSizeWithPrecision(size uint64, precision int) (string, error) {
+	return HumanReadableSizeWithUnitAndPrecision(size, "", precision)
+}
+
+// HumanReadableSizeWithUnit converts the size representation in bytes to the
+// closest human readable format i.e 10M, 1G, 2T etc with a forced unit
+func HumanReadableSizeWithUnit(size uint64, unit string) (string, error) {
+	return HumanReadableSizeWithUnitAndPrecision(size, unit, -1)
+}
+
+// HumanReadableSize converts the size representation in bytes to the closest
+// human readable format i.e 10M, 1G, 2T etc
+func HumanReadableSize(size uint64) (string, error) {
+	return HumanReadableSizeWithUnitAndPrecision(size, "", -1)
 }
 
 // FreeSpace returns the block device available/free space considering the currently
@@ -249,10 +289,28 @@ func (bd *BlockDevice) FreeSpace() (uint64, error) {
 	return bd.Size - total, nil
 }
 
+// HumanReadableSizeWithUnitAndPrecision converts the size representation in bytes to the
+// closest human readable format i.e 10M, 1G, 2T etc with a forced unit and precision
+func (bd *BlockDevice) HumanReadableSizeWithUnitAndPrecision(unit string, precision int) (string, error) {
+	return HumanReadableSizeWithUnitAndPrecision(bd.Size, unit, precision)
+}
+
+// HumanReadableSizeWithPrecision converts the size representation in bytes to the
+// closest human readable format i.e 10M, 1G, 2T etc with a forced precision
+func (bd *BlockDevice) HumanReadableSizeWithPrecision(precision int) (string, error) {
+	return bd.HumanReadableSizeWithUnitAndPrecision("", precision)
+}
+
+// HumanReadableSizeWithUnit converts the size representation in bytes to the
+// closest human readable format i.e 10M, 1G, 2T etc with a forced unit
+func (bd *BlockDevice) HumanReadableSizeWithUnit(unit string) (string, error) {
+	return bd.HumanReadableSizeWithUnitAndPrecision(unit, -1)
+}
+
 // HumanReadableSize converts the size representation in bytes to the closest
 // human readable format i.e 10M, 1G, 2T etc
 func (bd *BlockDevice) HumanReadableSize() (string, error) {
-	return HumanReadableSize(bd.Size)
+	return bd.HumanReadableSizeWithUnitAndPrecision("", -1)
 }
 
 func listBlockDevices(userDefined []*BlockDevice) ([]*BlockDevice, error) {
@@ -417,7 +475,7 @@ func (bd *BlockDevice) IsValidSize(str string) string {
 	str = strings.ToLower(str)
 
 	if !storageExp.MatchString(str) {
-		return "Invalid size, must be suffixed by: B, K, M, G, T or P"
+		return "Invalid size, may only be suffixed by: B, K, M, G, T or P"
 	}
 
 	size, err := ParseVolumeSize(str)

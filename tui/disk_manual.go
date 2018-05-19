@@ -34,7 +34,7 @@ var (
 )
 
 func (page *ManualPartPage) showManualDisk(bd *storage.BlockDevice, frame *clui.Frame) error {
-	size, err := bd.HumanReadableSize()
+	size, err := bd.HumanReadableSizeWithPrecision(1)
 	if err != nil {
 		return err
 	}

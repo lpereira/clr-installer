@@ -29,7 +29,7 @@ func (page *GuidedPartPage) SetDone(done bool) bool {
 }
 
 func (page *GuidedPartPage) showGuidedDisk(bd *storage.BlockDevice) error {
-	size, err := bd.HumanReadableSize()
+	size, err := bd.HumanReadableSizeWithPrecision(1)
 	if err != nil {
 		return err
 	}

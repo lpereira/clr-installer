@@ -102,7 +102,7 @@ func (page *DiskPartitionPage) Activate() {
 	page.mPointEdit.SetTitle("")
 	page.mPointWarning.SetTitle("")
 	page.sizeEdit.SetTitle("")
-	page.sizeInfo.SetTitle("Use '+' or '=' to set Maximum size")
+	page.sizeInfo.SetTitle("'+/=' to force Maximum size")
 	page.sizeWarning.SetTitle("")
 
 	page.setPartitionForm(sel.part)
@@ -114,8 +114,6 @@ func (page *DiskPartitionPage) Activate() {
 		page.deleteBtn.SetTitle("Cancel")
 		// and the Confirm button is really our "Add" button
 		page.confirmBtn.SetTitle("Add")
-
-		sel.addMode = false
 	} else {
 		page.setPartitionButtonsVisible(true, partCancelBtn)
 		page.deleteBtn.SetTitle("Delete")
@@ -213,7 +211,7 @@ func newDiskPartitionPage(mi *Tui) (Page, error) {
 		for _, curr := range maxSizeKeys {
 			if curr == ch {
 				sel := page.getSelectedBlockDevice()
-				page.sizeEdit.SetTitle(fmt.Sprintf("%vb", sel.part.MaxParitionSize()))
+				page.sizeEdit.SetTitle(fmt.Sprintf("%v", sel.part.MaxParitionSize()))
 				return true
 			}
 		}
