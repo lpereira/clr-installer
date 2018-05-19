@@ -19,14 +19,14 @@ type ManualPartPage struct {
 // SelectedBlockDevice holds the shared date between the manual partitioning page and
 // the partition configuration page
 type SelectedBlockDevice struct {
-	bd        *storage.BlockDevice
-	part      *storage.BlockDevice
-	freeSpace uint64
+	bd      *storage.BlockDevice
+	part    *storage.BlockDevice
+	addMode bool
 }
 
 const (
 	manualDesc = `Select a partition to modify its configuration and to define it as the
-target instalattion disk.`
+target installation disk.`
 )
 
 var (
@@ -48,7 +48,7 @@ func (page *ManualPartPage) showManualDisk(bd *storage.BlockDevice, frame *clui.
 	page.btns = append(page.btns, btn)
 
 	for _, part := range bd.Children {
-		sel := &SelectedBlockDevice{bd: bd, part: part}
+		sel := &SelectedBlockDevice{bd: bd, part: part, addMode: false}
 
 		size, err = sel.part.HumanReadableSize()
 		if err != nil {
@@ -76,10 +76,19 @@ func (page *ManualPartPage) showManualDisk(bd *storage.BlockDevice, frame *clui.
 	}
 
 	btn = page.newPartBtn(frame, fmt.Sprintf("%16s: %s", "Free space", freeSpaceLbl))
-	btn.OnClick(func(ev clui.Event) {
-		page.data = &SelectedBlockDevice{bd: bd, freeSpace: freeSpace}
-		page.mi.gotoPage(TuiPageDiskPart, page.mi.currPage)
-	})
+	if freeSpace > 0 {
+		btn.OnClick(func(ev clui.Event) {
+			newPart := &storage.BlockDevice{
+				FsType:     "ext4",
+				MountPoint: "",
+				Size:       freeSpace,
+				Parent:     bd,
+			}
+			bd.AddChild(newPart)
+			page.data = &SelectedBlockDevice{bd: bd, part: newPart, addMode: true}
+			page.mi.gotoPage(TuiPageDiskPart, page.mi.currPage)
+		})
+	}
 
 	return nil
 }

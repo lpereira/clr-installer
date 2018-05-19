@@ -17,10 +17,9 @@ type DiskPartitionPage struct {
 	mPointEdit    *clui.EditField
 	mPointWarning *clui.Label
 	sizeEdit      *clui.EditField
-	cancelBtn     *SimpleButton
-	deleteBtn     *SimpleButton
-	addBtn        *SimpleButton
 	confirmBtn    *SimpleButton
+	deleteBtn     *SimpleButton
+	cancelBtn     *SimpleButton
 	sizeWarning   *clui.Label
 	sizeInfo      *clui.Label
 }
@@ -28,32 +27,32 @@ type DiskPartitionPage struct {
 const (
 	nPartitionHelp = "Set the new partition's file system, mount point and size."
 
-	// partDeleteBtn mask defines a partition configuration page will have a delete button
-	partDeleteBtn = 1 << 1
-
-	// partAddBtn mask defines a partition configuration page will have an add button
-	partAddBtn = 1 << 2
-
 	// partConfirmBtn mask defines a partition configuration page will have a confirm button
-	partConfirmBtn = 1 << 3
+	partConfirmBtn = 1 << 1
+
+	// partDeleteBtn mask defines a partition configuration page will have a delete button
+	partDeleteBtn = 1 << 2
+
+	// partCancelBtn mask defines a partition configuration page will have a cancel button
+	partCancelBtn = 1 << 3
 
 	// partAllBtns mask defines a partition configuration page will have show both:
 	// delete, add and confirm buttons
-	partAllBtns = partDeleteBtn | partAddBtn | partConfirmBtn
+	partAllBtns = partConfirmBtn | partDeleteBtn | partCancelBtn
 )
 
 func (page *DiskPartitionPage) setPartitionButtonsVisible(visible bool, mask int) {
+	if mask&partConfirmBtn == partConfirmBtn {
+		page.confirmBtn.SetVisible(visible)
+		page.setConfirmButton()
+	}
+
 	if mask&partDeleteBtn == partDeleteBtn {
 		page.deleteBtn.SetVisible(visible)
 	}
 
-	if mask&partAddBtn == partAddBtn {
-		page.addBtn.SetVisible(visible)
-	}
-
-	if mask&partConfirmBtn == partConfirmBtn {
-		page.confirmBtn.SetVisible(visible)
-		page.setConfirmButton()
+	if mask&partCancelBtn == partCancelBtn {
+		page.cancelBtn.SetVisible(visible)
 	}
 }
 
@@ -76,8 +75,7 @@ func (page *DiskPartitionPage) setPartitionForm(part *storage.BlockDevice) {
 
 	page.sizeEdit.SetTitle(size)
 
-	page.setPartitionButtonsVisible(false, partAllBtns)
-	page.setPartitionButtonsVisible(true, partDeleteBtn|partConfirmBtn)
+	page.setPartitionButtonsVisible(true, partAllBtns)
 }
 
 func (page *DiskPartitionPage) getSelectedBlockDevice() *SelectedBlockDevice {
@@ -107,11 +105,21 @@ func (page *DiskPartitionPage) Activate() {
 	page.sizeInfo.SetTitle("Use '+' or '=' to set Maximum size")
 	page.sizeWarning.SetTitle("")
 
-	if sel.part != nil {
-		page.setPartitionForm(sel.part)
-	} else if sel.bd != nil && sel.freeSpace != 0 {
-		page.setPartitionButtonsVisible(false, partAllBtns)
-		page.setPartitionButtonsVisible(true, partAddBtn)
+	page.setPartitionForm(sel.part)
+
+	if sel.addMode {
+		page.setPartitionButtonsVisible(false, partCancelBtn)
+		// In Add partition mode, the Delete button is really
+		// our "Cancel" as the new partition was already added.
+		page.deleteBtn.SetTitle("Cancel")
+		// and the Confirm button is really our "Add" button
+		page.confirmBtn.SetTitle("Add")
+
+		sel.addMode = false
+	} else {
+		page.setPartitionButtonsVisible(true, partCancelBtn)
+		page.deleteBtn.SetTitle("Delete")
+		page.confirmBtn.SetTitle("Confirm")
 	}
 }
 
@@ -225,42 +233,6 @@ func newDiskPartitionPage(mi *Tui) (Page, error) {
 	btnFrm.SetGaps(1, 1)
 	btnFrm.SetPaddings(2, 0)
 
-	page.cancelBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Cancel", Fixed)
-	page.cancelBtn.OnClick(func(ev clui.Event) {
-		mi.gotoPage(TuiPageManualPart, mi.currPage)
-	})
-
-	page.deleteBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Delete", Fixed)
-	page.deleteBtn.OnClick(func(ev clui.Event) {
-		sel := page.getSelectedBlockDevice()
-		sel.bd.RemoveChild(sel.part)
-		mi.gotoPage(TuiPageManualPart, mi.currPage)
-	})
-
-	page.addBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Add", Fixed)
-
-	page.addBtn.OnClick(func(ev clui.Event) {
-		sel := page.getSelectedBlockDevice()
-		page.sizeWarning.SetTitle(sel.part.IsValidSize(page.sizeEdit.Title()))
-		if page.sizeWarning.Title() != "" {
-			return
-		}
-
-		size, err := storage.ParseVolumeSize(page.sizeEdit.Title())
-		if err != nil {
-			return
-		}
-
-		part := &storage.BlockDevice{
-			FsType:     page.fsList.SelectedItemText(),
-			MountPoint: page.mPointEdit.Title(),
-			Size:       size,
-		}
-
-		sel.bd.AddChild(part)
-		mi.gotoPage(TuiPageManualPart, mi.currPage)
-	})
-
 	page.confirmBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Confirm", Fixed)
 	page.confirmBtn.OnClick(func(ev clui.Event) {
 		sel := page.getSelectedBlockDevice()
@@ -274,6 +246,19 @@ func newDiskPartitionPage(mi *Tui) (Page, error) {
 			}
 		}
 
+		mi.gotoPage(TuiPageManualPart, mi.currPage)
+	})
+
+	page.deleteBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Delete", Fixed)
+	page.deleteBtn.OnClick(func(ev clui.Event) {
+		sel := page.getSelectedBlockDevice()
+		sel.bd.RemoveChild(sel.part)
+
+		mi.gotoPage(TuiPageManualPart, mi.currPage)
+	})
+
+	page.cancelBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Cancel", Fixed)
+	page.cancelBtn.OnClick(func(ev clui.Event) {
 		mi.gotoPage(TuiPageManualPart, mi.currPage)
 	})
 
