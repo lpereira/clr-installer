@@ -97,14 +97,6 @@ func newMenuPage(mi *Tui) (Page, error) {
 		go clui.Stop()
 	})
 
-	saveBtn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Save & Exit", Fixed)
-	saveBtn.OnClick(func(ev clui.Event) {
-		if err := page.getModel().WriteFile(descFile); err != nil {
-			page.Panic(err)
-		}
-		go clui.Stop()
-	})
-
 	page.installBtn = CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Install", Fixed)
 	page.installBtn.OnClick(func(ev clui.Event) {
 		page.mi.gotoPage(TuiPageInstall, page.mi.currPage)
