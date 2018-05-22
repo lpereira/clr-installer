@@ -13,13 +13,16 @@ type MenuPage struct {
 	installBtn *SimpleButton
 }
 
-func (page *MenuPage) addMenuItem(item Page, activated bool) {
+func (page *MenuPage) addMenuItem(item Page) bool {
 	done := "[ ]"
+	completed := false
 
 	if item.GetDone() {
 		done = "[+]"
+		completed = true
 	} else if item.GetConfigDefinition() == ConfigDefinedByConfig {
 		done = "[*]"
+		completed = true
 	}
 
 	title := fmt.Sprintf(" %s %s", done, item.GetMenuTitle())
@@ -33,9 +36,7 @@ func (page *MenuPage) addMenuItem(item Page, activated bool) {
 
 	page.btns = append(page.btns, btn)
 
-	if activated {
-		page.activated = btn
-	}
+	return completed
 }
 
 // Activate is called when the page is "shown" and it repaints the main menu based on the
@@ -47,29 +48,33 @@ func (page *MenuPage) Activate() {
 	page.btns = []*SimpleButton{}
 
 	previous := false
-	for idx, curr := range page.mi.pages {
-		activated := false
-
+	activeSet := false
+	for _, curr := range page.mi.pages {
 		if curr.GetMenuTitle() == "" {
 			continue
 		}
 
-		if page.mi.prevPage == nil {
-			if idx == 0 {
-				activated = true
-			}
-		} else {
-			if page.mi.prevPage.GetID() == curr.GetID() {
-				previous = true
-			} else if previous {
-				activated = true
-			}
+		if page.mi.prevPage != nil {
+			// Is this menu option match the previous page?
+			previous = page.mi.prevPage.GetID() == curr.GetID()
 		}
 
-		page.addMenuItem(curr, activated)
+		// Does the menu item added have the data set completed?
+		completed := page.addMenuItem(curr)
 
-		if previous && activated {
-			previous = false
+		// If we haven't found the first active choice, set it
+		if !activeSet && !completed {
+			// Make last button added Active
+			page.activated = page.btns[len(page.btns)-1]
+			activeSet = true
+		}
+
+		// Special case if the previous page and the data set is not completed
+		// we want THIS to be the active choice for easy return
+		if previous && !completed {
+			// Make last button added Active
+			page.activated = page.btns[len(page.btns)-1]
+			activeSet = true
 		}
 	}
 
