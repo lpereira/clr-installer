@@ -175,10 +175,10 @@ func newNetworkInterfacePage(mi *Tui) (Page, error) {
 	page.ifaceLbl = clui.CreateLabel(ifaceFrm, AutoSize, 2, "", Fixed)
 	page.ifaceLbl.SetAlign(AlignLeft)
 
-	page.IPEdit = newEditField(fldFrm, validateIPEdit)
-	page.NetMaskEdit = newEditField(fldFrm, validateIPEdit)
-	page.GatewayEdit = newEditField(fldFrm, validateIPEdit)
-	page.DNSEdit = newEditField(fldFrm, validateIPEdit)
+	page.IPEdit, _ = newEditField(fldFrm, false, validateIPEdit)
+	page.NetMaskEdit, _ = newEditField(fldFrm, false, validateIPEdit)
+	page.GatewayEdit, _ = newEditField(fldFrm, false, validateIPEdit)
+	page.DNSEdit, _ = newEditField(fldFrm, false, validateIPEdit)
 
 	eLblFrm := clui.CreateFrame(frm, 20, AutoSize, BorderNone, Fixed)
 	eLblFrm.SetPack(clui.Vertical)

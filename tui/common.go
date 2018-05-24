@@ -25,6 +25,7 @@ type BasePage struct {
 	done      bool          // marks if an item is completed
 	id        int           // the page id
 	data      interface{}   // arbitrary page context data
+	action    int           // indicates if the user has performed a navigation action
 }
 
 // Page defines the methods a Page must implement
@@ -123,6 +124,15 @@ const (
 
 	// ConfigNotDefined is used to determine no configuration was provided yet
 	ConfigNotDefined
+
+	// ActionBackButton indicates the user has pressed back button
+	ActionBackButton = iota
+
+	// ActionDoneButton indicates the user has pressed done button
+	ActionDoneButton
+
+	// ActionNone indicates no action has been performed
+	ActionNone
 )
 
 // GetConfigDefinition is a stub implementation
@@ -202,6 +212,7 @@ func init() {
 }
 
 func (page *BasePage) setup(mi *Tui, id int, btns int) {
+	page.action = ActionNone
 	page.id = id
 	page.mi = mi
 	page.newWindow()
@@ -255,7 +266,9 @@ func (page *BasePage) newBackButton() {
 	btn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "< Main Menu", Fixed)
 
 	btn.OnClick(func(ev clui.Event) {
+		page.action = ActionBackButton
 		page.mi.gotoPage(TuiPageMenu, page.mi.currPage)
+		page.action = ActionNone
 	})
 
 	page.backBtn = btn
@@ -266,7 +279,9 @@ func (page *BasePage) newDoneButton(mi *Tui) {
 
 	btn.OnClick(func(ev clui.Event) {
 		if mi.currPage.SetDone(true) {
+			page.action = ActionDoneButton
 			mi.gotoPage(TuiPageMenu, page.mi.currPage)
+			page.action = ActionNone
 		}
 	})
 	page.doneBtn = btn
@@ -276,14 +291,28 @@ func (page *BasePage) getModel() *model.SystemInstall {
 	return page.mi.model
 }
 
-func newEditField(frame *clui.Frame, cb func(k term.Key, ch rune) bool) *clui.EditField {
-	iframe := clui.CreateFrame(frame, 5, 2, BorderNone, Fixed)
+func newEditField(frame *clui.Frame, validation bool, cb func(k term.Key, ch rune) bool) (*clui.EditField, *clui.Label) {
+	var label *clui.Label
+
+	height := 2
+	if validation {
+		height = 1
+	}
+
+	iframe := clui.CreateFrame(frame, 5, height, BorderNone, Fixed)
 	iframe.SetPack(clui.Vertical)
 	edit := clui.CreateEditField(iframe, 1, "", Fixed)
+
+	if validation {
+		label = clui.CreateLabel(iframe, AutoSize, 1, "", Fixed)
+		label.SetVisible(false)
+		label.SetBackColor(errorLabelBg)
+		label.SetTextColor(errorLabelFg)
+	}
 
 	if cb != nil {
 		edit.OnKeyPress(cb)
 	}
 
-	return edit
+	return edit, label
 }
