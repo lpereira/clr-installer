@@ -42,9 +42,28 @@ func RunAndLog(args ...string) error {
 	return Run(runLogger{}, args...)
 }
 
-// Run executes a command and uses writer to write both stdout and stderr
-// args are the actual command and its arguments
-func Run(writer io.Writer, args ...string) error {
+// PipeRunAndLog is similar to RunAndLog runs a command and writes the output
+// to default logger and also writes in to the process stdin
+func PipeRunAndLog(in string, args ...string) error {
+	return run(func(cmd *exec.Cmd) error {
+		stdin, err := cmd.StdinPipe()
+		if err != nil {
+			return err
+		}
+
+		go func() {
+			defer func() {
+				_ = stdin.Close()
+			}()
+
+			_, _ = io.WriteString(stdin, in)
+		}()
+
+		return nil
+	}, runLogger{}, args...)
+}
+
+func run(sw func(cmd *exec.Cmd) error, writer io.Writer, args ...string) error {
 	var exe string
 	var cmdArgs []string
 
@@ -59,6 +78,12 @@ func Run(writer io.Writer, args ...string) error {
 		cmd.Env = append(os.Environ(), fmt.Sprintf("https_proxy=%s", httpsProxy))
 	}
 
+	if sw != nil {
+		if err := sw(cmd); err != nil {
+			return err
+		}
+	}
+
 	cmd.Stdout = writer
 	cmd.Stderr = writer
 
@@ -68,4 +93,10 @@ func Run(writer io.Writer, args ...string) error {
 	}
 
 	return nil
+}
+
+// Run executes a command and uses writer to write both stdout and stderr
+// args are the actual command and its arguments
+func Run(writer io.Writer, args ...string) error {
+	return run(nil, writer, args...)
 }
