@@ -20,6 +20,9 @@ const (
 	// ConfigFile is the install descriptor
 	ConfigFile = "clr-installer.yaml"
 
+	// ChpasswdPAMFile is the chpasswd pam configuration file
+	ChpasswdPAMFile = "chpasswd"
+
 	// DefaultConfigDir is the system wide default configuration directory
 	DefaultConfigDir = "/usr/share/defaults/clr-installer"
 
@@ -96,4 +99,9 @@ func FetchRemoteConfigFile(url string) (string, error) {
 	}
 
 	return out.Name(), nil
+}
+
+// LookupChpasswdConfig looks up the chpasswd pam file used in the post install
+func LookupChpasswdConfig() (string, error) {
+	return lookupDefaultFile(ChpasswdPAMFile)
 }

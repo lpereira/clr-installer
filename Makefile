@@ -45,6 +45,7 @@ install: build
 	@install -m 644  $(top_srcdir)/etc/clr-installer.yaml $(CONFIG_DIR)
 	@install -m 644  $(top_srcdir)/etc/bundles.json $(CONFIG_DIR)
 	@install -m 644 $(top_srcdir)/etc/systemd/clr-installer.service $(SYSTEMD_DIR)
+	@install -m 644  $(top_srcdir)/etc/chpasswd $(CONFIG_DIR)
 
 build-pkgs: build
 	@for pkg in `find -path ./vendor -prune -o -path ./.gopath -prune -o -name "*.go" \
