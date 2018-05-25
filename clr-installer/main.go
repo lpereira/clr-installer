@@ -12,6 +12,7 @@ import (
 
 	"github.com/clearlinux/clr-installer/cmd"
 	"github.com/clearlinux/clr-installer/conf"
+	"github.com/clearlinux/clr-installer/crypt"
 	"github.com/clearlinux/clr-installer/frontend"
 	"github.com/clearlinux/clr-installer/keyboard"
 	"github.com/clearlinux/clr-installer/log"
@@ -24,6 +25,7 @@ import (
 var (
 	frontEndImpls []frontend.Frontend
 	args          frontend.Args
+	genPwd        string
 )
 
 func init() {
@@ -41,6 +43,10 @@ func init() {
 
 	flag.StringVar(
 		&args.ConfigFile, "config", "", "Installation configuration file",
+	)
+
+	flag.StringVar(
+		&genPwd, "genpwd", "", "Generates a PAM compatible password hash based on the provided string",
 	)
 
 	flag.IntVar(
@@ -77,6 +83,16 @@ func main() {
 
 	if err := log.SetLogLevel(args.LogLevel); err != nil {
 		fatal(err)
+	}
+
+	if genPwd != "" {
+		hashed, err := crypt.Crypt(genPwd)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println(hashed)
+		return
 	}
 
 	if args.Version {
