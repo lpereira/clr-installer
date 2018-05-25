@@ -2,3 +2,4 @@
 bundles: [os-core, os-core-update, kernel-native]
 keyboard: us
 language: en_US.UTF-8
+timezone: "America/Los_Angeles"

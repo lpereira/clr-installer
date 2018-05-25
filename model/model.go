@@ -12,6 +12,7 @@ import (
 	"github.com/clearlinux/clr-installer/network"
 	"github.com/clearlinux/clr-installer/storage"
 	"github.com/clearlinux/clr-installer/telemetry"
+	"github.com/clearlinux/clr-installer/timezone"
 )
 
 // Version of Clear Installer.
@@ -28,6 +29,7 @@ type SystemInstall struct {
 	Bundles           []string               `yaml:"bundles,omitempty,flow"`
 	HTTPSProxy        string                 `yaml:"httpsProxy,omitempty,flow"`
 	Telemetry         *telemetry.Telemetry   `yaml:"telemetry,omitempty,flow"`
+	Timezone          *timezone.TimeZone     `yaml:"timezone,omitempty,flow"`
 }
 
 // ContainsBundle returns true if the data model has a bundle and false otherwise

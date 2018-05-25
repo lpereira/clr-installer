@@ -106,6 +106,7 @@ func (mi *Tui) Run(md *model.SystemInstall, rootDir string) (bool, error) {
 		desc string
 		fc   func(*Tui) (Page, error)
 	}{
+		{"timezone", newTimezonePage},
 		{"language", newLanguagePage},
 		{"keyboard", newKeyboardPage},
 		{"disk menu", newDiskPage},

@@ -121,6 +121,9 @@ const (
 	// TuiPageTelemetry is the id for the telemetry enabling screen
 	TuiPageTelemetry
 
+	// TuiPageTimezone is the id for the timezone selection page
+	TuiPageTimezone
+
 	// ConfigDefinedByUser is used to determine a configuration was interactively
 	// defined by the user
 	ConfigDefinedByUser = iota
