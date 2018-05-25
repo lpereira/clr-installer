@@ -114,6 +114,9 @@ const (
 	// TuiPageBundle is the id for the bundle selection page
 	TuiPageBundle
 
+	// TuiPageTelemetry is the id for the telemetry enabling screen
+	TuiPageTelemetry
+
 	// ConfigDefinedByUser is used to determine a configuration was interactively
 	// defined by the user
 	ConfigDefinedByUser = iota

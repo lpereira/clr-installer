@@ -11,6 +11,7 @@ import (
 	"github.com/clearlinux/clr-installer/language"
 	"github.com/clearlinux/clr-installer/network"
 	"github.com/clearlinux/clr-installer/storage"
+	"github.com/clearlinux/clr-installer/telemetry"
 )
 
 // Version of Clear Installer.
@@ -26,6 +27,7 @@ type SystemInstall struct {
 	Language          *language.Language     `yaml:"language,omitempty,flow"`
 	Bundles           []string               `yaml:"bundles,omitempty,flow"`
 	HTTPSProxy        string                 `yaml:"httpsProxy,omitempty,flow"`
+	Telemetry         *telemetry.Telemetry   `yaml:"telemetry,omitempty,flow"`
 }
 
 // ContainsBundle returns true if the data model has a bundle and false otherwise
@@ -89,6 +91,10 @@ func (si *SystemInstall) Validate() error {
 		return errors.Errorf("System Language not set")
 	}
 
+	if si.Telemetry == nil {
+		return errors.Errorf("Telemetry not acknowledged")
+	}
+
 	return nil
 }
 
@@ -127,6 +133,25 @@ func LoadFile(path string) (*SystemInstall, error) {
 	}
 
 	return &result, nil
+}
+
+// EnableTelemetry operates on the telemetry flag and enables or disables the target
+// systems telemetry support based in enable argument
+func (si *SystemInstall) EnableTelemetry(enable bool) {
+	if si.Telemetry == nil {
+		si.Telemetry = &telemetry.Telemetry{}
+	}
+
+	si.Telemetry.SetEnable(enable)
+}
+
+// IsTelemetryEnabled returns true if telemetry is enabled, false otherwise
+func (si *SystemInstall) IsTelemetryEnabled() bool {
+	if si.Telemetry == nil {
+		return false
+	}
+
+	return si.Telemetry.Enabled
 }
 
 // WriteFile writes a yaml formatted representation of si into the provided file path

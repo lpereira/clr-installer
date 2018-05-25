@@ -32,3 +32,4 @@ targetMedia:
 keyboard: us
 language: en_US.UTF-8
 bundles: [os-core, os-core-update, kernel-native]
+telemetry: true

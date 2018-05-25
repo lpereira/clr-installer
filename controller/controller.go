@@ -125,6 +125,10 @@ func Install(rootDir string, model *model.SystemInstall) error {
 		return err
 	}
 
+	if model.Telemetry.Enabled {
+		model.AddBundle("telemetrics")
+	}
+
 	prg, err := contentInstall(rootDir, version, model.Bundles)
 	if err != nil {
 		prg.Done()

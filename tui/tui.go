@@ -118,6 +118,7 @@ func (mi *Tui) Run(md *model.SystemInstall, rootDir string) (bool, error) {
 		{"manual partitioning", newManualPartitionPage},
 		{"disk partition", newDiskPartitionPage},
 		{"bundle selection", newBundlePage},
+		{"telemetry enabling", newTelemetryPage},
 		{"install", newInstallPage},
 	}
 
