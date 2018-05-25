@@ -17,6 +17,7 @@ import (
 	"github.com/clearlinux/clr-installer/storage"
 	"github.com/clearlinux/clr-installer/telemetry"
 	"github.com/clearlinux/clr-installer/timezone"
+	"github.com/clearlinux/clr-installer/user"
 )
 
 // Version of Clear Installer.
@@ -36,6 +37,7 @@ type SystemInstall struct {
 	HTTPSProxy        string                 `yaml:"httpsProxy,omitempty,flow"`
 	Telemetry         *telemetry.Telemetry   `yaml:"telemetry,omitempty,flow"`
 	Timezone          *timezone.TimeZone     `yaml:"timezone,omitempty,flow"`
+	Users             []*user.User           `yaml:"users,omitempty,flow"`
 }
 
 // ContainsBundle returns true if the data model has a bundle and false otherwise
@@ -71,6 +73,22 @@ func (si *SystemInstall) AddBundle(bundle string) {
 	}
 
 	si.Bundles = append(si.Bundles, bundle)
+}
+
+// RemoveAllUsers remove from the data model all previously added user
+func (si *SystemInstall) RemoveAllUsers() {
+	si.Users = []*user.User{}
+}
+
+// AddUser adds a new user to the data model, this function also prevents duplicate entries
+func (si *SystemInstall) AddUser(usr *user.User) {
+	for _, curr := range si.Users {
+		if curr.Equals(usr) {
+			return
+		}
+	}
+
+	si.Users = append(si.Users, usr)
 }
 
 // Validate checks the model for possible inconsistencies or "minimum required"

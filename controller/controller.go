@@ -23,6 +23,7 @@ import (
 	"github.com/clearlinux/clr-installer/progress"
 	"github.com/clearlinux/clr-installer/storage"
 	"github.com/clearlinux/clr-installer/swupd"
+	cuser "github.com/clearlinux/clr-installer/user"
 )
 
 func sortMountPoint(bds []*storage.BlockDevice) []*storage.BlockDevice {
@@ -136,6 +137,10 @@ func Install(rootDir string, model *model.SystemInstall) error {
 	prg, err := contentInstall(rootDir, version, model.Bundles)
 	if err != nil {
 		prg.Done()
+		return err
+	}
+
+	if err := cuser.Apply(rootDir, model.Users); err != nil {
 		return err
 	}
 
