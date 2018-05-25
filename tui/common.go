@@ -128,6 +128,9 @@ const (
 	// TuiPageTimezone is the id for the timezone selection page
 	TuiPageTimezone
 
+	// TuiPageUseradd is the id for the user add page
+	TuiPageUseradd
+
 	// ConfigDefinedByUser is used to determine a configuration was interactively
 	// defined by the user
 	ConfigDefinedByUser = iota
