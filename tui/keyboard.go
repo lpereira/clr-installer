@@ -34,6 +34,27 @@ func (page *KeyboardPage) SetDone(done bool) bool {
 	return true
 }
 
+// DeActivate will reset the selection case the user has pressed cancel
+func (page *KeyboardPage) DeActivate() {
+	if page.action == ActionDoneButton {
+		return
+	}
+
+	for idx, curr := range page.avKeymaps {
+		if !curr.Equals(page.getModel().Keyboard) {
+			continue
+		}
+
+		page.kbdListBox.SelectItem(idx)
+
+		if err := keyboard.Apply(curr); err != nil {
+			page.Panic(err)
+		}
+
+		return
+	}
+}
+
 func newKeyboardPage(mi *Tui) (Page, error) {
 	kmaps, err := keyboard.LoadKeymaps()
 	if err != nil {
@@ -44,7 +65,7 @@ func newKeyboardPage(mi *Tui) (Page, error) {
 		avKeymaps: kmaps,
 	}
 
-	page.setupMenu(mi, TuiPageKeyboard, "Configure the keyboard", DoneButton)
+	page.setupMenu(mi, TuiPageKeyboard, "Configure the keyboard", DoneButton|CancelButton)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Select Keyboard", Fixed)
 	lbl.SetPaddings(0, 2)
