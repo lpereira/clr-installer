@@ -18,6 +18,7 @@ type BasePage struct {
 	mFrame    *clui.Frame   // main frame
 	content   *clui.Frame   // the main content frame
 	cFrame    *clui.Frame   // control frame
+	cancelBtn *SimpleButton // cancel button
 	backBtn   *SimpleButton // back button
 	doneBtn   *SimpleButton // done button
 	activated clui.Control  // activated control
@@ -69,8 +70,11 @@ const (
 	// BackButton mask defines a common Page will have a back button
 	BackButton = 1 << 1
 
-	// DoneButton mask defines a common Page will have  done button
+	// DoneButton mask defines a common Page will have done button
 	DoneButton = 1 << 2
+
+	// CancelButton mask defines a common Page will have a cancel button
+	CancelButton = 1 << 3
 
 	// AllButtons mask defines a common Page will have both Back and Done buttons
 	AllButtons = BackButton | DoneButton
@@ -133,6 +137,9 @@ const (
 
 	// ActionDoneButton indicates the user has pressed done button
 	ActionDoneButton
+
+	// ActionCancelButton indicates the user has pressed cancel button
+	ActionCancelButton
 
 	// ActionNone indicates no action has been performed
 	ActionNone
@@ -232,6 +239,10 @@ func (page *BasePage) setup(mi *Tui, id int, btns int) {
 	page.cFrame.SetGaps(1, 1)
 	page.cFrame.SetPaddings(2, 0)
 
+	if btns&CancelButton == CancelButton {
+		page.newCancelButton()
+	}
+
 	if btns&BackButton == BackButton {
 		page.newBackButton()
 	}
@@ -275,6 +286,18 @@ func (page *BasePage) newBackButton() {
 	})
 
 	page.backBtn = btn
+}
+
+func (page *BasePage) newCancelButton() {
+	btn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Cancel", Fixed)
+
+	btn.OnClick(func(ev clui.Event) {
+		page.action = ActionCancelButton
+		page.mi.gotoPage(TuiPageMenu, page.mi.currPage)
+		page.action = ActionNone
+	})
+
+	page.cancelBtn = btn
 }
 
 func (page *BasePage) newDoneButton(mi *Tui) {
