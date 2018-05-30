@@ -37,7 +37,8 @@ char *__salt_and_crypt(char prefix[3], char *pass, size_t size) {
   }
 
   randSize = read(fd, rand, ENTROPY_SIZE);
-  if (randSize < 0) {
+  close(fd);
+  if (randSize != ENTROPY_SIZE) {
     return NULL;
   }
 #endif
