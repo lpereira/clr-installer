@@ -1,6 +1,9 @@
 package conf
 
 import (
+	"io"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -58,4 +61,31 @@ func LookupBundleListFile() (string, error) {
 // the system installed file
 func LookupDefaultConfig() (string, error) {
 	return lookupDefaultFile(ConfigFile)
+}
+
+// FetchRemoteConfigFile given an config url fetches it from the network. This function
+// currently supports only http/https protocol. After success return the local file path.
+func FetchRemoteConfigFile(url string) (string, error) {
+	out, err := ioutil.TempFile("", "clr-installer-yaml-")
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		_ = out.Close()
+	}()
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return out.Name(), nil
 }

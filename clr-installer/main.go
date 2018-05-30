@@ -19,6 +19,8 @@ import (
 	"github.com/clearlinux/clr-installer/massinstall"
 	"github.com/clearlinux/clr-installer/model"
 	"github.com/clearlinux/clr-installer/tui"
+	"github.com/clearlinux/clr-installer/utils"
+
 	flag "github.com/spf13/pflag"
 )
 
@@ -122,6 +124,22 @@ func main() {
 	}
 
 	var md *model.SystemInstall
+	var url string
+
+	if url, err = utils.ReadKernelCmdline(); err != nil {
+		fatal(err)
+	}
+
+	if url != "" {
+		var ffile string
+
+		if ffile, err = conf.FetchRemoteConfigFile(url); err != nil {
+			fatal(err)
+		}
+
+		args.ConfigFile = ffile
+	}
+
 	cf := args.ConfigFile
 
 	if args.ConfigFile == "" {
