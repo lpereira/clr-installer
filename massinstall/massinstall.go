@@ -2,6 +2,7 @@ package massinstall
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/clearlinux/clr-installer/controller"
@@ -68,6 +69,36 @@ func (mi *MassInstall) MustRun(args *frontend.Args) bool {
 	return args.ConfigFile != "" && !args.ForceTUI
 }
 
+func shouldReboot() (bool, bool, error) {
+	var answer string
+	va := map[string]bool{
+		"y":   true,
+		"yes": true,
+		"n":   false,
+		"no":  false,
+	}
+
+	fmt.Printf("reboot?[Y|n]: ")
+	_, err := fmt.Scanf("%s", &answer)
+	if err != nil {
+		return false, false, err
+	}
+
+	reboot := false
+	valid := false
+	answer = strings.ToLower(answer)
+
+	for k, v := range va {
+		if k == answer {
+			valid = true
+			reboot = v
+			break
+		}
+	}
+
+	return valid, reboot, nil
+}
+
 // Run is part of the Frontend implementation and is the actual entry point for the
 // "mass installer" frontend
 func (mi *MassInstall) Run(md *model.SystemInstall, rootDir string) (bool, error) {
@@ -76,11 +107,8 @@ func (mi *MassInstall) Run(md *model.SystemInstall, rootDir string) (bool, error
 	progress.Set(mi)
 
 	log.Debug("Starting install")
-	instCompleted := true
+
 	instError = controller.Install(rootDir, md)
-	if instError != nil {
-		instCompleted = false
-	}
 
 	prg := progress.NewLoop("Cleaning up install environment")
 	if err := controller.Cleanup(rootDir, true); err != nil {
@@ -88,5 +116,27 @@ func (mi *MassInstall) Run(md *model.SystemInstall, rootDir string) (bool, error
 	}
 	prg.Done()
 
-	return instCompleted, instError
+	if instError != nil {
+		return false, instError
+	}
+
+	var reboot bool
+
+	for {
+		var valid bool
+		var err error
+
+		if valid, reboot, err = shouldReboot(); err != nil {
+			panic(err)
+		}
+
+		if !valid {
+			fmt.Printf("Invalid answer...\n")
+			continue
+		}
+
+		break
+	}
+
+	return reboot, nil
 }
