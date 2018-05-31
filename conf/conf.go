@@ -21,7 +21,7 @@ const (
 )
 
 func isRunningFromSourceTree() (bool, string, error) {
-	src, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	src, err := os.Executable()
 	if err != nil {
 		return false, src, err
 	}
