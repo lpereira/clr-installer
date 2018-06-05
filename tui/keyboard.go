@@ -102,7 +102,7 @@ func newKeyboardPage(mi *Tui) (Page, error) {
 	frame.SetPack(clui.Vertical)
 	frame.SetPaddings(0, 1)
 
-	clui.CreateLabel(frame, AutoSize, 1, "Test our keyboard", Fixed)
+	clui.CreateLabel(frame, AutoSize, 1, "Test keyboard", Fixed)
 	newEditField(frame, false, nil)
 
 	page.activated = page.doneBtn
