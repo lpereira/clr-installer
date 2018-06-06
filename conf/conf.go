@@ -32,6 +32,10 @@ func isRunningFromSourceTree() (bool, string, error) {
 	if err != nil {
 		return false, src, err
 	}
+	src, err = filepath.Abs(filepath.Dir(src))
+	if err != nil {
+		return false, src, err
+	}
 
 	return !strings.HasPrefix(src, "/usr/bin"), src, nil
 }
