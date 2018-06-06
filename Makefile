@@ -1,3 +1,7 @@
+# Copyright 2018 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
 .NOTPARALLEL:
 
 top_srcdir = $(abspath .)
