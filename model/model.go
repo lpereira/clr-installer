@@ -21,7 +21,7 @@ import (
 
 // Version of Clear Installer.
 // Also used by the Makefile for releases.
-const Version = "0.1.0"
+const Version = "0.7.0"
 
 // SystemInstall represents the system install "configuration", the target
 // medias, bundles to install and whatever state a install may require
