@@ -46,6 +46,20 @@ install: build
 	@install -m 644  $(top_srcdir)/etc/bundles.json $(CONFIG_DIR)
 	@install -m 644 $(top_srcdir)/etc/systemd/clr-installer.service $(SYSTEMD_DIR)
 
+build-pkgs: build
+	@for pkg in `find -path ./vendor -prune -o -path ./.gopath -prune -o -name "*.go" \
+	   -printf "%h\n" | sort -u | sed 's/\.\///g'`; do \
+	   go install -v $${GO_PACKAGE_PREFIX}/$$pkg; \
+   done
+
+build-vendor: build
+	@cp -R vendor/* .gopath/src/
+	@for pkg in `find ./vendor -name "*.go" \
+	   -printf "%h\n" | sort -u | sed 's/\.\/vendor\///g'`; do \
+	   go install -v $$pkg; \
+   done
+	@rm -rf .gopath/src/*
+
 build: gopath
 	go get -v ${GO_PACKAGE_PREFIX}/clr-installer
 	go install -v ${GO_PACKAGE_PREFIX}/clr-installer
