@@ -178,6 +178,7 @@ dist-clean: clean
 	@if [ "$$(git status -s)" = "" ]; then \
 		git clean -fdxq; \
 		git reset HEAD; \
+		go clean -testcache; \
 	else \
 		echo "There are pending changes in the repository!"; \
 		git status -s; \
