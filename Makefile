@@ -19,6 +19,7 @@ export TESTS_DIR := $(top_srcdir)/tests/
 
 THEME_DIR=$(DESTDIR)/usr/share/clr-installer/themes/
 CONFIG_DIR=$(DESTDIR)/usr/share/defaults/clr-installer/
+SYSTEMD_DIR=$(DESTDIR)/usr/lib/systemd/system/
 
 .PHONY: gopath
 
@@ -43,6 +44,7 @@ install: build
 	@install -m 644  $(top_srcdir)/themes/clr-installer.theme $(THEME_DIR)
 	@install -m 644  $(top_srcdir)/etc/clr-installer.yaml $(CONFIG_DIR)
 	@install -m 644  $(top_srcdir)/etc/bundles.json $(CONFIG_DIR)
+	@install -m 644 $(top_srcdir)/etc/systemd/clr-installer.service $(SYSTEMD_DIR)
 
 build: gopath
 	go get -v ${GO_PACKAGE_PREFIX}/clr-installer

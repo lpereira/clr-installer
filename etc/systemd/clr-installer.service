@@ -1,0 +1,13 @@
+[Unit]
+Description=clear linux installer
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/clr-installer
+StandardInput=tty
+StandardOutput=tty
+StandardError=tty
+TTYPath=/dev/tty1
+
+[Install]
+WantedBy=multi-user.target
