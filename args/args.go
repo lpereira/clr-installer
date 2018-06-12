@@ -11,6 +11,7 @@ package args
 // 3. Program defaults -- Lowest Priority
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -91,8 +92,8 @@ func (args *Args) readKernelCmd() (string, error) {
 }
 
 func (args *Args) setCommandLineArgs() (err error) {
-	flag.BoolVar(
-		&args.Version, "version", false, "Version of the Installer",
+	flag.BoolVarP(
+		&args.Version, "version", "v", false, "Version of the Installer",
 	)
 
 	flag.BoolVar(
@@ -103,17 +104,18 @@ func (args *Args) setCommandLineArgs() (err error) {
 		&args.ForceTUI, "tui", false, "Use TUI frontend",
 	)
 
-	flag.StringVar(
-		&args.ConfigFile, "config", args.ConfigFile, "Installation configuration file",
+	flag.StringVarP(
+		&args.ConfigFile, "config", "c", args.ConfigFile, "Installation configuration file",
 	)
 
 	flag.StringVar(
 		&args.PamSalt, "genpass", "", "Generates a PAM compatible password hash based on the provided salt string",
 	)
 
-	flag.IntVar(
+	flag.IntVarP(
 		&args.LogLevel,
 		"log-level",
+		"l",
 		log.LogLevelDebug,
 		fmt.Sprintf("%d (debug), %d (info), %d (warning), %d (error)",
 			log.LogLevelDebug, log.LogLevelInfo, log.LogLevelWarning, log.LogLevelError),
@@ -122,7 +124,11 @@ func (args *Args) setCommandLineArgs() (err error) {
 	flag.BoolVar(
 		&args.DemoMode, "demo", args.DemoMode, "Demonstration mode for documentation generation",
 	)
-	//flag.MarkHidden("demo")
+	// We do not want this flag to be shown as part of the standard help message
+	fflag := flag.Lookup("demo")
+	if fflag != nil {
+		fflag.Hidden = true
+	}
 
 	usr, err := user.Current()
 	if err != nil {
@@ -133,6 +139,8 @@ func (args *Args) setCommandLineArgs() (err error) {
 	flag.StringVar(
 		&args.LogFile, "log-file", defaultLogFile, "The log file path",
 	)
+
+	flag.ErrHelp = errors.New("Clear Linux Installer program")
 
 	flag.Parse()
 
