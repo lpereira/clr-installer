@@ -319,7 +319,8 @@ func (bd *BlockDevice) HumanReadableSize() (string, error) {
 
 func listBlockDevices(userDefined []*BlockDevice) ([]*BlockDevice, error) {
 	w := bytes.NewBuffer(nil)
-	err := cmd.Run(w, lsblkBinary, "-J", "-b", "-O")
+	// Exclude memory(1), floppy(2), and SCSI CDROM(11) devices
+	err := cmd.Run(w, lsblkBinary, "--exclude", "1,2,11", "-J", "-b", "-O")
 	if err != nil {
 		return nil, fmt.Errorf("%s", w.String())
 	}
