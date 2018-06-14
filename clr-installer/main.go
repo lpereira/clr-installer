@@ -9,11 +9,10 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
-	"os/user"
 	"path"
-	"path/filepath"
 	"syscall"
 
+	"github.com/clearlinux/clr-installer/args"
 	"github.com/clearlinux/clr-installer/cmd"
 	"github.com/clearlinux/clr-installer/conf"
 	"github.com/clearlinux/clr-installer/crypt"
@@ -23,54 +22,11 @@ import (
 	"github.com/clearlinux/clr-installer/massinstall"
 	"github.com/clearlinux/clr-installer/model"
 	"github.com/clearlinux/clr-installer/tui"
-	"github.com/clearlinux/clr-installer/utils"
-
-	flag "github.com/spf13/pflag"
 )
 
 var (
 	frontEndImpls []frontend.Frontend
-	args          frontend.Args
-	genPwd        string
 )
-
-func init() {
-	flag.BoolVar(
-		&args.Version, "version", false, "Version of the Installer",
-	)
-
-	flag.BoolVar(
-		&args.Reboot, "reboot", true, "Reboot after finishing",
-	)
-
-	flag.BoolVar(
-		&args.ForceTUI, "tui", false, "Use TUI frontend",
-	)
-
-	flag.StringVar(
-		&args.ConfigFile, "config", "", "Installation configuration file",
-	)
-
-	flag.StringVar(
-		&genPwd, "genpwd", "", "Generates a PAM compatible password hash based on the provided string",
-	)
-
-	flag.IntVar(
-		&args.LogLevel,
-		"log-level",
-		log.LogLevelDebug,
-		fmt.Sprintf("%d (debug), %d (info), %d (warning), %d (error)",
-			log.LogLevelDebug, log.LogLevelInfo, log.LogLevelWarning, log.LogLevelError),
-	)
-
-	usr, err := user.Current()
-	if err != nil {
-		fatal(err)
-	}
-
-	defaultLogFile := filepath.Join(usr.HomeDir, "clr-installer.log")
-	flag.StringVar(&args.LogFile, "log-file", defaultLogFile, "The log file path")
-}
 
 func fatal(err error) {
 	log.ErrorError(err)
@@ -85,14 +41,21 @@ func initFrontendList() {
 }
 
 func main() {
-	flag.Parse()
+	var options args.Args
 
-	if err := log.SetLogLevel(args.LogLevel); err != nil {
+	if err := options.ParseArgs(); err != nil {
 		fatal(err)
 	}
 
-	if genPwd != "" {
-		hashed, err := crypt.Crypt(genPwd)
+	if options.DemoMode {
+		model.Version = "X.Y.Z"
+	}
+	if err := log.SetLogLevel(options.LogLevel); err != nil {
+		fatal(err)
+	}
+
+	if options.PamSalt != "" {
+		hashed, err := crypt.Crypt(options.PamSalt)
 		if err != nil {
 			panic(err)
 		}
@@ -101,12 +64,12 @@ func main() {
 		return
 	}
 
-	if args.Version {
+	if options.Version {
 		fmt.Println(path.Base(os.Args[0]) + ": " + model.Version)
 		return
 	}
 
-	f, err := os.OpenFile(args.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	f, err := os.OpenFile(options.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		fatal(err)
 	}
@@ -128,25 +91,9 @@ func main() {
 	}
 
 	var md *model.SystemInstall
-	var url string
+	cf := options.ConfigFile
 
-	if url, err = utils.ReadKernelCmdline(); err != nil {
-		fatal(err)
-	}
-
-	if url != "" {
-		var ffile string
-
-		if ffile, err = conf.FetchRemoteConfigFile(url); err != nil {
-			fatal(err)
-		}
-
-		args.ConfigFile = ffile
-	}
-
-	cf := args.ConfigFile
-
-	if args.ConfigFile == "" {
+	if options.ConfigFile == "" {
 		if cf, err = conf.LookupDefaultConfig(); err != nil {
 			fatal(err)
 		}
@@ -167,7 +114,7 @@ func main() {
 
 	go func() {
 		for _, fe := range frontEndImpls {
-			if !fe.MustRun(&args) {
+			if !fe.MustRun(&options) {
 				continue
 			}
 
@@ -190,7 +137,7 @@ func main() {
 
 	<-done
 
-	if args.Reboot && installReboot {
+	if options.Reboot && installReboot {
 		if err := cmd.RunAndLog("reboot"); err != nil {
 			fatal(err)
 		}

@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/clearlinux/clr-installer/args"
 	"github.com/clearlinux/clr-installer/errors"
-	"github.com/clearlinux/clr-installer/frontend"
 	"github.com/clearlinux/clr-installer/log"
 	"github.com/clearlinux/clr-installer/model"
 
@@ -45,7 +45,7 @@ func New() *Tui {
 
 // MustRun is part of the Frontend interface implementation and tells the core that this
 // frontend wants/must run.
-func (mi *Tui) MustRun(args *frontend.Args) bool {
+func (mi *Tui) MustRun(args *args.Args) bool {
 	return true
 }
 

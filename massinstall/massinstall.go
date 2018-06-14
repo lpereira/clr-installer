@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/clearlinux/clr-installer/args"
 	"github.com/clearlinux/clr-installer/controller"
-	"github.com/clearlinux/clr-installer/frontend"
 	"github.com/clearlinux/clr-installer/log"
 	"github.com/clearlinux/clr-installer/model"
 	"github.com/clearlinux/clr-installer/progress"
@@ -69,7 +69,7 @@ func (mi *MassInstall) Done() {
 
 // MustRun is part of the Frontend implementation and tells the core implementation that this
 // frontend wants or should be executed
-func (mi *MassInstall) MustRun(args *frontend.Args) bool {
+func (mi *MassInstall) MustRun(args *args.Args) bool {
 	return args.ConfigFile != "" && !args.ForceTUI
 }
 
