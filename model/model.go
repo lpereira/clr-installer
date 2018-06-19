@@ -11,6 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/clearlinux/clr-installer/errors"
+	"github.com/clearlinux/clr-installer/kernel"
 	"github.com/clearlinux/clr-installer/keyboard"
 	"github.com/clearlinux/clr-installer/language"
 	"github.com/clearlinux/clr-installer/network"
@@ -39,6 +40,7 @@ type SystemInstall struct {
 	Timezone          *timezone.TimeZone     `yaml:"timezone,omitempty,flow"`
 	Users             []*user.User           `yaml:"users,omitempty,flow"`
 	KernelCMDLine     string                 `yaml:"kernel-cmdline,omitempty,flow"`
+	Kernel            *kernel.Kernel         `yaml:"kernel,omitempty,flow"`
 }
 
 // ContainsBundle returns true if the data model has a bundle and false otherwise

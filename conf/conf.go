@@ -26,6 +26,9 @@ const (
 	// DefaultConfigDir is the system wide default configuration directory
 	DefaultConfigDir = "/usr/share/defaults/clr-installer"
 
+	// KernelListFile is the file describing the available kernel bundles
+	KernelListFile = "kernels.json"
+
 	// SourcePath is the source path (within the .gopath)
 	SourcePath = "src/github.com/clearlinux/clr-installer"
 )
@@ -59,11 +62,19 @@ func lookupDefaultFile(file string) (string, error) {
 }
 
 // LookupBundleListFile looks up the bundle list definition
-// Guesses if we're running from source code our from system, if we're running from
-// source code directory then we loads the source default file, otherwise tried to load
+// Guesses if we're running from source code or from system, if we're running from
+// source code directory then we load the source default file, otherwise tried to load
 // the system installed file
 func LookupBundleListFile() (string, error) {
 	return lookupDefaultFile(BundleListFile)
+}
+
+// LookupKernelListFile looks up the kernel list definition
+// Guesses if we're running from source code or from system, if we're running from
+// source code directory then we load the source default file, otherwise load the system
+// installed file
+func LookupKernelListFile() (string, error) {
+	return lookupDefaultFile(KernelListFile)
 }
 
 // LookupDefaultConfig looks up the install descriptor
