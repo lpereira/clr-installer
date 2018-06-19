@@ -24,6 +24,7 @@ import (
 	"github.com/clearlinux/clr-installer/storage"
 	"github.com/clearlinux/clr-installer/swupd"
 	cuser "github.com/clearlinux/clr-installer/user"
+	"github.com/clearlinux/clr-installer/utils"
 )
 
 func sortMountPoint(bds []*storage.BlockDevice) []*storage.BlockDevice {
@@ -132,6 +133,20 @@ func Install(rootDir string, model *model.SystemInstall) error {
 
 	if model.Telemetry.Enabled {
 		model.AddBundle("telemetrics")
+	}
+
+	if model.KernelCMDLine != "" {
+		cmdlineDir := filepath.Join(rootDir, "etc", "kernel")
+		cmdlineFile := filepath.Join(cmdlineDir, "cmdline")
+		cmdline := model.KernelCMDLine
+
+		if err := utils.MkdirAll(cmdlineDir); err != nil {
+			return err
+		}
+
+		if err = ioutil.WriteFile(cmdlineFile, []byte(cmdline), 0644); err != nil {
+			return err
+		}
 	}
 
 	prg, err := contentInstall(rootDir, version, model.Bundles)

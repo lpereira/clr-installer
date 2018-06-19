@@ -38,6 +38,7 @@ type SystemInstall struct {
 	Telemetry         *telemetry.Telemetry   `yaml:"telemetry,omitempty,flow"`
 	Timezone          *timezone.TimeZone     `yaml:"timezone,omitempty,flow"`
 	Users             []*user.User           `yaml:"users,omitempty,flow"`
+	KernelCMDLine     string                 `yaml:"kernel-cmdline,omitempty,flow"`
 }
 
 // ContainsBundle returns true if the data model has a bundle and false otherwise
