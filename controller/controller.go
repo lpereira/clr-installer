@@ -181,10 +181,19 @@ func contentInstall(rootDir string, version string, bundles []string, kernel str
 
 	bundles = append(bundles, kernel)
 	for _, bundle := range bundles {
+		// swupd will fail (return exit code 18) if we try to "re-install" a bundle
+		// already installed - with that we need to prevent doing bundle-add for bundles
+		// previously installed by verify operation
+		if swupd.IsCoreBundle(bundle) {
+			log.Debug("Bundle %s was already installed with the core bundles, skipping")
+			continue
+		}
+
 		prg = progress.NewLoop("Installing bundle: %s", bundle)
 		if err := sw.BundleAdd(bundle); err != nil {
 			return prg, err
 		}
+
 		prg.Done()
 	}
 

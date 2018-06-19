@@ -15,6 +15,14 @@ import (
 	"github.com/clearlinux/clr-installer/errors"
 )
 
+var (
+	// CoreBundles represents the core bundles installed in the Verify() operation
+	CoreBundles = []string{
+		"os-core",
+		"os-core-update",
+	}
+)
+
 // SoftwareUpdater abstracts the swupd executable, environment and operations
 type SoftwareUpdater struct {
 	rootDir  string
@@ -25,6 +33,16 @@ type SoftwareUpdater struct {
 type Bundle struct {
 	Name string // Name the bundle name or id
 	Desc string // Desc is the bundle long description
+}
+
+// IsCoreBundle checks if bundle is in the list of core bundles
+func IsCoreBundle(bundle string) bool {
+	for _, curr := range CoreBundles {
+		if curr == bundle {
+			return true
+		}
+	}
+	return false
 }
 
 // New creates a new instance of SoftwareUpdater with the rootDir properly adjusted
