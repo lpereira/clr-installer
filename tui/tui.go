@@ -125,6 +125,7 @@ func (mi *Tui) Run(md *model.SystemInstall, rootDir string) (bool, error) {
 		{"bundle selection", newBundlePage},
 		{"add user", newUseraddPage},
 		{"telemetry enabling", newTelemetryPage},
+		{"kernel cmdline", newKernelCMDLine},
 		{"install", newInstallPage},
 	}
 
