@@ -134,6 +134,9 @@ const (
 	// TuiPageKernelCMDLine is the id for the kernel command line page
 	TuiPageKernelCMDLine
 
+	// TuiPageKernel is the id for the kernel selection page
+	TuiPageKernel
+
 	// ConfigDefinedByUser is used to determine a configuration was interactively
 	// defined by the user
 	ConfigDefinedByUser = iota
