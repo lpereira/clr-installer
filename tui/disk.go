@@ -45,7 +45,12 @@ func (page *DiskMenuPage) GetConfigDefinition() int {
 // The disk page gives the user the option so select how to set the storage device,
 // if to manually configure it or a guided standard partition schema
 func newDiskPage(mi *Tui) (Page, error) {
-	page := &DiskMenuPage{}
+	page := &DiskMenuPage{
+		BasePage: BasePage{
+			// Tag this Page as required to be complete for the Install to proceed
+			required: true,
+		},
+	}
 	page.setupMenu(mi, TuiPageDiskMenu, "Partition disks", BackButton)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Partition Disks", clui.Fixed)

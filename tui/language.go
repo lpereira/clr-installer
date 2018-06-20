@@ -62,6 +62,10 @@ func newLanguagePage(mi *Tui) (Page, error) {
 
 	page := &LanguagePage{
 		avLanguages: avLanguages,
+		BasePage: BasePage{
+			// Tag this Page as required to be complete for the Install to proceed
+			required: true,
+		},
 	}
 
 	page.setupMenu(mi, TuiPageLanguage, "Choose language", DoneButton|CancelButton)

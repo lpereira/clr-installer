@@ -6,6 +6,9 @@ package tui
 
 import (
 	"fmt"
+	//	"strings"
+
+	"github.com/clearlinux/clr-installer/log"
 
 	"github.com/VladimirMarkelov/clui"
 )
@@ -31,7 +34,9 @@ func (page *MenuPage) addMenuItem(item Page) bool {
 
 	page.btns = append(page.btns, btn)
 
-	return buttonPrefix == MenuButtonPrefixUncompleted
+	log.Debug("buttonPrefix: %q", buttonPrefix)
+	//return strings.Compare(buttonPrefix, MenuButtonPrefixUncompleted) == 0
+	return buttonPrefix != MenuButtonPrefixUncompleted
 }
 
 // Activate is called when the page is "shown" and it repaints the main menu based on the
@@ -45,7 +50,8 @@ func (page *MenuPage) Activate() {
 	previous := false
 	activeSet := false
 	for _, curr := range page.mi.pages {
-		if curr.GetMenuTitle() == "" {
+		// Skip Menu Pages that are not required
+		if !curr.IsRequired() {
 			continue
 		}
 
@@ -56,6 +62,7 @@ func (page *MenuPage) Activate() {
 
 		// Does the menu item added have the data set completed?
 		completed := page.addMenuItem(curr)
+		log.Debug("Completed = %s", completed)
 
 		// If we haven't found the first active choice, set it
 		if !activeSet && !completed {
@@ -75,6 +82,7 @@ func (page *MenuPage) Activate() {
 
 	if page.getModel() != nil && page.getModel().Validate() == nil {
 		page.installBtn.SetEnabled(true)
+		page.activated = page.installBtn
 	}
 }
 

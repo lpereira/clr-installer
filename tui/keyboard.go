@@ -67,6 +67,10 @@ func newKeyboardPage(mi *Tui) (Page, error) {
 
 	page := &KeyboardPage{
 		avKeymaps: kmaps,
+		BasePage: BasePage{
+			// Tag this Page as required to be complete for the Install to proceed
+			required: true,
+		},
 	}
 
 	page.setupMenu(mi, TuiPageKeyboard, "Configure the keyboard", DoneButton|CancelButton)

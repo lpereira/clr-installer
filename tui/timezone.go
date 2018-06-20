@@ -62,6 +62,10 @@ func newTimezonePage(mi *Tui) (Page, error) {
 
 	page := &TimezonePage{
 		avTimezones: avTimezones,
+		BasePage: BasePage{
+			// Tag this Page as required to be complete for the Install to proceed
+			required: true,
+		},
 	}
 
 	page.setupMenu(mi, TuiPageTimezone, "Choose Timezone", DoneButton|CancelButton)

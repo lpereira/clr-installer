@@ -33,11 +33,13 @@ type BasePage struct {
 	id        int           // the page id
 	data      interface{}   // arbitrary page context data
 	action    int           // indicates if the user has performed a navigation action
+	required  bool          // marks if an item is required for the install
 }
 
 // Page defines the methods a Page must implement
 type Page interface {
 	GetID() int
+	IsRequired() bool
 	GetWindow() *clui.Window
 	GetActivated() clui.Control
 	GetMenuTitle() string
@@ -236,6 +238,11 @@ func (page *BasePage) GetWindow() *clui.Window {
 // GetID returns the current page's identifier
 func (page *BasePage) GetID() int {
 	return page.id
+}
+
+// IsRequired returns if this Page is required to be completed for the Install
+func (page *BasePage) IsRequired() bool {
+	return page.required
 }
 
 // GetButtonPrefix returns string for prefixing a menu button
