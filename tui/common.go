@@ -7,6 +7,8 @@ package tui
 import (
 	"os/user"
 	"path/filepath"
+	"reflect"
+	"strings"
 
 	"github.com/clearlinux/clr-installer/model"
 
@@ -46,6 +48,7 @@ type Page interface {
 	Activate()
 	DeActivate()
 	GetConfigDefinition() int
+	GetButtonPrefix(item Page) string
 }
 
 var (
@@ -53,6 +56,15 @@ var (
 )
 
 const (
+	// MenuButtonPrefixUncompleted is the standard, uncompleted prefix for a menu button
+	MenuButtonPrefixUncompleted = "[ ]"
+	// MenuButtonPrefixCompletedByConfig is the completed by config prefix for a menu button
+	MenuButtonPrefixCompletedByConfig = "[*]"
+	// MenuButtonPrefixCompletedByUser is the completed by user prefix for a menu button
+	MenuButtonPrefixCompletedByUser = "[+]"
+	// MenuButtonPrefixSubMenu is the prefix for a sub-menu button
+	MenuButtonPrefixSubMenu = "-->"
+
 	// AutoSize is shortcut for clui.AutoSize flag
 	AutoSize = clui.AutoSize
 
@@ -136,6 +148,9 @@ const (
 
 	// TuiPageKernel is the id for the kernel selection page
 	TuiPageKernel
+
+	// TuiPageAdvancedMenu is the id for Advanced/Optional configuration menu
+	TuiPageAdvancedMenu
 
 	// ConfigDefinedByUser is used to determine a configuration was interactively
 	// defined by the user
@@ -221,6 +236,25 @@ func (page *BasePage) GetWindow() *clui.Window {
 // GetID returns the current page's identifier
 func (page *BasePage) GetID() int {
 	return page.id
+}
+
+// GetButtonPrefix returns string for prefixing a menu button
+func (page *BasePage) GetButtonPrefix(item Page) string {
+	prefix := MenuButtonPrefixUncompleted
+
+	if item.GetDone() {
+		prefix = MenuButtonPrefixCompletedByUser
+	} else if item.GetConfigDefinition() == ConfigDefinedByConfig {
+		prefix = MenuButtonPrefixCompletedByConfig
+	}
+
+	itemType := reflect.TypeOf(item).Elem().Name()
+
+	if strings.Contains(itemType, "SubMenu") {
+		prefix = MenuButtonPrefixSubMenu
+	}
+
+	return prefix
 }
 
 func (page *BasePage) setupMenu(mi *Tui, id int, menuTitle string, btns int) {

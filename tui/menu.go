@@ -18,18 +18,9 @@ type MenuPage struct {
 }
 
 func (page *MenuPage) addMenuItem(item Page) bool {
-	done := "[ ]"
-	completed := false
 
-	if item.GetDone() {
-		done = "[+]"
-		completed = true
-	} else if item.GetConfigDefinition() == ConfigDefinedByConfig {
-		done = "[*]"
-		completed = true
-	}
-
-	title := fmt.Sprintf(" %s %s", done, item.GetMenuTitle())
+	buttonPrefix := page.GetButtonPrefix(item)
+	title := fmt.Sprintf(" %s %s", buttonPrefix, item.GetMenuTitle())
 	btn := CreateSimpleButton(page.content, AutoSize, AutoSize, title, Fixed)
 	btn.SetStyle("Menu")
 	btn.SetAlign(AlignLeft)
@@ -40,7 +31,7 @@ func (page *MenuPage) addMenuItem(item Page) bool {
 
 	page.btns = append(page.btns, btn)
 
-	return completed
+	return buttonPrefix == MenuButtonPrefixUncompleted
 }
 
 // Activate is called when the page is "shown" and it repaints the main menu based on the
