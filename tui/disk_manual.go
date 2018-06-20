@@ -109,7 +109,7 @@ func (page *ManualPartPage) newPartBtn(frame *clui.Frame, label string) *SimpleB
 
 func (page *ManualPartPage) showManualStorageList() error {
 	for _, bd := range page.bds {
-		if err := page.showManualDisk(bd, page.content); err != nil {
+		if err := page.showManualDisk(bd.Clone(), page.content); err != nil {
 			return err
 		}
 	}
@@ -120,21 +120,40 @@ func (page *ManualPartPage) showManualStorageList() error {
 // Activate is called when the manual disk partitioning page is activated and resets the
 // page's displayed data
 func (page *ManualPartPage) Activate() {
-	if page.data == nil {
-		return
+	var err error
+	var selected *storage.BlockDevice
+
+	if sel, ok := page.data.(*SelectedBlockDevice); ok {
+		selected = sel.bd
 	}
+
+	bds, err := storage.ListAvailableBlockDevices(page.getModel().TargetMedias)
+	if err != nil {
+		page.Panic(err)
+	}
+
+	nList := []*storage.BlockDevice{}
+
+	for _, curr := range bds {
+		if curr.Equals(selected) {
+			nList = append(nList, selected)
+		} else {
+			nList = append(nList, curr)
+		}
+	}
+
+	page.bds = nList
 
 	for _, curr := range page.btns {
 		curr.Destroy()
 	}
 
-	if err := page.showManualStorageList(); err != nil {
+	if err = page.showManualStorageList(); err != nil {
 		page.Panic(err)
 	}
-	page.data = nil
 
 	for _, bd := range page.bds {
-		if err := bd.Validate(); err == nil {
+		if err = bd.Validate(); err == nil {
 			page.doneBtn.SetEnabled(true)
 		}
 	}
@@ -144,7 +163,25 @@ func (page *ManualPartPage) Activate() {
 // as done
 func (page *ManualPartPage) SetDone(done bool) bool {
 	if sel, ok := page.data.(*SelectedBlockDevice); ok {
-		page.getModel().AddTargetMedia(sel.bd)
+		var selected *storage.BlockDevice
+
+		bds, err := storage.ListAvailableBlockDevices(page.getModel().TargetMedias)
+		if err != nil {
+			page.Panic(err)
+		}
+
+		for _, curr := range bds {
+			if !curr.Equals(sel.bd) {
+				continue
+			}
+
+			selected = curr
+			break
+		}
+
+		selected.Children = sel.bd.Children
+		page.getModel().AddTargetMedia(selected)
+		page.data = nil
 	}
 
 	diskPage := page.mi.getPage(TuiPageDiskMenu)
@@ -154,8 +191,6 @@ func (page *ManualPartPage) SetDone(done bool) bool {
 }
 
 func newManualPartitionPage(mi *Tui) (Page, error) {
-	var err error
-
 	partBtnBg = clui.RealColor(clui.ColorDefault, "ManualPartitionBack")
 
 	page := &ManualPartPage{}
@@ -166,15 +201,6 @@ func newManualPartitionPage(mi *Tui) (Page, error) {
 
 	lbl = clui.CreateLabel(page.content, 70, 3, manualDesc, Fixed)
 	lbl.SetMultiline(true)
-
-	page.bds, err = storage.ListAvailableBlockDevices(page.getModel().TargetMedias)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = page.showManualStorageList(); err != nil {
-		return nil, err
-	}
 
 	page.doneBtn.SetEnabled(false)
 	return page, nil

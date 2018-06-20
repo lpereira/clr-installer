@@ -92,6 +92,7 @@ const (
 )
 
 var (
+	avBlockDevices      []*BlockDevice
 	lsblkBinary         = "lsblk"
 	storageExp          = regexp.MustCompile(`^([0-9]*(\.)?[0-9]*)([bkmgtp]{1}){0,1}$`)
 	mountExp            = regexp.MustCompile(`^(/|(/[[:word:]-+_]+)+)$`)
@@ -136,6 +137,37 @@ func parseBlockDeviceState(bds string) (BlockDeviceState, error) {
 	}
 
 	return BlockDeviceStateUnknown, errors.Errorf("Unrecognized block device state: %s", bds)
+}
+
+// Clone creates a copies a BlockDevice and its children
+func (bd *BlockDevice) Clone() *BlockDevice {
+	clone := &BlockDevice{
+		Name:            bd.Name,
+		Model:           bd.Model,
+		MajorMinor:      bd.MajorMinor,
+		FsType:          bd.FsType,
+		UUID:            bd.UUID,
+		MountPoint:      bd.MountPoint,
+		Size:            bd.Size,
+		Type:            bd.Type,
+		State:           bd.State,
+		ReadOnly:        bd.ReadOnly,
+		RemovableDevice: bd.RemovableDevice,
+		Parent:          bd.Parent,
+		userDefined:     bd.userDefined,
+		available:       bd.available,
+	}
+
+	clone.Children = []*BlockDevice{}
+
+	for _, curr := range bd.Children {
+		cc := curr.Clone()
+		cc.Parent = clone
+
+		clone.Children = append(clone.Children, cc)
+	}
+
+	return clone
 }
 
 // IsUserDefined returns true if the configuration was interactively
@@ -360,6 +392,10 @@ func listBlockDevices(userDefined []*BlockDevice) ([]*BlockDevice, error) {
 // where available means block devices not mounted or not in use by the host system
 // userDefined will be inserted in the resulting list reather the loaded ones
 func ListAvailableBlockDevices(userDefined []*BlockDevice) ([]*BlockDevice, error) {
+	if avBlockDevices != nil {
+		return avBlockDevices, nil
+	}
+
 	bds, err := listBlockDevices(userDefined)
 	if err != nil {
 		return nil, err
@@ -374,6 +410,7 @@ func ListAvailableBlockDevices(userDefined []*BlockDevice) ([]*BlockDevice, erro
 		result = append(result, curr)
 	}
 
+	avBlockDevices = result
 	return result, nil
 }
 

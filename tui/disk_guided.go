@@ -15,7 +15,8 @@ import (
 // GuidedPartPage is the Page implementation for guided partitioning page
 type GuidedPartPage struct {
 	BasePage
-	bd *storage.BlockDevice
+	bd       *storage.BlockDevice
+	bdFrames []*clui.Frame
 }
 
 const (
@@ -25,7 +26,26 @@ target instalattion disk.`
 
 // SetDone adds a new target media to installation model and sets the previous' page done flag
 func (page *GuidedPartPage) SetDone(done bool) bool {
-	page.getModel().AddTargetMedia(page.bd)
+	var selected *storage.BlockDevice
+
+	bds, err := storage.ListAvailableBlockDevices(page.getModel().TargetMedias)
+	if err != nil {
+		page.Panic(err)
+	}
+
+	for _, curr := range bds {
+		if !curr.Equals(page.bd) {
+			continue
+		}
+
+		selected = curr
+		break
+	}
+
+	selected.Children = page.bd.Children
+	page.getModel().AddTargetMedia(selected)
+	page.bd = nil
+
 	diskPage := page.mi.getPage(TuiPageDiskMenu)
 	diskPage.SetDone(done)
 	page.mi.gotoPage(TuiPageMenu, diskPage)
@@ -40,6 +60,7 @@ func (page *GuidedPartPage) showGuidedDisk(bd *storage.BlockDevice) error {
 
 	frame := clui.CreateFrame(page.content, AutoSize, AutoSize, BorderNone, clui.Fixed)
 	frame.SetPack(clui.Vertical)
+	page.bdFrames = append(page.bdFrames, frame)
 
 	mm := fmt.Sprintf("(%s)", bd.MajorMinor)
 	lbl := fmt.Sprintf("%s %s %s %s", bd.Model, bd.Name, mm, size)
@@ -92,6 +113,25 @@ func showGuidedPartition(frame *clui.Frame, part *storage.BlockDevice) (*clui.La
 	return clui.CreateLabel(frame, AutoSize, 1, txt, Fixed), nil
 }
 
+// Activate updates the UI elements with the most current list of block devices
+func (page *GuidedPartPage) Activate() {
+	for _, curr := range page.bdFrames {
+		curr.Destroy()
+	}
+	page.bdFrames = []*clui.Frame{}
+
+	bds, err := storage.ListAvailableBlockDevices(page.getModel().TargetMedias)
+	if err != nil {
+		page.Panic(err)
+	}
+
+	for _, bd := range bds {
+		if err = page.showGuidedDisk(bd.Clone()); err != nil {
+			page.Panic(err)
+		}
+	}
+}
+
 func newGuidedPartitionPage(mi *Tui) (Page, error) {
 	page := &GuidedPartPage{}
 	page.setup(mi, TuiPageGuidedPart, AllButtons)
@@ -101,17 +141,6 @@ func newGuidedPartitionPage(mi *Tui) (Page, error) {
 
 	lbl = clui.CreateLabel(page.content, 70, 3, guidedDesc, Fixed)
 	lbl.SetMultiline(true)
-
-	bds, err := storage.ListAvailableBlockDevices(page.getModel().TargetMedias)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, bd := range bds {
-		if err = page.showGuidedDisk(bd); err != nil {
-			page.Panic(err)
-		}
-	}
 
 	page.doneBtn.SetEnabled(false)
 	return page, nil

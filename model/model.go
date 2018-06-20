@@ -128,12 +128,21 @@ func (si *SystemInstall) Validate() error {
 }
 
 // AddTargetMedia adds a BlockDevice instance to the list of TargetMedias
+// if bd was previously added to as a target media its pointer is updated
 func (si *SystemInstall) AddTargetMedia(bd *storage.BlockDevice) {
 	if si.TargetMedias == nil {
 		si.TargetMedias = []*storage.BlockDevice{}
 	}
 
-	si.TargetMedias = append(si.TargetMedias, bd)
+	nList := []*storage.BlockDevice{bd}
+
+	for _, curr := range si.TargetMedias {
+		if !bd.Equals(curr) {
+			nList = append(nList, curr)
+		}
+	}
+
+	si.TargetMedias = nList
 }
 
 // AddNetworkInterface adds an Interface instance to the list of NetworkInterfaces
