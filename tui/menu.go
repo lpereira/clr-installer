@@ -6,9 +6,6 @@ package tui
 
 import (
 	"fmt"
-	//	"strings"
-
-	"github.com/clearlinux/clr-installer/log"
 
 	"github.com/VladimirMarkelov/clui"
 )
@@ -34,8 +31,6 @@ func (page *MenuPage) addMenuItem(item Page) bool {
 
 	page.btns = append(page.btns, btn)
 
-	log.Debug("buttonPrefix: %q", buttonPrefix)
-	//return strings.Compare(buttonPrefix, MenuButtonPrefixUncompleted) == 0
 	return buttonPrefix != MenuButtonPrefixUncompleted
 }
 
@@ -62,7 +57,6 @@ func (page *MenuPage) Activate() {
 
 		// Does the menu item added have the data set completed?
 		completed := page.addMenuItem(curr)
-		log.Debug("Completed = %s", completed)
 
 		// If we haven't found the first active choice, set it
 		if !activeSet && !completed {

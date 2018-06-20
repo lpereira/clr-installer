@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/clearlinux/clr-installer/args"
 	"github.com/clearlinux/clr-installer/errors"
@@ -150,6 +151,14 @@ func (mi *Tui) Run(md *model.SystemInstall, rootDir string) (bool, error) {
 			clui.Stop()
 			log.ErrorError(paniced)
 		}
+	}()
+
+	go func() {
+		time.Sleep(20 * time.Millisecond)
+		log.Debug("Finished sleeping, now properly set the active item")
+
+		clui.ActivateControl(mi.currPage.GetWindow(), mi.currPage.GetActivated())
+		clui.RefreshScreen()
 	}()
 
 	clui.MainLoop()
