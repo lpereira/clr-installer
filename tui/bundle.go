@@ -79,15 +79,17 @@ func newBundlePage(mi *Tui) (Page, error) {
 
 	confirmBtn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Confirm", Fixed)
 	confirmBtn.OnClick(func(ev clui.Event) {
+		anySelected := false
 		for _, curr := range bundles {
 			if curr.check.State() == 1 {
 				page.getModel().AddBundle(curr.bundle.Name)
+				anySelected = true
 			} else {
 				page.getModel().RemoveBundle(curr.bundle.Name)
 			}
 		}
 
-		page.SetDone(true)
+		page.SetDone(anySelected)
 		mi.gotoPage(TuiPageMenu, mi.currPage)
 	})
 
