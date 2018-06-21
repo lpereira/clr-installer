@@ -264,8 +264,8 @@ func (page *BasePage) GetButtonPrefix(item Page) string {
 	return prefix
 }
 
-func (page *BasePage) setupMenu(mi *Tui, id int, menuTitle string, btns int, returnId int) {
-	page.setup(mi, id, btns, returnId)
+func (page *BasePage) setupMenu(mi *Tui, id int, menuTitle string, btns int, returnID int) {
+	page.setup(mi, id, btns, returnID)
 	page.menuTitle = menuTitle
 }
 
@@ -278,7 +278,7 @@ func init() {
 	descFile = filepath.Join(usr.HomeDir, "clr-installer.yaml")
 }
 
-func (page *BasePage) setup(mi *Tui, id int, btns int, returnId int) {
+func (page *BasePage) setup(mi *Tui, id int, btns int, returnID int) {
 	page.action = ActionNone
 	page.id = id
 	page.mi = mi
@@ -297,15 +297,15 @@ func (page *BasePage) setup(mi *Tui, id int, btns int, returnId int) {
 	page.cFrame.SetPaddings(2, 0)
 
 	if btns&CancelButton == CancelButton {
-		page.newCancelButton(returnId)
+		page.newCancelButton(returnID)
 	}
 
 	if btns&BackButton == BackButton {
-		page.newBackButton(returnId)
+		page.newBackButton(returnID)
 	}
 
 	if btns&DoneButton == DoneButton {
-		page.newDoneButton(mi, returnId)
+		page.newDoneButton(mi, returnID)
 	}
 
 	page.window.SetVisible(false)
@@ -333,37 +333,37 @@ func (page *BasePage) newWindow() {
 	})
 }
 
-func (page *BasePage) newBackButton(pageId int) {
+func (page *BasePage) newBackButton(pageID int) {
 	btn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "< Main Menu", Fixed)
 
 	btn.OnClick(func(ev clui.Event) {
 		page.action = ActionBackButton
-		page.mi.gotoPage(pageId, page.mi.currPage)
+		page.mi.gotoPage(pageID, page.mi.currPage)
 		page.action = ActionNone
 	})
 
 	page.backBtn = btn
 }
 
-func (page *BasePage) newCancelButton(pageId int) {
+func (page *BasePage) newCancelButton(pageID int) {
 	btn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Cancel", Fixed)
 
 	btn.OnClick(func(ev clui.Event) {
 		page.action = ActionCancelButton
-		page.mi.gotoPage(pageId, page.mi.currPage)
+		page.mi.gotoPage(pageID, page.mi.currPage)
 		page.action = ActionNone
 	})
 
 	page.cancelBtn = btn
 }
 
-func (page *BasePage) newDoneButton(mi *Tui, pageId int) {
+func (page *BasePage) newDoneButton(mi *Tui, pageID int) {
 	btn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Done", Fixed)
 
 	btn.OnClick(func(ev clui.Event) {
 		if mi.currPage.SetDone(true) {
 			page.action = ActionDoneButton
-			mi.gotoPage(pageId, page.mi.currPage)
+			mi.gotoPage(pageID, page.mi.currPage)
 			page.action = ActionNone
 		}
 	})

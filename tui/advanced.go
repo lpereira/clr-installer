@@ -75,7 +75,7 @@ func (page *AdvancedSubMenuPage) Activate() {
 }
 
 const (
-	AdvancedDesc = `Advanced/Optional configuration items which influence the Installer.`
+	advancedDesc = `Advanced/Optional configuration items which influence the Installer.`
 )
 
 // The Advanced page gives the user the option so select how to set the storage device,
@@ -93,7 +93,7 @@ func newAdvancedPage(mi *Tui) (Page, error) {
 	lbl := clui.CreateLabel(page.content, 2, 2, "Advanced/Optional Menu", clui.Fixed)
 	lbl.SetPaddings(0, 2)
 
-	lbl = clui.CreateLabel(page.content, 70, 3, AdvancedDesc, Fixed)
+	lbl = clui.CreateLabel(page.content, 70, 3, advancedDesc, Fixed)
 	lbl.SetMultiline(true)
 	lbl.SetPaddings(0, 2)
 
