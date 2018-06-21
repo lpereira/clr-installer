@@ -21,7 +21,7 @@ func (pp *ProxyPage) Activate() {
 
 func newProxyPage(mi *Tui) (Page, error) {
 	page := &ProxyPage{}
-	page.setupMenu(mi, TuiPageProxy, "Proxy", NoButtons)
+	page.setupMenu(mi, TuiPageProxy, "Proxy", NoButtons, TuiPageAdvancedMenu)
 
 	clui.CreateLabel(page.content, 2, 2, "Configure the network proxy", Fixed)
 
@@ -49,7 +49,7 @@ func newProxyPage(mi *Tui) (Page, error) {
 
 	cancelBtn := CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Cancel", Fixed)
 	cancelBtn.OnClick(func(ev clui.Event) {
-		mi.gotoPage(TuiPageMenu, mi.currPage)
+		mi.gotoPage(TuiPageAdvancedMenu, mi.currPage)
 	})
 
 	confirmBtn := CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Confirm", Fixed)
@@ -57,7 +57,7 @@ func newProxyPage(mi *Tui) (Page, error) {
 		proxy := page.httpsProxyEdit.Title()
 		page.getModel().HTTPSProxy = proxy
 		page.SetDone(proxy != "")
-		mi.gotoPage(TuiPageMenu, mi.currPage)
+		mi.gotoPage(TuiPageAdvancedMenu, mi.currPage)
 	})
 
 	page.activated = page.httpsProxyEdit

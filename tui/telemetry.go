@@ -33,7 +33,7 @@ func newTelemetryPage(mi *Tui) (Page, error) {
 			required: true,
 		},
 	}
-	page.setupMenu(mi, TuiPageTelemetry, "Telemetry", BackButton|DoneButton)
+	page.setupMenu(mi, TuiPageTelemetry, "Telemetry", BackButton|DoneButton, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 11, telemetryHelp, Fixed)
 	lbl.SetMultiline(true)

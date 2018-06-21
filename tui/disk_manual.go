@@ -186,7 +186,7 @@ func (page *ManualPartPage) SetDone(done bool) bool {
 
 	diskPage := page.mi.getPage(TuiPageDiskMenu)
 	diskPage.SetDone(done)
-	page.mi.gotoPage(TuiPageMenu, diskPage)
+	page.mi.gotoPage(TuiPageAdvancedMenu, diskPage)
 	return false
 }
 
@@ -194,7 +194,7 @@ func newManualPartitionPage(mi *Tui) (Page, error) {
 	partBtnBg = clui.RealColor(clui.ColorDefault, "ManualPartitionBack")
 
 	page := &ManualPartPage{}
-	page.setup(mi, TuiPageManualPart, AllButtons)
+	page.setup(mi, TuiPageManualPart, AllButtons, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Manual Partition", Fixed)
 	lbl.SetPaddings(0, 2)

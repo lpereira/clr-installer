@@ -48,7 +48,7 @@ func (page *GuidedPartPage) SetDone(done bool) bool {
 
 	diskPage := page.mi.getPage(TuiPageDiskMenu)
 	diskPage.SetDone(done)
-	page.mi.gotoPage(TuiPageMenu, diskPage)
+	page.mi.gotoPage(TuiPageAdvancedMenu, diskPage)
 	return false
 }
 
@@ -134,7 +134,7 @@ func (page *GuidedPartPage) Activate() {
 
 func newGuidedPartitionPage(mi *Tui) (Page, error) {
 	page := &GuidedPartPage{}
-	page.setup(mi, TuiPageGuidedPart, AllButtons)
+	page.setup(mi, TuiPageGuidedPart, AllButtons, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Guided Partition", Fixed)
 	lbl.SetPaddings(0, 2)

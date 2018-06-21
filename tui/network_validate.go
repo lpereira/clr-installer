@@ -71,7 +71,7 @@ func (page *NetworkValidatePage) Activate() {
 
 func newNetworkValidatePage(mi *Tui) (Page, error) {
 	page := &NetworkValidatePage{}
-	page.setupMenu(mi, TuiPageNetworkValidate, "Test Network Settings", NoButtons)
+	page.setupMenu(mi, TuiPageNetworkValidate, "Test Network Settings", NoButtons, TuiPageAdvancedMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Test Network Settings", clui.Fixed)
 	lbl.SetPaddings(0, 2)
@@ -92,7 +92,7 @@ func newNetworkValidatePage(mi *Tui) (Page, error) {
 
 	cancelBtn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Cancel", Fixed)
 	cancelBtn.OnClick(func(ev clui.Event) {
-		page.mi.gotoPage(TuiPageMenu, page.mi.currPage)
+		page.mi.gotoPage(TuiPageAdvancedMenu, page.mi.currPage)
 	})
 
 	btn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Test", Fixed)
@@ -117,7 +117,7 @@ func newNetworkValidatePage(mi *Tui) (Page, error) {
 
 	page.doneBtn.OnClick(func(ev clui.Event) {
 		page.SetDone(true)
-		page.mi.gotoPage(TuiPageMenu, page.mi.currPage)
+		page.mi.gotoPage(TuiPageAdvancedMenu, page.mi.currPage)
 	})
 
 	page.activated = btn

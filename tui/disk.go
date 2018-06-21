@@ -51,7 +51,7 @@ func newDiskPage(mi *Tui) (Page, error) {
 			required: true,
 		},
 	}
-	page.setupMenu(mi, TuiPageDiskMenu, "Partition disks", BackButton)
+	page.setupMenu(mi, TuiPageDiskMenu, "Partition disks", BackButton, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Partition Disks", clui.Fixed)
 	lbl.SetPaddings(0, 2)

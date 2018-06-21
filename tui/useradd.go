@@ -98,7 +98,7 @@ func (page *UseraddPage) validatePassword() {
 
 func newUseraddPage(mi *Tui) (Page, error) {
 	page := &UseraddPage{users: []*UserBtn{}}
-	page.setupMenu(mi, TuiPageUseradd, "Add Users", BackButton)
+	page.setupMenu(mi, TuiPageUseradd, "Add Users", BackButton, TuiPageAdvancedMenu)
 
 	clui.CreateLabel(page.content, 2, 2, "Add new users", Fixed)
 

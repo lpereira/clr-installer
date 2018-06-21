@@ -88,7 +88,7 @@ between the elements.
 
 func newMenuPage(mi *Tui) (Page, error) {
 	page := &MenuPage{}
-	page.setup(mi, TuiPageMenu, NoButtons)
+	page.setup(mi, TuiPageMenu, NoButtons, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 3, menuHelp, Fixed)
 	lbl.SetMultiline(true)

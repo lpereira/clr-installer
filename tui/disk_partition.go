@@ -142,7 +142,7 @@ func (page *DiskPartitionPage) validateMountPoint() {
 func newDiskPartitionPage(mi *Tui) (Page, error) {
 	page := &DiskPartitionPage{}
 
-	page.setup(mi, TuiPageDiskPart, NoButtons)
+	page.setup(mi, TuiPageDiskPart, NoButtons, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Partition Setup", Fixed)
 	lbl.SetPaddings(0, 2)

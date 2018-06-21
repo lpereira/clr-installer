@@ -68,7 +68,7 @@ func newTimezonePage(mi *Tui) (Page, error) {
 		},
 	}
 
-	page.setupMenu(mi, TuiPageTimezone, "Choose Timezone", DoneButton|CancelButton)
+	page.setupMenu(mi, TuiPageTimezone, "Choose Timezone", DoneButton|CancelButton, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Select System Timezone", Fixed)
 	lbl.SetPaddings(0, 2)
