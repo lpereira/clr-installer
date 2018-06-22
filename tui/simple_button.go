@@ -21,7 +21,6 @@ type SimpleButton struct {
 	style   string
 	pressed int32
 	onClick func(clui.Event)
-	visible bool
 }
 
 // CreateSimpleButton returns an instance of SimpleButton
@@ -34,7 +33,6 @@ func CreateSimpleButton(parent clui.Control, width, height int, title string, sc
 	b := new(SimpleButton)
 	b.BaseControl = clui.NewBaseControl()
 
-	b.visible = true
 	b.SetParent(parent)
 	b.SetAlign(clui.AlignCenter)
 
@@ -71,7 +69,7 @@ func (b *SimpleButton) SetStyle(style string) {
 
 // Draw paints the button in the screen and adjust colors depending on the button state
 func (b *SimpleButton) Draw() {
-	if !b.visible {
+	if !b.Visible() {
 		return
 	}
 
@@ -185,23 +183,4 @@ func (b *SimpleButton) ProcessEvent(event clui.Event) bool {
 // OnClick sets the button's onClick callback
 func (b *SimpleButton) OnClick(fn func(clui.Event)) {
 	b.onClick = fn
-}
-
-// Visible returns the current button's visibility flag
-func (b *SimpleButton) Visible() bool {
-	return b.visible
-}
-
-// SetVisible changes the button's visibility
-func (b *SimpleButton) SetVisible(visible bool) {
-	parent := b.Parent()
-
-	if !visible {
-		b.Destroy()
-	} else {
-		b.visible = visible
-		if !parent.ChildExists(b) {
-			parent.AddChild(b)
-		}
-	}
 }
