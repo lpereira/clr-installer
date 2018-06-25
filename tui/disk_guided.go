@@ -48,7 +48,7 @@ func (page *GuidedPartPage) SetDone(done bool) bool {
 
 	diskPage := page.mi.getPage(TuiPageDiskMenu)
 	diskPage.SetDone(done)
-	page.mi.gotoPage(TuiPageAdvancedMenu, diskPage)
+	page.mi.gotoPage(TuiPageMenu, diskPage)
 	return false
 }
 
