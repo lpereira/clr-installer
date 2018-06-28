@@ -7,6 +7,8 @@ package utils
 import (
 	"io/ioutil"
 	"os"
+	"os/user"
+	"path"
 	"path/filepath"
 
 	"github.com/clearlinux/clr-installer/errors"
@@ -53,6 +55,25 @@ func CopyFile(src string, dest string) error {
 
 	if err = ioutil.WriteFile(dest, data, 0644); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// VerifyRootUser returns an error if we're not running as root
+func VerifyRootUser() error {
+	// ProgName is the short name of this executable
+	progName := path.Base(os.Args[0])
+
+	user, err := user.Current()
+	if err != nil {
+		return errors.Errorf("%s MUST run as 'root' user to install! (user=%s)",
+			progName, "UNKNOWN")
+	}
+
+	if user.Uid != "0" {
+		return errors.Errorf("%s MUST run as 'root' user to install! (user=%s)",
+			progName, user.Uid)
 	}
 
 	return nil

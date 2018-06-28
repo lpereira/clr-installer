@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/clearlinux/clr-installer/cmd"
 	"github.com/clearlinux/clr-installer/errors"
@@ -82,9 +83,8 @@ func (bd *BlockDevice) Mount(root string) error {
 	}
 
 	targetPath := filepath.Join(root, bd.MountPoint)
-	devName := fmt.Sprintf("/dev/%s", bd.Name)
 
-	return mountFs(devName, targetPath, bd.FsType, syscall.MS_RELATIME)
+	return mountFs(bd.GetDeviceFile(), targetPath, bd.FsType, syscall.MS_RELATIME)
 }
 
 // UmountAll unmounts all previously mounted devices
@@ -114,7 +114,7 @@ func UmountAll() error {
 
 // WritePartitionTable writes the defined partitions to the actual block device
 func (bd *BlockDevice) WritePartitionTable() error {
-	if bd.Type != BlockDeviceTypeDisk {
+	if bd.Type != BlockDeviceTypeDisk && bd.Type != BlockDeviceTypeLoop {
 		return errors.Errorf("Type is partition, disk required")
 	}
 
@@ -122,7 +122,7 @@ func (bd *BlockDevice) WritePartitionTable() error {
 	args := []string{
 		"parted",
 		"-s",
-		fmt.Sprintf("/dev/%s", bd.Name),
+		bd.GetDeviceFile(),
 		"mklabel",
 		"gpt",
 	}
@@ -136,7 +136,7 @@ func (bd *BlockDevice) WritePartitionTable() error {
 		"parted",
 		"-a",
 		"optimal",
-		fmt.Sprintf("/dev/%s", bd.Name),
+		bd.GetDeviceFile(),
 		"--script",
 	}
 
@@ -181,7 +181,7 @@ func (bd *BlockDevice) WritePartitionTable() error {
 
 	args = []string{
 		"parted",
-		fmt.Sprintf("/dev/%s", bd.Name),
+		bd.GetDeviceFile(),
 		fmt.Sprintf("set %d boot on", bootPartition),
 	}
 
@@ -196,7 +196,7 @@ func (bd *BlockDevice) WritePartitionTable() error {
 	for idx, guid := range guids {
 		args = []string{
 			"sgdisk",
-			fmt.Sprintf("/dev/%s", bd.Name),
+			bd.GetDeviceFile(),
 			fmt.Sprintf("--typecode=%d:%s", idx, guid),
 		}
 
@@ -208,6 +208,14 @@ func (bd *BlockDevice) WritePartitionTable() error {
 		prg.Partial(cnt)
 		cnt = cnt + 1
 	}
+
+	if err = bd.partProbe(); err != nil {
+		prg.Done()
+		return err
+	}
+
+	time.Sleep(time.Duration(4) * time.Second)
+
 	prg.Done()
 
 	return nil
@@ -288,7 +296,7 @@ func ext4MakeFs(bd *BlockDevice) error {
 		"-F",
 		"-b",
 		"4096",
-		fmt.Sprintf("/dev/%s", bd.Name),
+		bd.GetDeviceFile(),
 	}
 
 	err := cmd.RunAndLog(args...)
@@ -313,7 +321,7 @@ func swapMakePartCommand(bd *BlockDevice, start uint64, end uint64) (string, err
 func swapMakeFs(bd *BlockDevice) error {
 	args := []string{
 		"mkswap",
-		fmt.Sprintf("/dev/%s", bd.Name),
+		bd.GetDeviceFile(),
 	}
 
 	err := cmd.RunAndLog(args...)
@@ -340,7 +348,7 @@ func vfatMakeFs(bd *BlockDevice) error {
 	args := []string{
 		"mkfs.vfat",
 		"-F32",
-		fmt.Sprintf("/dev/%s", bd.Name),
+		bd.GetDeviceFile(),
 	}
 
 	err := cmd.RunAndLog(args...)

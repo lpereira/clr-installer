@@ -10,12 +10,14 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/clearlinux/clr-installer/cmd"
 	"github.com/clearlinux/clr-installer/errors"
+	"github.com/clearlinux/clr-installer/utils"
 )
 
 // A BlockDevice describes a block device and its partitions
@@ -75,6 +77,9 @@ const (
 	// BlockDeviceTypeLVM2Volume identifies a BlockDevice as a lvm2 volume
 	BlockDeviceTypeLVM2Volume
 
+	// BlockDeviceTypeLoop indeitifies a BlockDevice as a loop device (created with losetup)
+	BlockDeviceTypeLoop
+
 	// BlockDeviceTypeUnknown identifies a BlockDevice as unknown
 	BlockDeviceTypeUnknown
 
@@ -104,12 +109,18 @@ var (
 	blockDeviceTypeMap = map[BlockDeviceType]string{
 		BlockDeviceTypeDisk:       "disk",
 		BlockDeviceTypePart:       "part",
+		BlockDeviceTypeLoop:       "loop",
 		BlockDeviceTypeRom:        "rom",
 		BlockDeviceTypeLVM2Group:  "LVM2_member",
 		BlockDeviceTypeLVM2Volume: "lvm",
 		BlockDeviceTypeUnknown:    "",
 	}
 )
+
+// GetDeviceFile formats the block device's file path
+func (bd BlockDevice) GetDeviceFile() string {
+	return filepath.Join("/dev/", bd.Name)
+}
 
 func (bt BlockDeviceType) String() string {
 	return blockDeviceTypeMap[bt]
@@ -232,8 +243,14 @@ func (bd *BlockDevice) AddChild(child *BlockDevice) {
 	child.Parent = bd
 	bd.Children = append(bd.Children, child)
 
+	partPrefix := ""
+
+	if bd.Type == BlockDeviceTypeLoop {
+		partPrefix = "p"
+	}
+
 	if child.Name == "" {
-		child.Name = fmt.Sprintf("%s%d", bd.Name, len(bd.Children))
+		child.Name = fmt.Sprintf("%s%s%d", bd.Name, partPrefix, len(bd.Children))
 	}
 }
 
@@ -447,6 +464,12 @@ func parseBlockDevicesDescriptor(data []byte) ([]*BlockDevice, error) {
 			if ch.MountPoint != "" {
 				bd.available = false
 				break
+			}
+		}
+
+		if err = utils.VerifyRootUser(); err == nil {
+			if err = bd.partProbe(); err != nil {
+				return nil, err
 			}
 		}
 	}
@@ -803,34 +826,46 @@ func SupportedFileSystems() []string {
 	return res
 }
 
-// NewStandardPartitions will return a list of BlockDevice representing a
+// NewStandardPartitions will add to disk a new set of partitions representing a
 // default set of partitions required for an installation
-func NewStandardPartitions(disk *BlockDevice) []*BlockDevice {
+func NewStandardPartitions(disk *BlockDevice) {
 	bootSize := uint64(150 * (1 << 20))
 	swapSize := uint64(2 * (1 << 30))
 	rootSize := uint64(disk.Size - bootSize - swapSize)
 
+	disk.Children = nil
+
 	// TODO review this standard partition schema (maybe add a default configuration)
-	return []*BlockDevice{
-		{
-			Name:       fmt.Sprintf("%s1", disk.Name),
-			Size:       bootSize,
-			Type:       BlockDeviceTypePart,
-			FsType:     "vfat",
-			MountPoint: "/boot",
-		},
-		{
-			Name:   fmt.Sprintf("%s2", disk.Name),
-			Size:   swapSize,
-			Type:   BlockDeviceTypePart,
-			FsType: "swap",
-		},
-		{
-			Name:       fmt.Sprintf("%s3", disk.Name),
-			Size:       rootSize,
-			Type:       BlockDeviceTypePart,
-			FsType:     "ext4",
-			MountPoint: "/",
-		},
+	disk.AddChild(&BlockDevice{
+		Size:       bootSize,
+		Type:       BlockDeviceTypePart,
+		FsType:     "vfat",
+		MountPoint: "/boot",
+	})
+
+	disk.AddChild(&BlockDevice{
+		Size:   swapSize,
+		Type:   BlockDeviceTypePart,
+		FsType: "swap",
+	})
+
+	disk.AddChild(&BlockDevice{
+		Size:       rootSize,
+		Type:       BlockDeviceTypePart,
+		FsType:     "ext4",
+		MountPoint: "/",
+	})
+}
+
+func (bd *BlockDevice) partProbe() error {
+	args := []string{
+		"partprobe",
+		bd.GetDeviceFile(),
 	}
+
+	if err := cmd.RunAndLog(args...); err != nil {
+		return errors.Wrap(err)
+	}
+
+	return nil
 }

@@ -78,3 +78,30 @@ or if using the Mass Installer mode:
 ```
 sudo .gopath/bin/clr-installer --config=~/my-install.yaml --reboot=false
 ```
+
+## Installing to an image file
+Follow the steps below to create a raw image file and perform a Clear Linux install to it.
+
+Create a raw image file with qemu-img:
+
+```
+qemu-img create -f raw clr-linux.img 4G
+```
+
+Setup a loop device:
+
+```
+sudo losetup --find --show clr-linux.img
+```
+
+> This command will display the just created loop device file i.e /dev/loop0
+
+Now you can launch the installer and use this loop device to perform an install to it.
+
+After finishing the install you may want to detach the loop device, i.e:
+
+```
+sudo losetup -d /dev/loop0
+```
+
+> Adapt this line to reflect the loop device file created in the second step

@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/user"
-	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -35,24 +33,6 @@ func sortMountPoint(bds []*storage.BlockDevice) []*storage.BlockDevice {
 	return bds
 }
 
-func verifyRootUser() error {
-	// ProgName is the short name of this executable
-	progName := path.Base(os.Args[0])
-
-	user, err := user.Current()
-	if err != nil {
-		return errors.Errorf("%s MUST run as 'root' user to install! (user=%s)",
-			progName, "UNKNOWN")
-	}
-
-	if user.Uid != "0" {
-		return errors.Errorf("%s MUST run as 'root' user to install! (user=%s)",
-			progName, user.Uid)
-	}
-
-	return nil
-}
-
 // Install is the main install controller, this is the entry point for a full
 // installation
 func Install(rootDir string, model *model.SystemInstall) error {
@@ -62,7 +42,7 @@ func Install(rootDir string, model *model.SystemInstall) error {
 
 	// First verify we are running as 'root' user which is required
 	// for most of the Installation commands
-	if err = verifyRootUser(); err != nil {
+	if err = utils.VerifyRootUser(); err != nil {
 		return err
 	}
 

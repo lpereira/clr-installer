@@ -70,7 +70,7 @@ func (page *GuidedPartPage) showGuidedDisk(bd *storage.BlockDevice) error {
 
 	labels := []*clui.Label{}
 	btn.OnClick(func(ev clui.Event) {
-		bd.Children = storage.NewStandardPartitions(bd)
+		storage.NewStandardPartitions(bd)
 
 		for _, curr := range labels {
 			curr.Destroy()
