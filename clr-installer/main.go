@@ -105,7 +105,7 @@ func main() {
 	}
 
 	if md.Keyboard != nil {
-		if err := keyboard.Apply(md.Keyboard); err != nil {
+		if err = keyboard.Apply(md.Keyboard); err != nil {
 			fatal(err)
 		}
 	}

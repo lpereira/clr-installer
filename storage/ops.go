@@ -145,6 +145,9 @@ func (bd *BlockDevice) WritePartitionTable() error {
 	guids := map[int]string{}
 
 	for idx, curr := range bd.Children {
+		var cmd string
+		var guid string
+
 		op, found := bdOps[curr.FsType]
 		if !found {
 			return errors.Errorf("No makePartCommand() implementation for: %s",
@@ -152,7 +155,7 @@ func (bd *BlockDevice) WritePartitionTable() error {
 		}
 
 		end := start + (uint64(curr.Size) >> 20)
-		cmd, err := op.makePartCommand(curr, start, end)
+		cmd, err = op.makePartCommand(curr, start, end)
 		if err != nil {
 			return err
 		}
@@ -161,7 +164,7 @@ func (bd *BlockDevice) WritePartitionTable() error {
 			bootPartition = idx + 1
 		}
 
-		guid, err := curr.getGUID()
+		guid, err = curr.getGUID()
 		if err != nil {
 			return err
 		}

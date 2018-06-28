@@ -140,7 +140,7 @@ func Install(rootDir string, model *model.SystemInstall) error {
 		cmdlineFile := filepath.Join(cmdlineDir, "cmdline")
 		cmdline := model.KernelCMDLine
 
-		if err := utils.MkdirAll(cmdlineDir); err != nil {
+		if err = utils.MkdirAll(cmdlineDir); err != nil {
 			return err
 		}
 
