@@ -104,6 +104,10 @@ func main() {
 		fatal(err)
 	}
 
+	if options.RebootSet {
+		md.PostReboot = options.Reboot
+	}
+
 	if md.Keyboard != nil {
 		if err = keyboard.Apply(md.Keyboard); err != nil {
 			fatal(err)

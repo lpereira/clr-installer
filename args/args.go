@@ -37,6 +37,7 @@ var (
 type Args struct {
 	Version    bool
 	Reboot     bool
+	RebootSet  bool
 	LogFile    string
 	ConfigFile string
 	PamSalt    string
@@ -149,6 +150,13 @@ func (args *Args) setCommandLineArgs() (err error) {
 	flag.ErrHelp = errors.New("Clear Linux Installer program")
 
 	flag.Parse()
+
+	fflag = flag.Lookup("reboot")
+	if fflag != nil {
+		if fflag.Changed {
+			args.RebootSet = true
+		}
+	}
 
 	return nil
 }

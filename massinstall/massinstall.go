@@ -120,26 +120,26 @@ func (mi *MassInstall) Run(md *model.SystemInstall, rootDir string) (bool, error
 	}
 	prg.Done()
 
-	if instError != nil {
-		return false, instError
-	}
-
 	var reboot bool
 
-	for {
-		var valid bool
-		var err error
+	if instError != nil {
+		return false, instError
+	} else if md.PostReboot {
+		for {
+			var valid bool
+			var err error
 
-		if valid, reboot, err = shouldReboot(); err != nil {
-			panic(err)
+			if valid, reboot, err = shouldReboot(); err != nil {
+				panic(err)
+			}
+
+			if !valid {
+				fmt.Printf("Invalid answer...\n")
+				continue
+			}
+
+			break
 		}
-
-		if !valid {
-			fmt.Printf("Invalid answer...\n")
-			continue
-		}
-
-		break
 	}
 
 	return reboot, nil

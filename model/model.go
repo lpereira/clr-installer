@@ -41,6 +41,7 @@ type SystemInstall struct {
 	Users             []*user.User           `yaml:"users,omitempty,flow"`
 	KernelCMDLine     string                 `yaml:"kernel-cmdline,omitempty,flow"`
 	Kernel            *kernel.Kernel         `yaml:"kernel,omitempty,flow"`
+	PostReboot        bool                   `yaml:"postReboot,omitempty,flow"`
 }
 
 // ContainsBundle returns true if the data model has a bundle and false otherwise
