@@ -18,6 +18,7 @@ import (
 
 	"github.com/clearlinux/clr-installer/cmd"
 	"github.com/clearlinux/clr-installer/errors"
+	"github.com/clearlinux/clr-installer/log"
 )
 
 // Interface is a network interface representation and wraps the net' package Interface struct
@@ -394,10 +395,16 @@ func Test() error {
 		"--kill-after=10s",
 		"10s",
 		"curl",
+		"--no-sessionid",
+		"-o",
+		"/dev/null",
+		"-s",
+		"-f",
 		string(versionURL),
 	}
 
 	if err := cmd.Run(nil, args...); err != nil {
+		log.Debug("curl failed : %q", err)
 		return errors.Wrap(err)
 	}
 
