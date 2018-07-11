@@ -379,6 +379,14 @@ func listBlockDevices(userDefined []*BlockDevice) ([]*BlockDevice, error) {
 		return nil, err
 	}
 
+	for _, bd := range bds {
+		if err = utils.VerifyRootUser(); err == nil {
+			if err = bd.partProbe(); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	if userDefined == nil || len(userDefined) == 0 {
 		return bds, nil
 	}
@@ -464,12 +472,6 @@ func parseBlockDevicesDescriptor(data []byte) ([]*BlockDevice, error) {
 			if ch.MountPoint != "" {
 				bd.available = false
 				break
-			}
-		}
-
-		if err = utils.VerifyRootUser(); err == nil {
-			if err = bd.partProbe(); err != nil {
-				return nil, err
 			}
 		}
 	}

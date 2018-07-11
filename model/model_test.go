@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/clearlinux/clr-installer/utils"
 )
 
 var (
@@ -65,11 +67,14 @@ func TestUnreadable(t *testing.T) {
 		t.Fatal("Failed to change tmp file mod")
 	}
 
-	_, err = LoadFile(file.Name())
-	if err == nil {
-		t.Fatal("Should have failed to read")
+	if utils.IsRoot() {
+		t.Log("Not running as 'root', not checking read permission")
+	} else {
+		_, err = LoadFile(file.Name())
+		if err == nil {
+			t.Fatal("Should have failed to read")
+		}
 	}
-
 	if os.Remove(file.Name()) != nil {
 		t.Fatal("Failed to cleanup test file")
 	}

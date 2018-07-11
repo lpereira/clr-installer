@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
+	"runtime"
 
 	"github.com/clearlinux/clr-installer/errors"
 )
@@ -77,4 +78,34 @@ func VerifyRootUser() error {
 	}
 
 	return nil
+}
+
+// IsClearLinux checks if the current OS is Clear by looking for Swupd
+// Mostly used in Go Testing
+func IsClearLinux() bool {
+	is := false
+
+	if runtime.GOOS == "linux" {
+		clearFile := "/usr/bin/swupd"
+		if _, err := os.Stat(clearFile); !os.IsNotExist(err) {
+			is = true
+		}
+	}
+
+	return is
+}
+
+// IsRoot checks if the current User is root (UID 0)
+// Mostly used in Go Testing
+func IsRoot() bool {
+	is := false
+
+	user, err := user.Current()
+	if err == nil {
+		if user.Uid == "0" {
+			is = true
+		}
+	}
+
+	return is
 }
