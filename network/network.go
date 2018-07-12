@@ -381,8 +381,8 @@ func Restart() error {
 	return nil
 }
 
-// Test tests if the network configuration is working
-func Test() error {
+// VerifyConnectivity tests if the network configuration is working
+func VerifyConnectivity() error {
 	var versionURL []byte
 	var err error
 
@@ -390,6 +390,11 @@ func Test() error {
 		return errors.Errorf("Read version file %s: %v", versionURLPath, err)
 	}
 
+	return CheckURL(string(versionURL))
+}
+
+// CheckURL tests if the given URL is accessible
+func CheckURL(url string) error {
 	args := []string{
 		"timeout",
 		"--kill-after=10s",
@@ -400,7 +405,7 @@ func Test() error {
 		"/dev/null",
 		"-s",
 		"-f",
-		string(versionURL),
+		url,
 	}
 
 	if err := cmd.Run(nil, args...); err != nil {

@@ -154,6 +154,9 @@ const (
 	// TuiPageAdvancedMenu is the id for Advanced/Optional configuration menu
 	TuiPageAdvancedMenu
 
+	// TuiPageSwupdMirror is the id for the swupd mirror page
+	TuiPageSwupdMirror
+
 	// ConfigDefinedByUser is used to determine a configuration was interactively
 	// defined by the user
 	ConfigDefinedByUser = iota

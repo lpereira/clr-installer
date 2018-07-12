@@ -21,6 +21,7 @@ import (
 	"github.com/clearlinux/clr-installer/log"
 	"github.com/clearlinux/clr-installer/massinstall"
 	"github.com/clearlinux/clr-installer/model"
+	"github.com/clearlinux/clr-installer/swupd"
 	"github.com/clearlinux/clr-installer/tui"
 )
 
@@ -106,6 +107,21 @@ func main() {
 
 	if options.RebootSet {
 		md.PostReboot = options.Reboot
+	}
+
+	// Command line overrides the configuration file
+	if options.SwupdMirror != "" {
+		md.SwupdMirror = options.SwupdMirror
+	}
+	// Now valid the mirror form the config or command line
+	if md.SwupdMirror != "" {
+		var url string
+		url, err = swupd.SetHostMirror(md.SwupdMirror)
+		if err != nil {
+			fatal(err)
+		} else {
+			log.Debug("Using Swupd Mirror value: %q", url)
+		}
 	}
 
 	if md.Keyboard != nil {

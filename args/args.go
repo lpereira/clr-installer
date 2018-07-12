@@ -35,15 +35,16 @@ var (
 
 // Args represents the user provided arguments
 type Args struct {
-	Version    bool
-	Reboot     bool
-	RebootSet  bool
-	LogFile    string
-	ConfigFile string
-	PamSalt    string
-	LogLevel   int
-	ForceTUI   bool
-	DemoMode   bool
+	Version     bool
+	Reboot      bool
+	RebootSet   bool
+	LogFile     string
+	ConfigFile  string
+	SwupdMirror string
+	PamSalt     string
+	LogLevel    int
+	ForceTUI    bool
+	DemoMode    bool
 }
 
 func (args *Args) setKernelArgs() (err error) {
@@ -107,6 +108,10 @@ func (args *Args) setCommandLineArgs() (err error) {
 
 	flag.StringVarP(
 		&args.ConfigFile, "config", "c", args.ConfigFile, "Installation configuration file",
+	)
+
+	flag.StringVarP(
+		&args.SwupdMirror, "mirror", "m", args.SwupdMirror, "Swupd Installation mirror URL",
 	)
 
 	flag.StringVar(

@@ -42,6 +42,7 @@ type SystemInstall struct {
 	KernelCMDLine     string                 `yaml:"kernel-cmdline,omitempty,flow"`
 	Kernel            *kernel.Kernel         `yaml:"kernel,omitempty,flow"`
 	PostReboot        bool                   `yaml:"postReboot,omitempty,flow"`
+	SwupdMirror       string                 `yaml:"swupdMirror,omitempty,flow"`
 }
 
 // ContainsBundle returns true if the data model has a bundle and false otherwise

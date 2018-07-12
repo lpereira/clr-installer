@@ -129,7 +129,7 @@ func Install(rootDir string, model *model.SystemInstall) error {
 		}
 	}
 
-	prg, err := contentInstall(rootDir, version, model.Bundles, model.Kernel.Bundle)
+	prg, err := contentInstall(rootDir, version, model.Bundles, model.Kernel.Bundle, model.SwupdMirror)
 	if err != nil {
 		prg.Done()
 		return err
@@ -146,11 +146,11 @@ func Install(rootDir string, model *model.SystemInstall) error {
 // latest one and start adding new bundles
 // for the bootstrap we huse the hosts's swupd and the following operations are
 // executed using the target swupd
-func contentInstall(rootDir string, version string, bundles []string, kernel string) (progress.Progress, error) {
+func contentInstall(rootDir string, version string, bundles []string, kernel string, mirror string) (progress.Progress, error) {
 	sw := swupd.New(rootDir)
 
 	prg := progress.NewLoop("Installing the base system")
-	if err := sw.Verify(version); err != nil {
+	if err := sw.Verify(version, mirror); err != nil {
 		return prg, err
 	}
 
@@ -225,11 +225,11 @@ func configureNetwork(model *model.SystemInstall) (progress.Progress, error) {
 	prg := progress.NewLoop("Testing connectivity")
 	ok := false
 
-	// 3 attempts to test conectivity
+	// 3 attempts to test connectivity
 	for i := 0; i < 3; i++ {
 		time.Sleep(2 * time.Second)
 
-		if err := network.Test(); err == nil {
+		if err := network.VerifyConnectivity(); err == nil {
 			ok = true
 			break
 		}

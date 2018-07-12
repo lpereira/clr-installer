@@ -194,6 +194,9 @@ func TestKernelAndCommandlineAllArgs(t *testing.T) {
 	if testArgs.ConfigFile != confName {
 		t.Errorf("Command Line 'config' is %q, NOT overridden to %q", testArgs.ConfigFile, confName)
 	}
+	if testArgs.SwupdMirror != "" {
+		t.Errorf("Command Line 'mirror' is not defaulted to ''")
+	}
 	if testArgs.PamSalt != "" {
 		t.Errorf("Command Line 'genpwd' is not defaulted to ''")
 	}
