@@ -141,6 +141,10 @@ func main() {
 
 	<-done
 
+	// Stop the signal handlers
+	// or we get a SIGTERM from reboot
+	signal.Reset()
+
 	if options.Reboot && installReboot {
 		if err := cmd.RunAndLog("reboot"); err != nil {
 			fatal(err)
