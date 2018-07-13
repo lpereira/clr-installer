@@ -62,8 +62,7 @@ func (s *SoftwareUpdater) Verify(version string, mirror string) error {
 		"verify",
 	}
 	if mirror != "" {
-		args = append(args, fmt.Sprintf("--contenturl=%s", mirror))
-		args = append(args, fmt.Sprintf("--versionurl=%s", mirror))
+		args = append(args, fmt.Sprintf("--url=%s", mirror))
 	}
 	args = append(args,
 		[]string{
