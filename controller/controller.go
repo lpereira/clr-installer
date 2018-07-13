@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/clearlinux/clr-installer/cmd"
+	"github.com/clearlinux/clr-installer/conf"
 	"github.com/clearlinux/clr-installer/errors"
 	"github.com/clearlinux/clr-installer/log"
 	"github.com/clearlinux/clr-installer/model"
@@ -242,6 +243,42 @@ func configureNetwork(model *model.SystemInstall) (progress.Progress, error) {
 	prg.Done()
 
 	return nil, nil
+}
+
+// SaveInstallResults saves the results of the installation process
+// onto the target media
+func SaveInstallResults(rootDir string, model *model.SystemInstall) error {
+	var err error
+	var errMsg string
+
+	log.Info("Saving Installation results to %s", rootDir)
+
+	saveDir := filepath.Join(rootDir, "root")
+	if err = utils.MkdirAll(saveDir); err != nil {
+		// Fallback in the unlikely case we can't use root's home
+		saveDir = rootDir
+	}
+
+	confFile := filepath.Join(saveDir, conf.ConfigFile)
+
+	if err := model.WriteFile(confFile); err != nil {
+		log.Error("Failed to write YAML file (%v) %q", err, confFile)
+		errMsg = "Failed to write YAML file"
+	}
+
+	logFile := filepath.Join(saveDir, conf.LogFile)
+
+	if err := log.ArchiveLogFile(logFile); err != nil {
+		if errMsg != "" {
+			errMsg = errMsg + "; "
+		}
+		errMsg = errMsg + "Failed to archive log file"
+	}
+
+	if errMsg != "" {
+		return errors.Errorf("%s", errMsg)
+	}
+	return nil
 }
 
 // Cleanup executes post-install cleanups i.e unmount partition, remove

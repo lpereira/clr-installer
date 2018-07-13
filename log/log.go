@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 
 	"github.com/clearlinux/clr-installer/errors"
 )
@@ -27,8 +28,9 @@ const (
 )
 
 var (
-	level    = LogLevelInfo
-	levelMap = map[int]string{}
+	level      = LogLevelInfo
+	levelMap   = map[int]string{}
+	filehandle *os.File
 )
 
 func init() {
@@ -48,9 +50,55 @@ func SetLogLevel(l int) error {
 	return nil
 }
 
-// SetOutput sets the default log output to w instead of stdout/stderr
-func SetOutput(w io.Writer) {
-	log.SetOutput(w)
+// SetOutputFilename ... sets the default log output to filename instead of stdout/stderr
+func SetOutputFilename(logFile string) (*os.File, error) {
+	var err error
+	filehandle, err = os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		return nil, err
+	}
+
+	log.SetOutput(filehandle)
+
+	return filehandle, nil
+}
+
+// ArchiveLogFile copies the contents of the log to the given filename
+func ArchiveLogFile(archiveFile string) error {
+	a, err := os.OpenFile(archiveFile, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		_ = a.Close()
+
+		// Jump back to the end of the log file
+		_, _ = filehandle.Seek(0, 2)
+
+	}()
+
+	_ = filehandle.Sync()
+
+	if filehandle == nil {
+		Error("filehandle is nil; oh my!")
+	}
+
+	// Jump to the beginning of the file
+	_, err = filehandle.Seek(0, 0)
+	if err != nil {
+		Error("Failed to seek log file (%v)", err)
+	}
+
+	var bytesCopied int64
+	bytesCopied, err = io.Copy(a, filehandle)
+	if err != nil {
+		Error("Failed to archive log file (%v) %q", err, archiveFile)
+	}
+	Debug("Archived %d bytes to file %q", bytesCopied, archiveFile)
+	_ = a.Sync()
+
+	return err
 }
 
 // LevelStr converts level to its text equivalent, if level is invalid

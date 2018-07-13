@@ -5,8 +5,6 @@
 package tui
 
 import (
-	"os/user"
-	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -52,10 +50,6 @@ type Page interface {
 	GetConfigDefinition() int
 	GetButtonPrefix(item Page) string
 }
-
-var (
-	descFile string
-)
 
 const (
 	// MenuButtonPrefixUncompleted is the standard, uncompleted prefix for a menu button
@@ -270,15 +264,6 @@ func (page *BasePage) GetButtonPrefix(item Page) string {
 func (page *BasePage) setupMenu(mi *Tui, id int, menuTitle string, btns int, returnID int) {
 	page.setup(mi, id, btns, returnID)
 	page.menuTitle = menuTitle
-}
-
-func init() {
-	usr, err := user.Current()
-	if err != nil {
-		panic(err)
-	}
-
-	descFile = filepath.Join(usr.HomeDir, "clr-installer.yaml")
 }
 
 func (page *BasePage) setup(mi *Tui, id int, btns int, returnID int) {

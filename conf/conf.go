@@ -17,6 +17,9 @@ const (
 	// BundleListFile the file file for the containing the bundle list definition
 	BundleListFile = "bundles.json"
 
+	// LogFile is the installation log file name
+	LogFile = "clr-installer.log"
+
 	// ConfigFile is the install descriptor
 	ConfigFile = "clr-installer.yaml"
 

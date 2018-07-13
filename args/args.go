@@ -145,7 +145,7 @@ func (args *Args) setCommandLineArgs() (err error) {
 
 	// use the env var CLR_INSTALLER_LOG_FILE to determine the log file path
 	if defaultLogFile = os.Getenv("CLR_INSTALLER_LOG_FILE"); defaultLogFile == "" {
-		defaultLogFile = filepath.Join(usr.HomeDir, "clr-installer.log")
+		defaultLogFile = filepath.Join(usr.HomeDir, conf.LogFile)
 	}
 
 	flag.StringVar(

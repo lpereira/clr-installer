@@ -7,11 +7,50 @@ package log
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/clearlinux/clr-installer/errors"
 )
+
+func setLog(t *testing.T) *os.File {
+	var handle *os.File
+
+	tmpfile, err := ioutil.TempFile("", "writeLog")
+	if err != nil {
+		t.Fatalf("could not make tempfile: %v", err)
+	}
+	_ = tmpfile.Close()
+
+	if handle, err = SetOutputFilename(tmpfile.Name()); err != nil {
+		t.Fatal("Could not set Log file")
+	}
+
+	return handle
+}
+
+func readLog(t *testing.T) *bytes.Buffer {
+	tmpfile, err := ioutil.TempFile("", "readLog")
+	if err != nil {
+		t.Fatalf("could not make tempfile: %v", err)
+	}
+	_ = tmpfile.Close()
+	defer func() { _ = os.Remove(tmpfile.Name()) }() // clean up
+
+	_ = ArchiveLogFile(tmpfile.Name())
+
+	var contents []byte
+	contents, err = ioutil.ReadFile(tmpfile.Name())
+	if err != nil {
+		t.Fatalf("could not read tempfile: %v %q", err, tmpfile.Name())
+	} else {
+		return bytes.NewBuffer(contents)
+	}
+
+	return nil
+}
 
 func TestTag(t *testing.T) {
 	tests := []struct {
@@ -25,16 +64,17 @@ func TestTag(t *testing.T) {
 		{"error tag test", "[ERR]", Error},
 	}
 
-	w := bytes.NewBuffer(nil)
-	SetOutput(w)
+	fh := setLog(t)
+	defer func() { _ = fh.Close() }()
+
 	if err := SetLogLevel(LogLevelDebug); err != nil {
-		t.Fatal("Shoul not fail with a valid level")
+		t.Fatal("Should not fail with a valid level")
 	}
 
 	for _, curr := range tests {
 		curr.fc(curr.msg)
 
-		str := w.String()
+		str := readLog(t).String()
 		if str == "" {
 			t.Fatal("No log written to output")
 		}
@@ -43,18 +83,16 @@ func TestTag(t *testing.T) {
 			t.Fatalf("Log generated an entry without the expected tag: %s - entry: %s",
 				curr.tag, str)
 		}
-
-		w.Reset()
 	}
 }
 
 func TestErrorError(t *testing.T) {
-	w := bytes.NewBuffer(nil)
-	SetOutput(w)
+	fh := setLog(t)
+	defer func() { _ = fh.Close() }()
 
 	ErrorError(fmt.Errorf("testing log with error"))
 
-	str := w.String()
+	str := readLog(t).String()
 	if str == "" {
 		t.Fatal("No log written to output")
 	}
@@ -71,8 +109,8 @@ func TestLogLevel(t *testing.T) {
 		{LogLevelError, "Warning() with LogLevelError", Warning},
 	}
 
-	w := bytes.NewBuffer(nil)
-	SetOutput(w)
+	fh := setLog(t)
+	defer func() { _ = fh.Close() }()
 
 	for _, curr := range tests {
 		if err := SetLogLevel(curr.mutedLevel); err != nil {
@@ -80,11 +118,9 @@ func TestLogLevel(t *testing.T) {
 		}
 		curr.fc(curr.msg)
 
-		if w.String() != "" {
+		if readLog(t).String() != "" {
 			t.Fatalf("Shouldn't produce any log with level: %d", curr.mutedLevel)
 		}
-
-		w.Reset()
 	}
 }
 
@@ -120,26 +156,27 @@ func TestInvalidLogLevelStr(t *testing.T) {
 
 func TestInvalidLogLevel(t *testing.T) {
 	if err := SetLogLevel(999); err == nil {
-		t.Fatal("Shold fail with an invalid log level")
+		t.Fatal("Should fail with an invalid log level")
 	}
 }
 
 func TestLogTraceableError(t *testing.T) {
-	w := bytes.NewBuffer(nil)
-	SetOutput(w)
+	fh := setLog(t)
+	defer func() { _ = fh.Close() }()
+
 	ErrorError(errors.Errorf("Traceable error"))
 
-	if !strings.Contains(w.String(), "log_test.go") {
+	if !strings.Contains(readLog(t).String(), "log_test.go") {
 		t.Fatal("Traceable should contain the source name")
 	}
 }
 
 func TestLogOut(t *testing.T) {
-	w := bytes.NewBuffer(nil)
-	SetOutput(w)
+	fh := setLog(t)
+	defer func() { _ = fh.Close() }()
 	Out("command output")
 
-	if !strings.Contains(w.String(), "[OUT]") {
+	if !strings.Contains(readLog(t).String(), "[OUT]") {
 		t.Fatal("Out logs should contain the tag [OUT]")
 	}
 }

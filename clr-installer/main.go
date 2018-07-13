@@ -70,14 +70,13 @@ func main() {
 		return
 	}
 
-	f, err := os.OpenFile(options.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	f, err := log.SetOutputFilename(options.LogFile)
 	if err != nil {
 		fatal(err)
 	}
 	defer func() {
 		_ = f.Close()
 	}()
-	log.SetOutput(f)
 
 	initFrontendList()
 

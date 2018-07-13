@@ -114,7 +114,13 @@ func (mi *MassInstall) Run(md *model.SystemInstall, rootDir string) (bool, error
 
 	instError = controller.Install(rootDir, md)
 
-	prg := progress.NewLoop("Cleaning up install environment")
+	prg := progress.NewLoop("Saving the installation results")
+	if err := controller.SaveInstallResults(rootDir, md); err != nil {
+		log.ErrorError(err)
+	}
+	prg.Done()
+
+	prg = progress.NewLoop("Cleaning up install environment")
 	if err := controller.Cleanup(rootDir, true); err != nil {
 		log.ErrorError(err)
 	}
