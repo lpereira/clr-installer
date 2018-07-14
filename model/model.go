@@ -43,6 +43,7 @@ type SystemInstall struct {
 	Kernel            *kernel.Kernel         `yaml:"kernel,omitempty,flow"`
 	PostReboot        bool                   `yaml:"postReboot,omitempty,flow"`
 	SwupdMirror       string                 `yaml:"swupdMirror,omitempty,flow"`
+	PostArchive       bool                   `yaml:"postArchive,omitempty,flow"`
 }
 
 // ContainsBundle returns true if the data model has a bundle and false otherwise
@@ -159,6 +160,9 @@ func (si *SystemInstall) AddNetworkInterface(iface *network.Interface) {
 // LoadFile loads a model from a yaml file pointed by path
 func LoadFile(path string) (*SystemInstall, error) {
 	var result SystemInstall
+
+	// Default to archiving by default
+	result.PostArchive = true
 
 	if _, err := os.Stat(path); err == nil {
 		configStr, err := ioutil.ReadFile(path)

@@ -251,6 +251,11 @@ func SaveInstallResults(rootDir string, model *model.SystemInstall) error {
 	var err error
 	var errMsg string
 
+	if !model.PostArchive {
+		log.Info("Skipping archiving of Installation results")
+		return nil
+	}
+
 	log.Info("Saving Installation results to %s", rootDir)
 
 	saveDir := filepath.Join(rootDir, "root")

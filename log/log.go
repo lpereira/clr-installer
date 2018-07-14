@@ -53,7 +53,7 @@ func SetLogLevel(l int) error {
 // SetOutputFilename ... sets the default log output to filename instead of stdout/stderr
 func SetOutputFilename(logFile string) (*os.File, error) {
 	var err error
-	filehandle, err = os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	filehandle, err = os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return nil, err
 	}

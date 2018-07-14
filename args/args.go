@@ -44,6 +44,8 @@ type Args struct {
 	PamSalt     string
 	LogLevel    int
 	ForceTUI    bool
+	Archive     bool
+	ArchiveSet  bool
 	DemoMode    bool
 }
 
@@ -128,6 +130,10 @@ func (args *Args) setCommandLineArgs() (err error) {
 	)
 
 	flag.BoolVar(
+		&args.Archive, "archive", true, "Archive data to target after finishing",
+	)
+
+	flag.BoolVar(
 		&args.DemoMode, "demo", args.DemoMode, "Demonstration mode for documentation generation",
 	)
 	// We do not want this flag to be shown as part of the standard help message
@@ -160,6 +166,13 @@ func (args *Args) setCommandLineArgs() (err error) {
 	if fflag != nil {
 		if fflag.Changed {
 			args.RebootSet = true
+		}
+	}
+
+	fflag = flag.Lookup("archive")
+	if fflag != nil {
+		if fflag.Changed {
+			args.ArchiveSet = true
 		}
 	}
 

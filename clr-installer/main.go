@@ -108,6 +108,10 @@ func main() {
 		md.PostReboot = options.Reboot
 	}
 
+	if options.ArchiveSet {
+		md.PostArchive = options.Archive
+	}
+
 	// Command line overrides the configuration file
 	if options.SwupdMirror != "" {
 		md.SwupdMirror = options.SwupdMirror
