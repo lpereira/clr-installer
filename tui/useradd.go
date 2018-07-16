@@ -1,3 +1,7 @@
+// Copyright © 2018 Intel Corporation
+//
+// SPDX-License-Identifier: GPL-3.0-only
+
 package tui
 
 import (
