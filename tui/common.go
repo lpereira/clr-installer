@@ -151,6 +151,9 @@ const (
 	// TuiPageSwupdMirror is the id for the swupd mirror page
 	TuiPageSwupdMirror
 
+	// TuiPageHostname is the id for the hostname page
+	TuiPageHostname
+
 	// ConfigDefinedByUser is used to determine a configuration was interactively
 	// defined by the user
 	ConfigDefinedByUser = iota

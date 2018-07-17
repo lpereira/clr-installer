@@ -16,6 +16,7 @@ import (
 	"github.com/clearlinux/clr-installer/cmd"
 	"github.com/clearlinux/clr-installer/conf"
 	"github.com/clearlinux/clr-installer/errors"
+	"github.com/clearlinux/clr-installer/hostname"
 	"github.com/clearlinux/clr-installer/log"
 	"github.com/clearlinux/clr-installer/model"
 	"github.com/clearlinux/clr-installer/network"
@@ -138,6 +139,12 @@ func Install(rootDir string, model *model.SystemInstall) error {
 
 	if err := cuser.Apply(rootDir, model.Users); err != nil {
 		return err
+	}
+
+	if model.Hostname != "" {
+		if err := hostname.SetTargetHostname(rootDir, model.Hostname); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -44,6 +44,7 @@ type SystemInstall struct {
 	PostReboot        bool                   `yaml:"postReboot,omitempty,flow"`
 	SwupdMirror       string                 `yaml:"swupdMirror,omitempty,flow"`
 	PostArchive       bool                   `yaml:"postArchive,omitempty,flow"`
+	Hostname          string                 `yaml:"hostname,omitempty,flow"`
 }
 
 // ContainsBundle returns true if the data model has a bundle and false otherwise
