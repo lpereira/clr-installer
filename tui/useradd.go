@@ -164,9 +164,10 @@ func newUseraddPage(mi *Tui) (Page, error) {
 	page.confirmBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Confirm", Fixed)
 
 	page.confirmBtn.OnClick(func(ev clui.Event) {
-		pwd := ""
-		if page.changedPwd {
-			pwd = page.pwdEdit.Title()
+		pwd := page.pwdEdit.Title()
+
+		if !page.changedPwd && page.selected != nil {
+			pwd = ""
 		}
 
 		page.showUser(page.loginEdit.Title(), pwd, page.adminCheck.State() == 1)
