@@ -21,7 +21,7 @@ type GuidedPartPage struct {
 
 const (
 	guidedDesc = `Select a partition to modify its configuration and to define it as the
-target instalattion disk.`
+target installation disk.`
 )
 
 // SetDone adds a new target media to installation model and sets the previous' page done flag

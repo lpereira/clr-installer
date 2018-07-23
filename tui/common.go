@@ -199,7 +199,7 @@ func (page *BasePage) SetDone(done bool) bool {
 	return true
 }
 
-// Panic write an error to the tui paniced channel - we'll deal the error, stop clui
+// Panic write an error to the tui panicked channel - we'll deal the error, stop clui
 // mainloop and nicely panic() the application
 func (page *BasePage) Panic(err error) {
 	page.mi.paniced <- err

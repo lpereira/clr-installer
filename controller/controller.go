@@ -152,7 +152,7 @@ func Install(rootDir string, model *model.SystemInstall) error {
 
 // use the current host's version to bootstrap the sysroot, then update to the
 // latest one and start adding new bundles
-// for the bootstrap we huse the hosts's swupd and the following operations are
+// for the bootstrap we use the hosts's swupd and the following operations are
 // executed using the target swupd
 func contentInstall(rootDir string, version string, bundles []string, kernel string, mirror string) (progress.Progress, error) {
 	sw := swupd.New(rootDir)

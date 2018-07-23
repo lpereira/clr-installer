@@ -37,7 +37,7 @@ func TestFailListBlockDevices(t *testing.T) {
 
 	_, err := ListBlockDevices(nil)
 	if err == nil {
-		t.Fatalf("Should have failed to liste block devices")
+		t.Fatalf("Should have failed to list block devices")
 	}
 
 	lsblkBinary = "lsblk"

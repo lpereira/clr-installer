@@ -71,13 +71,13 @@ const (
 	// BlockDeviceTypeRom identifies a BlockDevice as a rom
 	BlockDeviceTypeRom
 
-	// BlockDeviceTypeLVM2Group indeitifies a BlockDevice as a lvm2 group
+	// BlockDeviceTypeLVM2Group identifies a BlockDevice as a lvm2 group
 	BlockDeviceTypeLVM2Group
 
 	// BlockDeviceTypeLVM2Volume identifies a BlockDevice as a lvm2 volume
 	BlockDeviceTypeLVM2Volume
 
-	// BlockDeviceTypeLoop indeitifies a BlockDevice as a loop device (created with losetup)
+	// BlockDeviceTypeLoop identifies a BlockDevice as a loop device (created with losetup)
 	BlockDeviceTypeLoop
 
 	// BlockDeviceTypeUnknown identifies a BlockDevice as unknown
@@ -415,7 +415,7 @@ func listBlockDevices(userDefined []*BlockDevice) ([]*BlockDevice, error) {
 
 // ListAvailableBlockDevices Lists only available block devices
 // where available means block devices not mounted or not in use by the host system
-// userDefined will be inserted in the resulting list reather the loaded ones
+// userDefined will be inserted in the resulting list rather the loaded ones
 func ListAvailableBlockDevices(userDefined []*BlockDevice) ([]*BlockDevice, error) {
 	if avBlockDevices != nil {
 		return avBlockDevices, nil

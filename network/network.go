@@ -352,7 +352,7 @@ func (i *Interface) Apply(root string) error {
 // Apply does apply the configurations of a set of interfaces to the running system
 func Apply(root string, ifaces []*Interface) error {
 	if root == "" {
-		return errors.Errorf("Could not apply network settings, Invalid root diretory: %s", root)
+		return errors.Errorf("Could not apply network settings, Invalid root directory: %s", root)
 	}
 
 	if _, err := os.Stat(configDir); os.IsNotExist(err) {

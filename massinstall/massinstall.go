@@ -54,7 +54,7 @@ func (mi *MassInstall) Desc(desc string) {
 }
 
 // Partial is part of the progress.Client implementation and sets the progress bar based
-// on actuall progression
+// on actual progression
 func (mi *MassInstall) Partial(total int, step int) {
 	line := fmt.Sprintf("%s %.0f%%\r", mi.prgDesc, (float64(step)/float64(total))*100)
 	fmt.Printf("%s", line)
