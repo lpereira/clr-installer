@@ -39,7 +39,7 @@ func newTelemetryPage(mi *Tui) (Page, error) {
 	lbl.SetMultiline(true)
 
 	page.backBtn.SetTitle("No, thanks")
-	page.doneBtn.SetSize(12, 1)
+	page.backBtn.SetSize(12, 1)
 
 	page.doneBtn.SetTitle("Yes, enable telemetry!!")
 	page.doneBtn.SetSize(25, 1)

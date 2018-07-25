@@ -128,6 +128,27 @@ func (s *SoftwareUpdater) Update() error {
 	return nil
 }
 
+// DisableUpdate executes the "systemctl" to disable auto update operation
+// "swupd autoupdate" currently does not --path
+// See Issue https://github.com/clearlinux/swupd-client/issues/527
+func (s *SoftwareUpdater) DisableUpdate() error {
+	args := []string{
+		filepath.Join(s.rootDir, "/usr/bin/systemctl"),
+		fmt.Sprintf("--root=%s", s.rootDir),
+		"mask",
+		"--now",
+		"swupd-update.service",
+		"swupd-update.timer",
+	}
+
+	err := cmd.RunAndLog(args...)
+	if err != nil {
+		return errors.Wrap(err)
+	}
+
+	return nil
+}
+
 // getMirror executes the "swupd mirror" to find the current mirror
 func getMirror(swupdArgs []string, t string) (string, error) {
 	w := bytes.NewBuffer(nil)

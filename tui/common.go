@@ -154,6 +154,9 @@ const (
 	// TuiPageHostname is the id for the hostname page
 	TuiPageHostname
 
+	// TuiPageAutoUpdate is the id for the Auto Update Enablement page
+	TuiPageAutoUpdate
+
 	// ConfigDefinedByUser is used to determine a configuration was interactively
 	// defined by the user
 	ConfigDefinedByUser = iota

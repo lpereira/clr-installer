@@ -45,6 +45,7 @@ type SystemInstall struct {
 	SwupdMirror       string                 `yaml:"swupdMirror,omitempty,flow"`
 	PostArchive       bool                   `yaml:"postArchive,omitempty,flow"`
 	Hostname          string                 `yaml:"hostname,omitempty,flow"`
+	AutoUpdate        bool                   `yaml:"autoUpdate,omitempty,flow"`
 }
 
 // ContainsBundle returns true if the data model has a bundle and false otherwise
@@ -164,6 +165,9 @@ func LoadFile(path string) (*SystemInstall, error) {
 
 	// Default to archiving by default
 	result.PostArchive = true
+
+	// Default to Auto Updating enabled by default
+	result.AutoUpdate = true
 
 	if _, err := os.Stat(path); err == nil {
 		configStr, err := ioutil.ReadFile(path)

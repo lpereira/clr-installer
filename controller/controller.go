@@ -131,7 +131,7 @@ func Install(rootDir string, model *model.SystemInstall) error {
 		}
 	}
 
-	prg, err := contentInstall(rootDir, version, model.Bundles, model.Kernel.Bundle, model.SwupdMirror)
+	prg, err := contentInstall(rootDir, version, model)
 	if err != nil {
 		prg.Done()
 		return err
@@ -154,20 +154,31 @@ func Install(rootDir string, model *model.SystemInstall) error {
 // latest one and start adding new bundles
 // for the bootstrap we use the hosts's swupd and the following operations are
 // executed using the target swupd
-func contentInstall(rootDir string, version string, bundles []string, kernel string, mirror string) (progress.Progress, error) {
+func contentInstall(rootDir string, version string, model *model.SystemInstall) (progress.Progress, error) {
+
 	sw := swupd.New(rootDir)
 
 	prg := progress.NewLoop("Installing the base system")
-	if err := sw.Verify(version, mirror); err != nil {
+	if err := sw.Verify(version, model.SwupdMirror); err != nil {
 		return prg, err
 	}
 
-	if err := sw.Update(); err != nil {
-		return prg, err
+	if model.AutoUpdate {
+		if err := sw.Update(); err != nil {
+			return prg, err
+		}
+	} else {
+		log.Info("Skipping initial swupd update due to Disabling of Auto Update")
+		log.Info("Disabling 'swupd autoupdate' on Target")
+		if err := sw.DisableUpdate(); err != nil {
+			log.Warning("Disabling 'swupd autoupdate' on Target FAILED!")
+			return prg, err
+		}
 	}
 	prg.Done()
 
-	bundles = append(bundles, kernel)
+	bundles := model.Bundles
+	bundles = append(bundles, model.Kernel.Bundle)
 	for _, bundle := range bundles {
 		// swupd will fail (return exit code 18) if we try to "re-install" a bundle
 		// already installed - with that we need to prevent doing bundle-add for bundles

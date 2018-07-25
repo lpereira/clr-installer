@@ -131,6 +131,7 @@ func (mi *Tui) Run(md *model.SystemInstall, rootDir string) (bool, error) {
 		{"advanced menu", newAdvancedPage},
 		{"swupd mirror", newSwupdMirrorPage},
 		{"hostname", newHostnamePage},
+		{"autoupdate", newAutoUpdatePage},
 	}
 
 	for _, menu := range menus {
