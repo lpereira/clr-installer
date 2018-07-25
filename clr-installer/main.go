@@ -116,7 +116,7 @@ func main() {
 	if options.SwupdMirror != "" {
 		md.SwupdMirror = options.SwupdMirror
 	}
-	// Now valid the mirror form the config or command line
+	// Now validate the mirror from the config or command line
 	if md.SwupdMirror != "" {
 		var url string
 		url, err = swupd.SetHostMirror(md.SwupdMirror)
