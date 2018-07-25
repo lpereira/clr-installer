@@ -362,6 +362,11 @@ func Apply(root string, ifaces []*Interface) error {
 	}
 
 	for _, curr := range ifaces {
+		if !curr.IsUserDefined() {
+			log.Info("Interface %s was not changed, skipping config apply.")
+			continue
+		}
+
 		err := curr.Apply(root)
 		if err != nil {
 			return err
