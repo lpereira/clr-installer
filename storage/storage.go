@@ -245,7 +245,7 @@ func (bd *BlockDevice) AddChild(child *BlockDevice) {
 
 	partPrefix := ""
 
-	if bd.Type == BlockDeviceTypeLoop {
+	if bd.Type == BlockDeviceTypeLoop || strings.Contains(bd.Name, "nvme") {
 		partPrefix = "p"
 	}
 
