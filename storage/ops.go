@@ -27,6 +27,7 @@ type blockDeviceOps struct {
 var (
 	bdOps = map[string]*blockDeviceOps{
 		"ext2": {ext2MakeFs, commonMakePartCommand},
+		"ext3": {ext3MakeFs, commonMakePartCommand},
 		"ext4": {ext4MakeFs, commonMakePartCommand},
 		"swap": {swapMakeFs, swapMakePartCommand},
 		"vfat": {vfatMakeFs, vfatMakePartCommand},
@@ -311,6 +312,22 @@ func ext4MakeFs(bd *BlockDevice) error {
 func ext2MakeFs(bd *BlockDevice) error {
 	args := []string{
 		"mkfs.ext2",
+		"-v",
+		"-F",
+		bd.GetDeviceFile(),
+	}
+
+	err := cmd.RunAndLog(args...)
+	if err != nil {
+		return errors.Wrap(err)
+	}
+
+	return nil
+}
+
+func ext3MakeFs(bd *BlockDevice) error {
+	args := []string{
+		"mkfs.ext3",
 		"-v",
 		"-F",
 		bd.GetDeviceFile(),
