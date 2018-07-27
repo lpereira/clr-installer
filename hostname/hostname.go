@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/clearlinux/clr-installer/errors"
 	"github.com/clearlinux/clr-installer/log"
 	"github.com/clearlinux/clr-installer/utils"
 )
@@ -37,9 +38,10 @@ func IsValidHostname(hostname string) string {
 // SetTargetHostname set the new installation target's hostname
 func SetTargetHostname(rootDir string, hostname string) error {
 	hostDir := filepath.Join(rootDir, "etc")
+
 	if err := utils.MkdirAll(hostDir); err != nil {
 		// Fallback in the unlikely case we can't use root's home
-		log.Error("Failed to create directory (%v) %q", err, hostDir)
+		return errors.Errorf("Failed to create directory (%v) %q", err, hostDir)
 	}
 
 	hostFile := filepath.Join(hostDir, "hostname")

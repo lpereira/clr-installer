@@ -7,7 +7,10 @@ package hostname
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
+
+	"github.com/clearlinux/clr-installer/utils"
 )
 
 func TestEmptyHostname(t *testing.T) {
@@ -86,5 +89,56 @@ func TestSaveHostname(t *testing.T) {
 	host := "hello"
 	if err = SetTargetHostname(rootDir, host); err != nil {
 		t.Fatalf("Could not SetTargetHostname to %q: %q", host, err)
+	}
+}
+
+func TestFailedToCreateDir(t *testing.T) {
+	dir, err := ioutil.TempDir("", "clr-installer-utest")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rootDir := filepath.Join(dir, "root")
+	if err = utils.MkdirAll(rootDir); err != nil {
+		t.Fatal(err)
+	}
+
+	err = os.Chmod(rootDir, 0000)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		_ = os.RemoveAll(dir)
+	}()
+
+	if err = SetTargetHostname(rootDir, "testhost"); err == nil {
+		t.Fatalf("Should have failed to create etc dir")
+	}
+}
+
+func TestFailedToWrite(t *testing.T) {
+	dir, err := ioutil.TempDir("", "clr-installer-utest")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	etcDir := filepath.Join(dir, "etc")
+	if err = utils.MkdirAll(etcDir); err != nil {
+		t.Fatal(err)
+	}
+
+	err = os.Chmod(etcDir, 0000)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		_ = os.RemoveAll(dir)
+	}()
+
+	err = SetTargetHostname(dir, "testhost")
+	if err == nil {
+		t.Fatal("Should have failed to write hostname file")
 	}
 }
