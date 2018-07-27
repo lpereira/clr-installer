@@ -50,6 +50,7 @@ func (page *ManualPartPage) showManualDisk(bd *storage.BlockDevice, frame *clui.
 	btn.SetAlign(AlignLeft)
 
 	page.btns = append(page.btns, btn)
+	lfs := storage.LargestFileSystemName()
 
 	for _, part := range bd.Children {
 		sel := &SelectedBlockDevice{bd: bd, part: part, addMode: false}
@@ -59,7 +60,10 @@ func (page *ManualPartPage) showManualDisk(bd *storage.BlockDevice, frame *clui.
 			return err
 		}
 
-		txt := fmt.Sprintf("%10s %10s %s %s", sel.part.Name, size, sel.part.FsType,
+		// builds the fsmask to align fstype column, also give 2 char padding
+		fsMask := fmt.Sprintf("%%10s %%10s %%%ds %%s", lfs+2)
+
+		txt := fmt.Sprintf(fsMask, sel.part.Name, size, sel.part.FsType,
 			sel.part.MountPoint)
 
 		btn = page.newPartBtn(frame, txt)

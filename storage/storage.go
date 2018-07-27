@@ -830,6 +830,20 @@ func SupportedFileSystems() []string {
 	return res
 }
 
+// LargestFileSystemName returns the lengh of the largest supported file system name
+func LargestFileSystemName() int {
+	res := 0
+
+	for key := range bdOps {
+		fsl := len(key)
+		if fsl > res {
+			res = fsl
+		}
+	}
+
+	return res
+}
+
 // NewStandardPartitions will add to disk a new set of partitions representing a
 // default set of partitions required for an installation
 func NewStandardPartitions(disk *BlockDevice) {
