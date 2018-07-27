@@ -30,6 +30,7 @@ var (
 		"ext3":  {ext3MakeFs, commonMakePartCommand},
 		"ext4":  {ext4MakeFs, commonMakePartCommand},
 		"btrfs": {btrfsMakeFs, commonMakePartCommand},
+		"xfs":   {xfsMakeFs, commonMakePartCommand},
 		"swap":  {swapMakeFs, swapMakePartCommand},
 		"vfat":  {vfatMakeFs, vfatMakePartCommand},
 	}
@@ -345,6 +346,21 @@ func ext3MakeFs(bd *BlockDevice) error {
 func btrfsMakeFs(bd *BlockDevice) error {
 	args := []string{
 		"mkfs.btrfs",
+		"-f",
+		bd.GetDeviceFile(),
+	}
+
+	err := cmd.RunAndLog(args...)
+	if err != nil {
+		return errors.Wrap(err)
+	}
+
+	return nil
+}
+
+func xfsMakeFs(bd *BlockDevice) error {
+	args := []string{
+		"mkfs.xfs",
 		"-f",
 		bd.GetDeviceFile(),
 	}
