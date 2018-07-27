@@ -12,6 +12,7 @@ import (
 	"math"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -825,6 +826,7 @@ func SupportedFileSystems() []string {
 		res = append(res, key)
 	}
 
+	sort.Strings(res)
 	return res
 }
 
