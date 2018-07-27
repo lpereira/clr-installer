@@ -26,7 +26,8 @@ type blockDeviceOps struct {
 
 var (
 	bdOps = map[string]*blockDeviceOps{
-		"ext4": {ext4MakeFs, ext4MakePartCommand},
+		"ext2": {ext2MakeFs, commonMakePartCommand},
+		"ext4": {ext4MakeFs, commonMakePartCommand},
 		"swap": {swapMakeFs, swapMakePartCommand},
 		"vfat": {vfatMakeFs, vfatMakePartCommand},
 	}
@@ -278,7 +279,7 @@ func mountProcFs(rootDir string) error {
 	return mountFs("/proc", mPointPath, "proc", syscall.MS_BIND)
 }
 
-func ext4MakePartCommand(bd *BlockDevice, start uint64, end uint64) (string, error) {
+func commonMakePartCommand(bd *BlockDevice, start uint64, end uint64) (string, error) {
 	args := []string{
 		"mkpart",
 		bd.MountPoint,
@@ -296,6 +297,22 @@ func ext4MakeFs(bd *BlockDevice) error {
 		"-F",
 		"-b",
 		"4096",
+		bd.GetDeviceFile(),
+	}
+
+	err := cmd.RunAndLog(args...)
+	if err != nil {
+		return errors.Wrap(err)
+	}
+
+	return nil
+}
+
+func ext2MakeFs(bd *BlockDevice) error {
+	args := []string{
+		"mkfs.ext2",
+		"-v",
+		"-F",
 		bd.GetDeviceFile(),
 	}
 
