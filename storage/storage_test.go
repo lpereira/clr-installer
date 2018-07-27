@@ -11,7 +11,7 @@ import (
 )
 
 func TestSupportedFileSystem(t *testing.T) {
-	expected := []string{"ext4", "swap", "vfat"}
+	expected := []string{"btrfs", "ext2", "ext3", "ext4", "swap", "vfat", "xfs"}
 	supported := SupportedFileSystems()
 	tot := 0
 
