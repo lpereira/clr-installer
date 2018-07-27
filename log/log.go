@@ -65,6 +65,10 @@ func SetOutputFilename(logFile string) (*os.File, error) {
 
 // ArchiveLogFile copies the contents of the log to the given filename
 func ArchiveLogFile(archiveFile string) error {
+	if filehandle == nil {
+		return errors.Errorf("Log output should be set, see log.SetOutputFilename()")
+	}
+
 	a, err := os.OpenFile(archiveFile, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return err
@@ -79,10 +83,6 @@ func ArchiveLogFile(archiveFile string) error {
 	}()
 
 	_ = filehandle.Sync()
-
-	if filehandle == nil {
-		Error("filehandle is nil; oh my!")
-	}
 
 	// Jump to the beginning of the file
 	_, err = filehandle.Seek(0, 0)

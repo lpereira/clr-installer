@@ -9,10 +9,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/clearlinux/clr-installer/errors"
+	"github.com/clearlinux/clr-installer/utils"
 )
 
 func setLog(t *testing.T) *os.File {
@@ -178,5 +180,74 @@ func TestLogOut(t *testing.T) {
 
 	if !strings.Contains(readLog(t).String(), "[OUT]") {
 		t.Fatal("Out logs should contain the tag [OUT]")
+	}
+}
+
+func TestFailSeek(t *testing.T) {
+	err := ArchiveLogFile("archivefile")
+	if err == nil {
+		t.Fatal("Should have failed, unseekable file")
+	}
+}
+
+func TestNoFileHandle(t *testing.T) {
+	prevHandle := filehandle
+	filehandle = nil
+	err := ArchiveLogFile("archivefile")
+	if err == nil {
+		t.Fatal("Should have failed, no output set")
+	}
+
+	filehandle = prevHandle
+}
+
+func TestFailedToArchiveUnwritableFile(t *testing.T) {
+	dir, err := ioutil.TempDir("", "clr-installer-utest")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rootDir := filepath.Join(dir, "root")
+	if err = utils.MkdirAll(rootDir); err != nil {
+		t.Fatal(err)
+	}
+
+	err = os.Chmod(rootDir, 0000)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		_ = os.RemoveAll(dir)
+	}()
+
+	if err = ArchiveLogFile(filepath.Join(rootDir, "test.log")); err == nil {
+		t.Fatal("Should have failed, no permission to archive file")
+	}
+}
+
+func TestFailedToSetOutput(t *testing.T) {
+	dir, err := ioutil.TempDir("", "clr-installer-utest")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rootDir := filepath.Join(dir, "root")
+	if err = utils.MkdirAll(rootDir); err != nil {
+		t.Fatal(err)
+	}
+
+	err = os.Chmod(rootDir, 0000)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer func() {
+		_ = os.RemoveAll(dir)
+	}()
+
+	_, err = SetOutputFilename(filepath.Join(rootDir, "test.log"))
+	if err == nil {
+		t.Fatal("Should have failed to open log file")
 	}
 }
