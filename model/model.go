@@ -46,6 +46,9 @@ type SystemInstall struct {
 	PostArchive       bool                   `yaml:"postArchive,omitempty,flow"`
 	Hostname          string                 `yaml:"hostname,omitempty,flow"`
 	AutoUpdate        bool                   `yaml:"autoUpdate,omitempty,flow"`
+	TelemetryURL      string                 `yaml:"telemetryURL,omitempty,flow"`
+	TelemetryTID      string                 `yaml:"telemetryTID,omitempty,flow"`
+	TelemetryPolicy   string                 `yaml:"telemetryPolicy,omitempty,flow"`
 }
 
 // ContainsBundle returns true if the data model has a bundle and false otherwise

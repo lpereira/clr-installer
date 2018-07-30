@@ -5,6 +5,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -22,6 +23,7 @@ import (
 	"github.com/clearlinux/clr-installer/massinstall"
 	"github.com/clearlinux/clr-installer/model"
 	"github.com/clearlinux/clr-installer/swupd"
+	"github.com/clearlinux/clr-installer/telemetry"
 	"github.com/clearlinux/clr-installer/tui"
 )
 
@@ -38,6 +40,54 @@ func initFrontendList() {
 	frontEndImpls = []frontend.Frontend{
 		massinstall.New(),
 		tui.New(),
+	}
+}
+
+func validateTelemetry(options args.Args, md *model.SystemInstall) {
+	if options.TelemetryPolicy != "" {
+		md.TelemetryPolicy = options.TelemetryPolicy
+	}
+	// Make sure the both URL and TID are in the configuration file
+	if (md.TelemetryURL != "" && md.TelemetryTID == "") ||
+		(md.TelemetryURL == "" && md.TelemetryTID != "") {
+		fatal(errors.New("Telemetry requires both telemetryUrl and telemetryTid in the configuration file"))
+	} else if md.TelemetryURL != "" && md.TelemetryPolicy == "" {
+		log.Warning("Defining a Telemetry Policy is encouraged when specifying a Telemetry server")
+	}
+
+	// Telemetry is not in the config file AND not specified on the command line
+	noTelemetryDefault := md.Telemetry == nil && !options.TelemetrySet
+
+	// Ensure we have a Telemetry object
+	md.EnableTelemetry(md.IsTelemetryEnabled())
+	md.Telemetry.Defined = !noTelemetryDefault
+
+	// Command line overrides the configuration file
+	if options.TelemetrySet {
+		md.EnableTelemetry(options.Telemetry)
+	}
+	if options.TelemetryURL != "" {
+		md.TelemetryURL = options.TelemetryURL
+		md.TelemetryTID = options.TelemetryTID
+	}
+	// Validate the specified telemetry server
+	if md.TelemetryURL != "" {
+		if telErr := md.Telemetry.SetTelemetryServer(md.TelemetryURL, md.TelemetryTID, md.TelemetryPolicy); telErr != nil {
+			fatal(telErr)
+		}
+
+		if noTelemetryDefault {
+			md.EnableTelemetry(true)
+			log.Warning("Setting a Telemetry server enables Telemetry!")
+		}
+	}
+	// This lowest priority for enabling/defaulting telemetry
+	if telemetryEnable := md.Telemetry.IsUsingPrivateIP(); telemetryEnable {
+		md.Telemetry.SetRequested(telemetryEnable)
+		log.Info(telemetry.RequestNotice)
+		if noTelemetryDefault {
+			md.EnableTelemetry(telemetryEnable)
+		}
 	}
 }
 
@@ -132,6 +182,8 @@ func main() {
 			fatal(err)
 		}
 	}
+
+	validateTelemetry(options, md)
 
 	installReboot := false
 

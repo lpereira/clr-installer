@@ -36,18 +36,23 @@ var (
 
 // Args represents the user provided arguments
 type Args struct {
-	Version     bool
-	Reboot      bool
-	RebootSet   bool
-	LogFile     string
-	ConfigFile  string
-	SwupdMirror string
-	PamSalt     string
-	LogLevel    int
-	ForceTUI    bool
-	Archive     bool
-	ArchiveSet  bool
-	DemoMode    bool
+	Version         bool
+	Reboot          bool
+	RebootSet       bool
+	LogFile         string
+	ConfigFile      string
+	SwupdMirror     string
+	Telemetry       bool
+	TelemetrySet    bool
+	TelemetryURL    string
+	TelemetryTID    string
+	TelemetryPolicy string
+	PamSalt         string
+	LogLevel        int
+	ForceTUI        bool
+	Archive         bool
+	ArchiveSet      bool
+	DemoMode        bool
 }
 
 func (args *Args) setKernelArgs() (err error) {
@@ -113,6 +118,27 @@ func (args *Args) setCommandLineArgs() (err error) {
 		&args.SwupdMirror, "mirror", "m", args.SwupdMirror, "Swupd Installation mirror URL",
 	)
 
+	flag.BoolVar(
+		&args.Telemetry, "telemetry", args.Telemetry, "Enable Telemetry",
+	)
+	// We do not want this flag to be shown as part of the standard help message
+	fflag := flag.Lookup("telemetry")
+	if fflag != nil {
+		fflag.Hidden = true
+	}
+
+	flag.StringVar(
+		&args.TelemetryURL, "telemetry-url", args.TelemetryURL, "Telemetry server URL",
+	)
+
+	flag.StringVar(
+		&args.TelemetryTID, "telemetry-tid", args.TelemetryTID, "Telemetry server TID",
+	)
+
+	flag.StringVar(
+		&args.TelemetryPolicy, "telemetry-policy", args.TelemetryPolicy, "Telemetry Policy text",
+	)
+
 	flag.StringVar(
 		&args.PamSalt, "genpass", "", "Generates a PAM compatible password hash based on the provided salt string",
 	)
@@ -134,7 +160,7 @@ func (args *Args) setCommandLineArgs() (err error) {
 		&args.DemoMode, "demo", args.DemoMode, "Demonstration mode for documentation generation",
 	)
 	// We do not want this flag to be shown as part of the standard help message
-	fflag := flag.Lookup("demo")
+	fflag = flag.Lookup("demo")
 	if fflag != nil {
 		fflag.Hidden = true
 	}
@@ -159,6 +185,13 @@ func (args *Args) setCommandLineArgs() (err error) {
 
 	flag.Parse()
 
+	fflag = flag.Lookup("telemetry")
+	if fflag != nil {
+		if fflag.Changed {
+			args.TelemetrySet = true
+		}
+	}
+
 	fflag = flag.Lookup("reboot")
 	if fflag != nil {
 		if fflag.Changed {
@@ -171,6 +204,11 @@ func (args *Args) setCommandLineArgs() (err error) {
 		if fflag.Changed {
 			args.ArchiveSet = true
 		}
+	}
+
+	if (args.TelemetryURL != "" && args.TelemetryTID == "") ||
+		(args.TelemetryURL == "" && args.TelemetryTID != "") {
+		return errors.New("Telemetry requires both --telemetry-url and --telemetry-tid")
 	}
 
 	return nil

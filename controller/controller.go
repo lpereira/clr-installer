@@ -147,6 +147,12 @@ func Install(rootDir string, model *model.SystemInstall) error {
 		}
 	}
 
+	if model.Telemetry.URL != "" {
+		if err := model.Telemetry.CreateTelemetryConf(rootDir); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
