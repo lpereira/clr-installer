@@ -17,6 +17,10 @@ export GOPATH=$(pkg_dir)
 export GO_PACKAGE_PREFIX := github.com/clearlinux/clr-installer
 export TESTS_DIR := $(top_srcdir)/tests/
 
+CLR_INSTALLER_TEST_HTTP_PORT ?= 8181
+
+export TEST_HTTP_PORT = ${CLR_INSTALLER_TEST_HTTP_PORT}
+
 THEME_DIR=$(DESTDIR)/usr/share/clr-installer/themes/
 CONFIG_DIR=$(DESTDIR)/usr/share/defaults/clr-installer/
 SYSTEMD_DIR=$(DESTDIR)/usr/lib/systemd/system/

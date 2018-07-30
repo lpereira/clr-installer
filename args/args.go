@@ -27,6 +27,7 @@ import (
 const (
 	kernelCmdlineConf = "clri.descriptor"
 	kernelCmdlineDemo = "clri.demo"
+	logFileEnvironVar = "CLR_INSTALLER_LOG_FILE"
 )
 
 var (
@@ -83,10 +84,6 @@ func (args *Args) setKernelArgs() (err error) {
 
 // readKernelCmd returns the kernel command line
 func (args *Args) readKernelCmd() (string, error) {
-	if _, err := os.Stat(kernelCmdlineFile); os.IsNotExist(err) {
-		return "", err
-	}
-
 	content, err := ioutil.ReadFile(kernelCmdlineFile)
 	if err != nil {
 		return "", err
@@ -150,7 +147,7 @@ func (args *Args) setCommandLineArgs() (err error) {
 	var defaultLogFile string
 
 	// use the env var CLR_INSTALLER_LOG_FILE to determine the log file path
-	if defaultLogFile = os.Getenv("CLR_INSTALLER_LOG_FILE"); defaultLogFile == "" {
+	if defaultLogFile = os.Getenv(logFileEnvironVar); defaultLogFile == "" {
 		defaultLogFile = filepath.Join(usr.HomeDir, conf.LogFile)
 	}
 
