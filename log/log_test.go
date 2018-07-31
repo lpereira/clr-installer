@@ -227,6 +227,10 @@ func TestFailedToArchiveUnwritableFile(t *testing.T) {
 }
 
 func TestFailedToSetOutput(t *testing.T) {
+	if utils.IsRoot() {
+		t.Skip("Not running as 'root', skipping test")
+	}
+
 	dir, err := ioutil.TempDir("", "clr-installer-utest")
 	if err != nil {
 		t.Fatal(err)

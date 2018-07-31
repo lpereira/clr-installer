@@ -93,6 +93,10 @@ func TestSaveHostname(t *testing.T) {
 }
 
 func TestFailedToCreateDir(t *testing.T) {
+	if utils.IsRoot() {
+		t.Skip("Not running as 'root', skipping test")
+	}
+
 	dir, err := ioutil.TempDir("", "clr-installer-utest")
 	if err != nil {
 		t.Fatal(err)
@@ -118,6 +122,10 @@ func TestFailedToCreateDir(t *testing.T) {
 }
 
 func TestFailedToWrite(t *testing.T) {
+	if utils.IsRoot() {
+		t.Skip("Not running as 'root', skipping test")
+	}
+
 	dir, err := ioutil.TempDir("", "clr-installer-utest")
 	if err != nil {
 		t.Fatal(err)
