@@ -327,10 +327,10 @@ Gateway={{.Gateway}}
 // Apply does apply the interface configuration to the running system
 func (i *Interface) Apply(root string) error {
 	fileName := fmt.Sprintf("10-%s.network", i.Name)
-	filePath := filepath.Join(configDir, fileName)
+	filePath := filepath.Join(root, configDir, fileName)
 
 	if i.DHCP {
-		if _, err := os.Stat(configDir); os.IsNotExist(err) {
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
 			return nil
 		}
 
