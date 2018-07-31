@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/clearlinux/clr-installer/user"
 	"github.com/clearlinux/clr-installer/utils"
 )
 
@@ -26,15 +27,16 @@ func TestLoadFile(t *testing.T) {
 		file  string
 		valid bool
 	}{
-		{"basic-valid-descriptor.yaml", true},
 		{"basic-invalid-descriptor.yaml", false},
+		{"basic-valid-descriptor.yaml", true},
+		{"invalid-no-keyboard.yaml", false},
+		{"invalid-no-language.yaml", false},
 		{"malformed-descriptor.yaml", false},
 		{"no-bootable-descriptor.yaml", false},
 		{"no-root-partition-descriptor.yaml", false},
-		{"invalid-no-keyboard.yaml", false},
-		{"invalid-no-language.yaml", false},
-		{"valid-network.yaml", true},
+		{"no-telemetry.yaml", false},
 		{"real-example.yaml", true},
+		{"valid-network.yaml", true},
 	}
 
 	for _, curr := range tests {
@@ -49,6 +51,24 @@ func TestLoadFile(t *testing.T) {
 		if curr.valid && err != nil {
 			t.Fatalf("%s is a valid tests and shouldn't return an error: %v", curr.file, err)
 		}
+	}
+}
+
+func TestEnableTelemetry(t *testing.T) {
+	si := &SystemInstall{}
+
+	if si.IsTelemetryEnabled() == true {
+		t.Fatal("Default value for telemetry should be false")
+	}
+
+	// should always succeed
+	si.EnableTelemetry(true)
+	if si.Telemetry == nil {
+		t.Fatal("SystemInstall.EnableTelemetry() should allocate Telemetry object")
+	}
+
+	if si.IsTelemetryEnabled() == false {
+		t.Fatal("Wrong Telemetry value set or returned")
 	}
 }
 
@@ -121,6 +141,22 @@ func TestAddTargetMedia(t *testing.T) {
 	if len(nm.TargetMedias) != 1 {
 		t.Fatal("Failed to add target media to model")
 	}
+
+	// the AddTargetMedia() interface must prevent duplication
+	cl := len(nm.TargetMedias)
+	nm.AddTargetMedia(loaded.TargetMedias[0])
+	if len(nm.TargetMedias) != cl {
+		t.Fatal("AddTargetMedia() must prevent duplication")
+	}
+
+	// AddTargetMedia() should always add non equal medias
+	clone := loaded.TargetMedias[0].Clone()
+	clone.Name = clone.Name + "-cloned"
+
+	nm.AddTargetMedia(clone)
+	if len(nm.TargetMedias) == cl {
+		t.Fatal("AddTargetMedia() failed to add a cloned and modified target media")
+	}
 }
 
 func TestAddNetworkInterface(t *testing.T) {
@@ -136,6 +172,39 @@ func TestAddNetworkInterface(t *testing.T) {
 	if len(nm.NetworkInterfaces) != 1 {
 		t.Fatal("Failed to add network interface to model")
 	}
+}
+
+func TestUser(t *testing.T) {
+	users := []*user.User{
+		{Login: "login1", Password: "pwd1", Admin: false},
+		{Login: "login2", Password: "pwd2", Admin: false},
+		{Login: "login3", Password: "pwd3", Admin: false},
+		{Login: "login4", Password: "pwd4", Admin: false},
+	}
+
+	si := &SystemInstall{}
+
+	for i, curr := range users {
+		si.AddUser(curr)
+
+		if len(si.Users) != i+1 {
+			t.Fatal("User wasn't added")
+		}
+	}
+
+	cl := len(si.Users)
+
+	// don't add same user twice
+	si.AddUser(users[0])
+	if len(si.Users) != cl {
+		t.Fatal("The AddUser() interface should prevent user duplication")
+	}
+
+	si.RemoveAllUsers()
+	if len(si.Users) != 0 {
+		t.Fatal("User list should be empty")
+	}
+
 }
 
 func TestWriteFile(t *testing.T) {
