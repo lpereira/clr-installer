@@ -53,3 +53,25 @@ func TestGoodSetHostMirror(t *testing.T) {
 		t.Fatal("Unsetting Good Host Mirror failed")
 	}
 }
+
+func TestIsCoreBundle(t *testing.T) {
+	tests := []struct {
+		bundle string
+		core   bool
+	}{
+		{"editors", false},
+		{"go-basic", false},
+		{"git", false},
+		{"games", false},
+		{"os-core", true},
+		{"os-core-update", true},
+	}
+
+	for _, curr := range tests {
+		res := IsCoreBundle(curr.bundle)
+
+		if res != curr.core {
+			t.Fatalf("IsCoreBundle() returned %v for %s, expected %v", res, curr.bundle, curr.core)
+		}
+	}
+}
