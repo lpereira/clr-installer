@@ -46,9 +46,13 @@ func (page *GuidedPartPage) SetDone(done bool) bool {
 	page.getModel().AddTargetMedia(selected)
 	page.bd = nil
 
-	diskPage := page.mi.getPage(TuiPageDiskMenu)
+	diskPage := page.tui.getPage(TuiPageDiskMenu)
 	diskPage.SetDone(done)
-	page.mi.gotoPage(TuiPageMenu, diskPage)
+
+	// TODO start using new API page.GotoPage() when finished merging
+	// disk pages
+	page.tui.gotoPage(TuiPageMenu, diskPage)
+
 	return false
 }
 

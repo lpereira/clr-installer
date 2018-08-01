@@ -86,7 +86,7 @@ func (page *DiskPartitionPage) getSelectedBlockDevice() *SelectedBlockDevice {
 	var sel *SelectedBlockDevice
 	var ok bool
 
-	prevPage := page.mi.getPage(TuiPageManualPart)
+	prevPage := page.tui.getPage(TuiPageManualPart)
 	if sel, ok = prevPage.GetData().(*SelectedBlockDevice); !ok {
 		return nil
 	}
@@ -248,7 +248,7 @@ func newDiskPartitionPage(tui *Tui) (Page, error) {
 			}
 		}
 
-		tui.gotoPage(TuiPageManualPart, tui.currPage)
+		page.GotoPage(TuiPageManualPart)
 	})
 
 	page.deleteBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Delete", Fixed)
@@ -256,12 +256,12 @@ func newDiskPartitionPage(tui *Tui) (Page, error) {
 		sel := page.getSelectedBlockDevice()
 		sel.bd.RemoveChild(sel.part)
 
-		tui.gotoPage(TuiPageManualPart, tui.currPage)
+		page.GotoPage(TuiPageManualPart)
 	})
 
 	page.cancelBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Cancel", Fixed)
 	page.cancelBtn.OnClick(func(ev clui.Event) {
-		tui.gotoPage(TuiPageManualPart, tui.currPage)
+		page.GotoPage(TuiPageManualPart)
 	})
 
 	page.activated = page.fsList

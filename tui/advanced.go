@@ -25,7 +25,7 @@ func (page *AdvancedSubMenuPage) addMenuItem(item Page) bool {
 	btn.SetAlign(AlignLeft)
 
 	btn.OnClick(func(ev clui.Event) {
-		page.mi.gotoPage(item.GetID(), page.mi.currPage)
+		page.GotoPage(item.GetID())
 	})
 
 	page.btns = append(page.btns, btn)
@@ -43,15 +43,15 @@ func (page *AdvancedSubMenuPage) Activate() {
 
 	previous := false
 	activeSet := false
-	for _, curr := range page.mi.pages {
+	for _, curr := range page.tui.pages {
 		// Skip Menu Pages that are not required
 		if curr.IsRequired() || curr.GetMenuTitle() == "" {
 			continue
 		}
 
-		if page.mi.prevPage != nil {
+		if page.tui.prevPage != nil {
 			// Is this menu option match the previous page?
-			previous = page.mi.prevPage.GetID() == curr.GetID()
+			previous = page.tui.prevPage.GetID() == curr.GetID()
 		}
 
 		// Does the menu item added have the data set completed?

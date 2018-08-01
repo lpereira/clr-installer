@@ -89,7 +89,7 @@ func newHostnamePage(tui *Tui) (Page, error) {
 
 	page.cancelBtn = CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Cancel", Fixed)
 	page.cancelBtn.OnClick(func(ev clui.Event) {
-		tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
+		page.GotoPage(TuiPageAdvancedMenu)
 	})
 
 	page.confirmBtn = CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Confirm", Fixed)
@@ -105,7 +105,7 @@ func newHostnamePage(tui *Tui) (Page, error) {
 		}
 		page.getModel().Hostname = hostname
 		page.setConfirmButton()
-		tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
+		page.GotoPage(TuiPageAdvancedMenu)
 	})
 	page.confirmBtn.SetEnabled(false)
 

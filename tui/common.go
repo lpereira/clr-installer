@@ -17,7 +17,7 @@ import (
 // BasePage is the common implementation for the TUI frontend
 // other pages will inherit this base page behaviours
 type BasePage struct {
-	mi        *Tui          // the Tui frontend reference
+	tui       *Tui          // the Tui frontend reference
 	window    *clui.Window  // the page window
 	mFrame    *clui.Frame   // main frame
 	content   *clui.Frame   // the main content frame
@@ -202,10 +202,15 @@ func (page *BasePage) SetDone(done bool) bool {
 	return true
 }
 
+// GotoPage transitions between 2 pages
+func (page *BasePage) GotoPage(id int) {
+	page.tui.gotoPage(id, page.tui.currPage)
+}
+
 // Panic write an error to the tui panicked channel - we'll deal the error, stop clui
 // mainloop and nicely panic() the application
 func (page *BasePage) Panic(err error) {
-	page.mi.paniced <- err
+	page.tui.paniced <- err
 }
 
 // GetDone returns the current value of a page's done flag
@@ -275,7 +280,7 @@ func (page *BasePage) setupMenu(tui *Tui, id int, menuTitle string, btns int, re
 func (page *BasePage) setup(tui *Tui, id int, btns int, returnID int) {
 	page.action = ActionNone
 	page.id = id
-	page.mi = tui
+	page.tui = tui
 	page.newWindow()
 
 	page.mFrame = clui.CreateFrame(page.window, 78, 22, BorderNone, clui.Fixed)
@@ -332,7 +337,7 @@ func (page *BasePage) newBackButton(pageID int) {
 
 	btn.OnClick(func(ev clui.Event) {
 		page.action = ActionBackButton
-		page.mi.gotoPage(pageID, page.mi.currPage)
+		page.GotoPage(pageID)
 		page.action = ActionNone
 	})
 
@@ -344,7 +349,7 @@ func (page *BasePage) newCancelButton(pageID int) {
 
 	btn.OnClick(func(ev clui.Event) {
 		page.action = ActionCancelButton
-		page.mi.gotoPage(pageID, page.mi.currPage)
+		page.GotoPage(pageID)
 		page.action = ActionNone
 	})
 
@@ -357,7 +362,7 @@ func (page *BasePage) newDoneButton(tui *Tui, pageID int) {
 	btn.OnClick(func(ev clui.Event) {
 		if tui.currPage.SetDone(true) {
 			page.action = ActionDoneButton
-			tui.gotoPage(pageID, page.mi.currPage)
+			page.GotoPage(pageID)
 			page.action = ActionNone
 		}
 	})
@@ -365,7 +370,7 @@ func (page *BasePage) newDoneButton(tui *Tui, pageID int) {
 }
 
 func (page *BasePage) getModel() *model.SystemInstall {
-	return page.mi.model
+	return page.tui.model
 }
 
 func newEditField(frame *clui.Frame, validation bool, cb func(k term.Key, ch rune) bool) (*clui.EditField, *clui.Label) {

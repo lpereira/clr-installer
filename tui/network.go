@@ -52,7 +52,7 @@ func (page *NetworkPage) showInterface(frm *clui.Frame, iface *network.Interface
 
 	btn.OnClick(func(ev clui.Event) {
 		page.data = iface
-		page.mi.gotoPage(TuiPageInterface, page.mi.currPage)
+		page.GotoPage(TuiPageInterface)
 	})
 
 	page.btns = append(page.btns, btn)

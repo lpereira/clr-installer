@@ -216,7 +216,7 @@ func (page *UseraddPage) resetForm() {
 	page.adminCheck.SetState(0)
 	page.selected = nil
 	page.deleteBtn.SetEnabled(false)
-	clui.ActivateControl(page.mi.currPage.GetWindow(), page.loginEdit)
+	clui.ActivateControl(page.tui.currPage.GetWindow(), page.loginEdit)
 }
 
 func (page *UseraddPage) updateUser(lbl string, login string, pwd string, admin bool) {
@@ -262,7 +262,7 @@ func (page *UseraddPage) addNewUser(lbl string, login string, pwd string, admin 
 		page.adminCheck.SetState(state)
 		page.deleteBtn.SetEnabled(true)
 
-		clui.ActivateControl(page.mi.currPage.GetWindow(), page.loginEdit)
+		clui.ActivateControl(page.tui.currPage.GetWindow(), page.loginEdit)
 	})
 }
 

@@ -93,7 +93,7 @@ func newNetworkValidatePage(tui *Tui) (Page, error) {
 
 	cancelBtn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Cancel", Fixed)
 	cancelBtn.OnClick(func(ev clui.Event) {
-		page.mi.gotoPage(TuiPageAdvancedMenu, page.mi.currPage)
+		page.GotoPage(TuiPageAdvancedMenu)
 	})
 
 	btn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Test", Fixed)
@@ -118,7 +118,7 @@ func newNetworkValidatePage(tui *Tui) (Page, error) {
 
 	page.doneBtn.OnClick(func(ev clui.Event) {
 		page.SetDone(true)
-		page.mi.gotoPage(TuiPageAdvancedMenu, page.mi.currPage)
+		page.GotoPage(TuiPageAdvancedMenu)
 	})
 
 	page.activated = btn

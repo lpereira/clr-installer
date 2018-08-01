@@ -69,7 +69,7 @@ func (page *ManualPartPage) showManualDisk(bd *storage.BlockDevice, frame *clui.
 		btn = page.newPartBtn(frame, txt)
 		btn.OnClick(func(ev clui.Event) {
 			page.data = sel
-			page.mi.gotoPage(TuiPageDiskPart, page.mi.currPage)
+			page.GotoPage(TuiPageDiskPart)
 		})
 	}
 
@@ -94,7 +94,7 @@ func (page *ManualPartPage) showManualDisk(bd *storage.BlockDevice, frame *clui.
 			}
 			bd.AddChild(newPart)
 			page.data = &SelectedBlockDevice{bd: bd, part: newPart, addMode: true}
-			page.mi.gotoPage(TuiPageDiskPart, page.mi.currPage)
+			page.GotoPage(TuiPageDiskPart)
 		})
 	}
 
@@ -188,9 +188,12 @@ func (page *ManualPartPage) SetDone(done bool) bool {
 		page.data = nil
 	}
 
-	diskPage := page.mi.getPage(TuiPageDiskMenu)
+	diskPage := page.tui.getPage(TuiPageDiskMenu)
 	diskPage.SetDone(done)
-	page.mi.gotoPage(TuiPageMenu, diskPage)
+
+	// TODO start using new API page.GotoPage() when finished merging
+	// disk pages
+	page.tui.gotoPage(TuiPageMenu, diskPage)
 	return false
 }
 

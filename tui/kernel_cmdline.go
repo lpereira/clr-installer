@@ -49,7 +49,7 @@ func newKernelCMDLine(tui *Tui) (Page, error) {
 
 	cancelBtn := CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Cancel", Fixed)
 	cancelBtn.OnClick(func(ev clui.Event) {
-		tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
+		page.GotoPage(TuiPageAdvancedMenu)
 	})
 
 	confirmBtn := CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Confirm", Fixed)
@@ -57,7 +57,7 @@ func newKernelCMDLine(tui *Tui) (Page, error) {
 	confirmBtn.OnClick(func(ev clui.Event) {
 		page.getModel().KernelCMDLine = page.kernelCMDLineEdit.Title()
 		page.SetDone(page.kernelCMDLineEdit.Title() != "")
-		tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
+		page.GotoPage(TuiPageAdvancedMenu)
 	})
 
 	page.activated = page.kernelCMDLineEdit

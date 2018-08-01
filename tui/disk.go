@@ -64,13 +64,13 @@ func newDiskPage(tui *Tui) (Page, error) {
 	gBtn := CreateSimpleButton(page.content, AutoSize, AutoSize, " Guided - use entire disk", Fixed)
 	gBtn.SetAlign(AlignLeft)
 	gBtn.OnClick(func(ev clui.Event) {
-		tui.gotoPage(TuiPageGuidedPart, tui.currPage)
+		page.GotoPage(TuiPageGuidedPart)
 	})
 
 	mBtn := CreateSimpleButton(page.content, AutoSize, AutoSize, " Manual configuration", Fixed)
 	mBtn.SetAlign(AlignLeft)
 	mBtn.OnClick(func(ev clui.Event) {
-		page.mi.gotoPage(TuiPageManualPart, tui.currPage)
+		page.GotoPage(TuiPageManualPart)
 	})
 
 	page.activated = gBtn

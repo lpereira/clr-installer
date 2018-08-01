@@ -26,7 +26,7 @@ func (page *MenuPage) addMenuItem(item Page) bool {
 	btn.SetAlign(AlignLeft)
 
 	btn.OnClick(func(ev clui.Event) {
-		page.mi.gotoPage(item.GetID(), page.mi.currPage)
+		page.GotoPage(item.GetID())
 	})
 
 	page.btns = append(page.btns, btn)
@@ -44,15 +44,15 @@ func (page *MenuPage) Activate() {
 
 	previous := false
 	activeSet := false
-	for _, curr := range page.mi.pages {
+	for _, curr := range page.tui.pages {
 		// Skip Menu Pages that are not required
 		if !curr.IsRequired() {
 			continue
 		}
 
-		if page.mi.prevPage != nil {
+		if page.tui.prevPage != nil {
 			// Is this menu option match the previous page?
-			previous = page.mi.prevPage.GetID() == curr.GetID()
+			previous = page.tui.prevPage.GetID() == curr.GetID()
 		}
 
 		// Does the menu item added have the data set completed?
@@ -101,7 +101,7 @@ func newMenuPage(tui *Tui) (Page, error) {
 
 	page.installBtn = CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Install", Fixed)
 	page.installBtn.OnClick(func(ev clui.Event) {
-		page.mi.gotoPage(TuiPageInstall, page.mi.currPage)
+		page.GotoPage(TuiPageInstall)
 	})
 
 	page.installBtn.SetEnabled(false)

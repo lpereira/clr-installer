@@ -101,7 +101,7 @@ func newSwupdMirrorPage(tui *Tui) (Page, error) {
 
 	page.cancelBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Cancel", Fixed)
 	page.cancelBtn.OnClick(func(ev clui.Event) {
-		tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
+		page.GotoPage(TuiPageAdvancedMenu)
 	})
 
 	page.confirmBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Confirm", Fixed)
@@ -114,7 +114,7 @@ func newSwupdMirrorPage(tui *Tui) (Page, error) {
 				page.getModel().SwupdMirror = mirror
 			}
 			page.SetDone(false)
-			tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
+			page.GotoPage(TuiPageAdvancedMenu)
 			page.userDefined = false
 		} else {
 			url, err := swupd.SetHostMirror(mirror)
@@ -127,7 +127,7 @@ func newSwupdMirrorPage(tui *Tui) (Page, error) {
 					page.userDefined = true
 					page.getModel().SwupdMirror = mirror
 					page.SetDone(true)
-					tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
+					page.GotoPage(TuiPageAdvancedMenu)
 				}
 			}
 		}

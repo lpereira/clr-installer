@@ -39,7 +39,7 @@ func (page *NetworkInterfacePage) getSelectedInterface() *network.Interface {
 	var iface *network.Interface
 	var ok bool
 
-	prevPage := page.mi.getPage(TuiPageNetwork)
+	prevPage := page.tui.getPage(TuiPageNetwork)
 	if iface, ok = prevPage.GetData().(*network.Interface); !ok {
 		return nil
 	}
@@ -238,7 +238,7 @@ func newNetworkInterfacePage(tui *Tui) (Page, error) {
 
 	cancelBtn := CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Cancel", Fixed)
 	cancelBtn.OnClick(func(ev clui.Event) {
-		tui.gotoPage(TuiPageNetwork, tui.currPage)
+		page.GotoPage(TuiPageNetwork)
 	})
 
 	page.confirmBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Confirm", Fixed)
@@ -293,8 +293,8 @@ func newNetworkInterfacePage(tui *Tui) (Page, error) {
 			page.getModel().AddNetworkInterface(sel)
 		}
 
-		tui.gotoPage(TuiPageNetwork, tui.currPage)
-		page.mi.getPage(TuiPageNetwork).SetDone(true)
+		page.GotoPage(TuiPageNetwork)
+		page.tui.getPage(TuiPageNetwork).SetDone(true)
 	})
 
 	return page, nil

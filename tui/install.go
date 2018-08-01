@@ -71,19 +71,19 @@ func (page *InstallPage) Activate() {
 	go func() {
 		progress.Set(page)
 
-		err := controller.Install(page.mi.rootDir, page.getModel())
+		err := controller.Install(page.tui.rootDir, page.getModel())
 		if err != nil {
 			page.Panic(err)
 		}
 
 		prg := progress.NewLoop("Saving the installation results")
-		if err := controller.SaveInstallResults(page.mi.rootDir, page.getModel()); err != nil {
+		if err := controller.SaveInstallResults(page.tui.rootDir, page.getModel()); err != nil {
 			log.ErrorError(err)
 		}
 		prg.Done()
 
 		prg = progress.NewLoop("Cleaning up install environment")
-		if err := controller.Cleanup(page.mi.rootDir, true); err != nil {
+		if err := controller.Cleanup(page.tui.rootDir, true); err != nil {
 			log.ErrorError(err)
 		}
 		prg.Done()
@@ -94,7 +94,7 @@ func (page *InstallPage) Activate() {
 		clui.ActivateControl(page.GetWindow(), page.rebootBtn)
 		clui.RefreshScreen()
 
-		page.mi.installReboot = true
+		page.tui.installReboot = true
 	}()
 }
 
@@ -124,7 +124,7 @@ func newInstallPage(tui *Tui) (Page, error) {
 
 	page.exitBtn = CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Exit", Fixed)
 	page.exitBtn.OnClick(func(ev clui.Event) {
-		page.mi.installReboot = false
+		page.tui.installReboot = false
 		go clui.Stop()
 	})
 	page.exitBtn.SetEnabled(false)

@@ -74,7 +74,7 @@ func newBundlePage(tui *Tui) (Page, error) {
 
 	cancelBtn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Cancel", Fixed)
 	cancelBtn.OnClick(func(ev clui.Event) {
-		tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
+		page.GotoPage(TuiPageAdvancedMenu)
 	})
 
 	confirmBtn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Confirm", Fixed)
@@ -90,7 +90,7 @@ func newBundlePage(tui *Tui) (Page, error) {
 		}
 
 		page.SetDone(anySelected)
-		tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
+		page.GotoPage(TuiPageAdvancedMenu)
 	})
 
 	return page, nil
