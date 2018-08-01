@@ -18,12 +18,12 @@ import (
 // MkdirAll similar to go's standard os.MkdirAll() this function creates a directory
 // named path, along with any necessary parents but also checks if path exists and
 // takes no action if that's true.
-func MkdirAll(path string) error {
+func MkdirAll(path string, perm os.FileMode) error {
 	if _, err := os.Stat(path); err == nil {
 		return nil
 	}
 
-	if err := os.MkdirAll(path, 0777); err != nil {
+	if err := os.MkdirAll(path, perm); err != nil {
 		return errors.Errorf("mkdir %s: %v", path, err)
 	}
 

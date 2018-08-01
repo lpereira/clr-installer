@@ -117,7 +117,7 @@ func setTempTargetPAMConfig(rootDir string) error {
 
 	pamDir := filepath.Join(rootDir, "etc", "pam.d")
 
-	if err = utils.MkdirAll(pamDir); err != nil {
+	if err = utils.MkdirAll(pamDir, 0755); err != nil {
 		return err
 	}
 

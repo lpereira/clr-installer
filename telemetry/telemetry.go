@@ -176,7 +176,7 @@ func (tl *Telemetry) CreateTelemetryConf(rootDir string) error {
 	// Ensure the customer configuration file directory exists
 	targetConfFile := filepath.Join(rootDir, customTelemetryConf)
 	targetConfDir := filepath.Dir(targetConfFile)
-	if err := utils.MkdirAll(targetConfDir); err != nil {
+	if err := utils.MkdirAll(targetConfDir, 0755); err != nil {
 		return err
 	}
 

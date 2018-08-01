@@ -39,7 +39,7 @@ func IsValidHostname(hostname string) string {
 func SetTargetHostname(rootDir string, hostname string) error {
 	hostDir := filepath.Join(rootDir, "etc")
 
-	if err := utils.MkdirAll(hostDir); err != nil {
+	if err := utils.MkdirAll(hostDir, 0755); err != nil {
 		// Fallback in the unlikely case we can't use root's home
 		return errors.Errorf("Failed to create directory (%v) %q", err, hostDir)
 	}

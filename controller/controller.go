@@ -122,7 +122,7 @@ func Install(rootDir string, model *model.SystemInstall) error {
 		cmdlineFile := filepath.Join(cmdlineDir, "cmdline")
 		cmdline := model.KernelCMDLine
 
-		if err = utils.MkdirAll(cmdlineDir); err != nil {
+		if err = utils.MkdirAll(cmdlineDir, 0755); err != nil {
 			return err
 		}
 
@@ -283,7 +283,7 @@ func SaveInstallResults(rootDir string, model *model.SystemInstall) error {
 	log.Info("Saving Installation results to %s", rootDir)
 
 	saveDir := filepath.Join(rootDir, "root")
-	if err = utils.MkdirAll(saveDir); err != nil {
+	if err = utils.MkdirAll(saveDir, 0755); err != nil {
 		// Fallback in the unlikely case we can't use root's home
 		saveDir = rootDir
 	}

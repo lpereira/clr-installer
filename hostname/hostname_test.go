@@ -103,7 +103,7 @@ func TestFailedToCreateDir(t *testing.T) {
 	}
 
 	rootDir := filepath.Join(dir, "root")
-	if err = utils.MkdirAll(rootDir); err != nil {
+	if err = utils.MkdirAll(rootDir, 0755); err != nil {
 		t.Fatal(err)
 	}
 
@@ -132,7 +132,7 @@ func TestFailedToWrite(t *testing.T) {
 	}
 
 	etcDir := filepath.Join(dir, "etc")
-	if err = utils.MkdirAll(etcDir); err != nil {
+	if err = utils.MkdirAll(etcDir, 0755); err != nil {
 		t.Fatal(err)
 	}
 

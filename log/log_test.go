@@ -208,7 +208,7 @@ func TestFailedToArchiveUnwritableFile(t *testing.T) {
 	}
 
 	rootDir := filepath.Join(dir, "root")
-	if err = utils.MkdirAll(rootDir); err != nil {
+	if err = utils.MkdirAll(rootDir, 0755); err != nil {
 		t.Fatal(err)
 	}
 
@@ -237,7 +237,7 @@ func TestFailedToSetOutput(t *testing.T) {
 	}
 
 	rootDir := filepath.Join(dir, "root")
-	if err = utils.MkdirAll(rootDir); err != nil {
+	if err = utils.MkdirAll(rootDir, 0755); err != nil {
 		t.Fatal(err)
 	}
 

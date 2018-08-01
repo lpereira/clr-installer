@@ -170,7 +170,7 @@ func TestApply(t *testing.T) {
 	}
 
 	etcDir := filepath.Join(dir, configDir)
-	if err = utils.MkdirAll(etcDir); err != nil {
+	if err = utils.MkdirAll(etcDir, 0755); err != nil {
 		t.Fatal(err)
 	}
 
