@@ -41,7 +41,7 @@ func (bp *BundlePage) Activate() {
 	}
 }
 
-func newBundlePage(mi *Tui) (Page, error) {
+func newBundlePage(tui *Tui) (Page, error) {
 	bdls, err := swupd.LoadBundleList()
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func newBundlePage(mi *Tui) (Page, error) {
 	}
 
 	page := &BundlePage{}
-	page.setupMenu(mi, TuiPageBundle, "Bundle Selection", NoButtons, TuiPageAdvancedMenu)
+	page.setupMenu(tui, TuiPageBundle, "Bundle Selection", NoButtons, TuiPageAdvancedMenu)
 
 	clui.CreateLabel(page.content, 2, 2, "Select additional bundles to be added to the system", Fixed)
 
@@ -74,7 +74,7 @@ func newBundlePage(mi *Tui) (Page, error) {
 
 	cancelBtn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Cancel", Fixed)
 	cancelBtn.OnClick(func(ev clui.Event) {
-		mi.gotoPage(TuiPageAdvancedMenu, mi.currPage)
+		tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
 	})
 
 	confirmBtn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Confirm", Fixed)
@@ -90,7 +90,7 @@ func newBundlePage(mi *Tui) (Page, error) {
 		}
 
 		page.SetDone(anySelected)
-		mi.gotoPage(TuiPageAdvancedMenu, mi.currPage)
+		tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
 	})
 
 	return page, nil

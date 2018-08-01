@@ -153,9 +153,9 @@ func validateIPEdit(k term.Key, ch rune) bool {
 	return true
 }
 
-func newNetworkInterfacePage(mi *Tui) (Page, error) {
+func newNetworkInterfacePage(tui *Tui) (Page, error) {
 	page := &NetworkInterfacePage{}
-	page.setup(mi, TuiPageInterface, NoButtons, TuiPageAdvancedMenu)
+	page.setup(tui, TuiPageInterface, NoButtons, TuiPageAdvancedMenu)
 
 	frm := clui.CreateFrame(page.content, AutoSize, AutoSize, BorderNone, Fixed)
 	frm.SetPack(clui.Horizontal)
@@ -238,7 +238,7 @@ func newNetworkInterfacePage(mi *Tui) (Page, error) {
 
 	cancelBtn := CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Cancel", Fixed)
 	cancelBtn.OnClick(func(ev clui.Event) {
-		mi.gotoPage(TuiPageNetwork, mi.currPage)
+		tui.gotoPage(TuiPageNetwork, tui.currPage)
 	})
 
 	page.confirmBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Confirm", Fixed)
@@ -293,7 +293,7 @@ func newNetworkInterfacePage(mi *Tui) (Page, error) {
 			page.getModel().AddNetworkInterface(sel)
 		}
 
-		mi.gotoPage(TuiPageNetwork, mi.currPage)
+		tui.gotoPage(TuiPageNetwork, tui.currPage)
 		page.mi.getPage(TuiPageNetwork).SetDone(true)
 	})
 

@@ -139,10 +139,10 @@ func (page *DiskPartitionPage) validateMountPoint() {
 	page.setConfirmButton()
 }
 
-func newDiskPartitionPage(mi *Tui) (Page, error) {
+func newDiskPartitionPage(tui *Tui) (Page, error) {
 	page := &DiskPartitionPage{}
 
-	page.setup(mi, TuiPageDiskPart, NoButtons, TuiPageMenu)
+	page.setup(tui, TuiPageDiskPart, NoButtons, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Partition Setup", Fixed)
 	lbl.SetPaddings(0, 2)
@@ -248,7 +248,7 @@ func newDiskPartitionPage(mi *Tui) (Page, error) {
 			}
 		}
 
-		mi.gotoPage(TuiPageManualPart, mi.currPage)
+		tui.gotoPage(TuiPageManualPart, tui.currPage)
 	})
 
 	page.deleteBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Delete", Fixed)
@@ -256,12 +256,12 @@ func newDiskPartitionPage(mi *Tui) (Page, error) {
 		sel := page.getSelectedBlockDevice()
 		sel.bd.RemoveChild(sel.part)
 
-		mi.gotoPage(TuiPageManualPart, mi.currPage)
+		tui.gotoPage(TuiPageManualPart, tui.currPage)
 	})
 
 	page.cancelBtn = CreateSimpleButton(btnFrm, AutoSize, AutoSize, "Cancel", Fixed)
 	page.cancelBtn.OnClick(func(ev clui.Event) {
-		mi.gotoPage(TuiPageManualPart, mi.currPage)
+		tui.gotoPage(TuiPageManualPart, tui.currPage)
 	})
 
 	page.activated = page.fsList

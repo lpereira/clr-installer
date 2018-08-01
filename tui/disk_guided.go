@@ -132,9 +132,9 @@ func (page *GuidedPartPage) Activate() {
 	}
 }
 
-func newGuidedPartitionPage(mi *Tui) (Page, error) {
+func newGuidedPartitionPage(tui *Tui) (Page, error) {
 	page := &GuidedPartPage{}
-	page.setup(mi, TuiPageGuidedPart, AllButtons, TuiPageMenu)
+	page.setup(tui, TuiPageGuidedPart, AllButtons, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Guided Partition", Fixed)
 	lbl.SetPaddings(0, 2)

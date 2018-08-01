@@ -69,9 +69,10 @@ func (page *NetworkValidatePage) Activate() {
 	page.prgBar.SetValue(0)
 }
 
-func newNetworkValidatePage(mi *Tui) (Page, error) {
+func newNetworkValidatePage(tui *Tui) (Page, error) {
 	page := &NetworkValidatePage{}
-	page.setupMenu(mi, TuiPageNetworkValidate, "Test Network Settings", NoButtons, TuiPageAdvancedMenu)
+	page.setupMenu(tui, TuiPageNetworkValidate, "Test Network Settings",
+		NoButtons, TuiPageAdvancedMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Test Network Settings", clui.Fixed)
 	lbl.SetPaddings(0, 2)
@@ -105,7 +106,7 @@ func newNetworkValidatePage(mi *Tui) (Page, error) {
 			} else {
 				page.prgLabel.SetTitle("Success.")
 				page.doneBtn.SetVisible(true)
-				clui.ActivateControl(mi.currPage.GetWindow(), page.doneBtn)
+				clui.ActivateControl(tui.currPage.GetWindow(), page.doneBtn)
 			}
 
 			clui.RefreshScreen()

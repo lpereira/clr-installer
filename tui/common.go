@@ -267,15 +267,15 @@ func (page *BasePage) GetButtonPrefix(item Page) string {
 	return prefix
 }
 
-func (page *BasePage) setupMenu(mi *Tui, id int, menuTitle string, btns int, returnID int) {
-	page.setup(mi, id, btns, returnID)
+func (page *BasePage) setupMenu(tui *Tui, id int, menuTitle string, btns int, returnID int) {
+	page.setup(tui, id, btns, returnID)
 	page.menuTitle = menuTitle
 }
 
-func (page *BasePage) setup(mi *Tui, id int, btns int, returnID int) {
+func (page *BasePage) setup(tui *Tui, id int, btns int, returnID int) {
 	page.action = ActionNone
 	page.id = id
-	page.mi = mi
+	page.mi = tui
 	page.newWindow()
 
 	page.mFrame = clui.CreateFrame(page.window, 78, 22, BorderNone, clui.Fixed)
@@ -299,7 +299,7 @@ func (page *BasePage) setup(mi *Tui, id int, btns int, returnID int) {
 	}
 
 	if btns&DoneButton == DoneButton {
-		page.newDoneButton(mi, returnID)
+		page.newDoneButton(tui, returnID)
 	}
 
 	page.window.SetVisible(false)
@@ -351,13 +351,13 @@ func (page *BasePage) newCancelButton(pageID int) {
 	page.cancelBtn = btn
 }
 
-func (page *BasePage) newDoneButton(mi *Tui, pageID int) {
+func (page *BasePage) newDoneButton(tui *Tui, pageID int) {
 	btn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Done", Fixed)
 
 	btn.OnClick(func(ev clui.Event) {
-		if mi.currPage.SetDone(true) {
+		if tui.currPage.SetDone(true) {
 			page.action = ActionDoneButton
-			mi.gotoPage(pageID, page.mi.currPage)
+			tui.gotoPage(pageID, page.mi.currPage)
 			page.action = ActionNone
 		}
 	})

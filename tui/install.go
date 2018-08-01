@@ -98,9 +98,9 @@ func (page *InstallPage) Activate() {
 	}()
 }
 
-func newInstallPage(mi *Tui) (Page, error) {
+func newInstallPage(tui *Tui) (Page, error) {
 	page := &InstallPage{}
-	page.setup(mi, TuiPageInstall, NoButtons, TuiPageMenu)
+	page.setup(tui, TuiPageInstall, NoButtons, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Installing Clear Linux", Fixed)
 	lbl.SetPaddings(0, 2)

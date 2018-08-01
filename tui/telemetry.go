@@ -26,14 +26,14 @@ See http://clearlinux.org/features/telemetry for more information.
 Intel's privacy policy can be found at: http://www.intel.com/privacy.`
 )
 
-func newTelemetryPage(mi *Tui) (Page, error) {
+func newTelemetryPage(tui *Tui) (Page, error) {
 	page := &TelemetryPage{
 		BasePage: BasePage{
 			// Tag this Page as required to be complete for the Install to proceed
 			required: true,
 		},
 	}
-	page.setupMenu(mi, TuiPageTelemetry, "Telemetry", BackButton|DoneButton, TuiPageMenu)
+	page.setupMenu(tui, TuiPageTelemetry, "Telemetry", BackButton|DoneButton, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 11, telemetryHelp, Fixed)
 	lbl.SetMultiline(true)

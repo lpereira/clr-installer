@@ -100,9 +100,9 @@ func (page *UseraddPage) validatePassword() {
 	page.confirmBtn.SetEnabled(!showLabel && (validLogin && !sysDefUser))
 }
 
-func newUseraddPage(mi *Tui) (Page, error) {
+func newUseraddPage(tui *Tui) (Page, error) {
 	page := &UseraddPage{users: []*UserBtn{}}
-	page.setupMenu(mi, TuiPageUseradd, "Add Users", BackButton, TuiPageAdvancedMenu)
+	page.setupMenu(tui, TuiPageUseradd, "Add Users", BackButton, TuiPageAdvancedMenu)
 
 	clui.CreateLabel(page.content, 2, 2, "Add new users", Fixed)
 

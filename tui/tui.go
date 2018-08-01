@@ -45,7 +45,7 @@ func New() *Tui {
 
 // MustRun is part of the Frontend interface implementation and tells the core that this
 // frontend wants/must run.
-func (mi *Tui) MustRun(args *args.Args) bool {
+func (tui *Tui) MustRun(args *args.Args) bool {
 	return true
 }
 
@@ -84,11 +84,11 @@ func lookupThemeDir() (string, error) {
 }
 
 // Run is part of the Frontend interface implementation and is the tui frontend main entry point
-func (mi *Tui) Run(md *model.SystemInstall, rootDir string) (bool, error) {
+func (tui *Tui) Run(md *model.SystemInstall, rootDir string) (bool, error) {
 	clui.InitLibrary()
 	defer clui.DeinitLibrary()
 
-	mi.model = md
+	tui.model = md
 	themeDir, err := lookupThemeDir()
 	if err != nil {
 		return false, err
@@ -103,8 +103,8 @@ func (mi *Tui) Run(md *model.SystemInstall, rootDir string) (bool, error) {
 	errorLabelBg = clui.RealColor(clui.ColorDefault, "ErrorLabelBack")
 	errorLabelFg = clui.RealColor(clui.ColorDefault, "ErrorLabelText")
 
-	mi.rootDir = rootDir
-	mi.paniced = make(chan error, 1)
+	tui.rootDir = rootDir
+	tui.paniced = make(chan error, 1)
 
 	menus := []struct {
 		desc string
@@ -137,19 +137,19 @@ func (mi *Tui) Run(md *model.SystemInstall, rootDir string) (bool, error) {
 	for _, menu := range menus {
 		var page Page
 
-		if page, err = menu.fc(mi); err != nil {
+		if page, err = menu.fc(tui); err != nil {
 			return false, err
 		}
 
-		mi.pages = append(mi.pages, page)
+		tui.pages = append(tui.pages, page)
 	}
 
-	mi.gotoPage(TuiPageMenu, mi.currPage)
+	tui.gotoPage(TuiPageMenu, tui.currPage)
 
 	var paniced error
 
 	go func() {
-		if paniced = <-mi.paniced; paniced != nil {
+		if paniced = <-tui.paniced; paniced != nil {
 			clui.Stop()
 			log.ErrorError(paniced)
 		}
@@ -161,29 +161,29 @@ func (mi *Tui) Run(md *model.SystemInstall, rootDir string) (bool, error) {
 		panic(paniced)
 	}
 
-	return mi.installReboot, nil
+	return tui.installReboot, nil
 }
 
-func (mi *Tui) gotoPage(id int, currPage Page) {
-	if mi.currPage != nil {
-		mi.currPage.GetWindow().SetVisible(false)
-		mi.currPage.DeActivate()
+func (tui *Tui) gotoPage(id int, currPage Page) {
+	if tui.currPage != nil {
+		tui.currPage.GetWindow().SetVisible(false)
+		tui.currPage.DeActivate()
 
 		// TODO clui is not hiding cursor when we hide/destroy an edit widget
 		termbox.HideCursor()
 	}
 
-	mi.currPage = mi.getPage(id)
-	mi.prevPage = currPage
+	tui.currPage = tui.getPage(id)
+	tui.prevPage = currPage
 
-	mi.currPage.Activate()
-	mi.currPage.GetWindow().SetVisible(true)
+	tui.currPage.Activate()
+	tui.currPage.GetWindow().SetVisible(true)
 
-	clui.ActivateControl(mi.currPage.GetWindow(), mi.currPage.GetActivated())
+	clui.ActivateControl(tui.currPage.GetWindow(), tui.currPage.GetActivated())
 }
 
-func (mi *Tui) getPage(page int) Page {
-	for _, curr := range mi.pages {
+func (tui *Tui) getPage(page int) Page {
+	for _, curr := range tui.pages {
 		if curr.GetID() == page {
 			return curr
 		}

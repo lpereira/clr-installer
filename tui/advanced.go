@@ -80,7 +80,7 @@ const (
 
 // The Advanced page gives the user the option so select how to set the storage device,
 // if to manually configure it or a guided standard partition schema
-func newAdvancedPage(mi *Tui) (Page, error) {
+func newAdvancedPage(tui *Tui) (Page, error) {
 	page := &AdvancedSubMenuPage{
 		BasePage: BasePage{
 			// Tag this Page as required to be complete for the Install to proceed
@@ -88,7 +88,7 @@ func newAdvancedPage(mi *Tui) (Page, error) {
 		},
 	}
 
-	page.setupMenu(mi, TuiPageAdvancedMenu, "Advanced/Optional Menu", BackButton, TuiPageMenu)
+	page.setupMenu(tui, TuiPageAdvancedMenu, "Advanced/Optional Menu", BackButton, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 70, 3, advancedDesc, Fixed)
 	lbl.SetMultiline(true)

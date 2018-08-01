@@ -44,14 +44,14 @@ func (page *DiskMenuPage) GetConfigDefinition() int {
 
 // The disk page gives the user the option so select how to set the storage device,
 // if to manually configure it or a guided standard partition schema
-func newDiskPage(mi *Tui) (Page, error) {
+func newDiskPage(tui *Tui) (Page, error) {
 	page := &DiskMenuPage{
 		BasePage: BasePage{
 			// Tag this Page as required to be complete for the Install to proceed
 			required: true,
 		},
 	}
-	page.setupMenu(mi, TuiPageDiskMenu, "Partition disks", BackButton, TuiPageMenu)
+	page.setupMenu(tui, TuiPageDiskMenu, "Partition disks", BackButton, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Partition Disks", clui.Fixed)
 	lbl.SetPaddings(0, 2)
@@ -64,13 +64,13 @@ func newDiskPage(mi *Tui) (Page, error) {
 	gBtn := CreateSimpleButton(page.content, AutoSize, AutoSize, " Guided - use entire disk", Fixed)
 	gBtn.SetAlign(AlignLeft)
 	gBtn.OnClick(func(ev clui.Event) {
-		mi.gotoPage(TuiPageGuidedPart, mi.currPage)
+		tui.gotoPage(TuiPageGuidedPart, tui.currPage)
 	})
 
 	mBtn := CreateSimpleButton(page.content, AutoSize, AutoSize, " Manual configuration", Fixed)
 	mBtn.SetAlign(AlignLeft)
 	mBtn.OnClick(func(ev clui.Event) {
-		page.mi.gotoPage(TuiPageManualPart, mi.currPage)
+		page.mi.gotoPage(TuiPageManualPart, tui.currPage)
 	})
 
 	page.activated = gBtn

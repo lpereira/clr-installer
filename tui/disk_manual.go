@@ -194,11 +194,11 @@ func (page *ManualPartPage) SetDone(done bool) bool {
 	return false
 }
 
-func newManualPartitionPage(mi *Tui) (Page, error) {
+func newManualPartitionPage(tui *Tui) (Page, error) {
 	partBtnBg = clui.RealColor(clui.ColorDefault, "ManualPartitionBack")
 
 	page := &ManualPartPage{}
-	page.setup(mi, TuiPageManualPart, AllButtons, TuiPageMenu)
+	page.setup(tui, TuiPageManualPart, AllButtons, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Manual Partition", Fixed)
 	lbl.SetPaddings(0, 2)

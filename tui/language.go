@@ -54,7 +54,7 @@ func (page *LanguagePage) DeActivate() {
 	}
 }
 
-func newLanguagePage(mi *Tui) (Page, error) {
+func newLanguagePage(tui *Tui) (Page, error) {
 	avLanguages, err := language.Load()
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func newLanguagePage(mi *Tui) (Page, error) {
 		},
 	}
 
-	page.setupMenu(mi, TuiPageLanguage, "Choose language", DoneButton|CancelButton, TuiPageMenu)
+	page.setupMenu(tui, TuiPageLanguage, "Choose language", DoneButton|CancelButton, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Select System Language", Fixed)
 	lbl.SetPaddings(0, 2)

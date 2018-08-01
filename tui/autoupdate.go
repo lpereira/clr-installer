@@ -33,10 +33,11 @@ To enable post-installation, use:
 `
 )
 
-func newAutoUpdatePage(mi *Tui) (Page, error) {
+func newAutoUpdatePage(tui *Tui) (Page, error) {
 	page := &AutoUpdatePage{}
 
-	page.setupMenu(mi, TuiPageAutoUpdate, "Automatic OS Updates", BackButton|DoneButton, TuiPageAdvancedMenu)
+	page.setupMenu(tui, TuiPageAutoUpdate, "Automatic OS Updates",
+		BackButton|DoneButton, TuiPageAdvancedMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 16, autoUpdateHelp, Fixed)
 	lbl.SetMultiline(true)

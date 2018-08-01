@@ -52,7 +52,7 @@ func (kp *KernelPage) GetConfigDefinition() int {
 	return ConfigDefinedByConfig
 }
 
-func newKernelPage(mi *Tui) (Page, error) {
+func newKernelPage(tui *Tui) (Page, error) {
 	page := &KernelPage{kernels: []*KernelRadio{}}
 
 	kernels, err := kernel.LoadKernelList()
@@ -64,7 +64,7 @@ func newKernelPage(mi *Tui) (Page, error) {
 		page.kernels = append(page.kernels, &KernelRadio{curr, nil})
 	}
 
-	page.setupMenu(mi, TuiPageKernel, "Kernel Selection", NoButtons, TuiPageAdvancedMenu)
+	page.setupMenu(tui, TuiPageKernel, "Kernel Selection", NoButtons, TuiPageAdvancedMenu)
 	clui.CreateLabel(page.content, 2, 2, "Select desired kernel", Fixed)
 
 	frm := clui.CreateFrame(page.content, AutoSize, AutoSize, BorderNone, Fixed)
@@ -88,7 +88,7 @@ func newKernelPage(mi *Tui) (Page, error) {
 
 	cancelBtn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Cancel", Fixed)
 	cancelBtn.OnClick(func(ev clui.Event) {
-		mi.gotoPage(TuiPageAdvancedMenu, mi.currPage)
+		tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
 	})
 
 	confirmBtn := CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Confirm", Fixed)
@@ -96,7 +96,7 @@ func newKernelPage(mi *Tui) (Page, error) {
 		selected := page.group.Selected()
 		page.getModel().Kernel = page.kernels[selected].kernel
 		page.SetDone(true)
-		mi.gotoPage(TuiPageAdvancedMenu, mi.currPage)
+		tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
 	})
 
 	return page, nil

@@ -59,7 +59,7 @@ func (page *KeyboardPage) DeActivate() {
 	}
 }
 
-func newKeyboardPage(mi *Tui) (Page, error) {
+func newKeyboardPage(tui *Tui) (Page, error) {
 	kmaps, err := keyboard.LoadKeymaps()
 	if err != nil {
 		return nil, err
@@ -73,7 +73,8 @@ func newKeyboardPage(mi *Tui) (Page, error) {
 		},
 	}
 
-	page.setupMenu(mi, TuiPageKeyboard, "Configure the keyboard", DoneButton|CancelButton, TuiPageMenu)
+	page.setupMenu(tui, TuiPageKeyboard, "Configure the keyboard",
+		DoneButton|CancelButton, TuiPageMenu)
 
 	lbl := clui.CreateLabel(page.content, 2, 2, "Select Keyboard", Fixed)
 	lbl.SetPaddings(0, 2)

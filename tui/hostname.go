@@ -48,9 +48,9 @@ func (page *HostnamePage) setConfirmButton() {
 	}
 }
 
-func newHostnamePage(mi *Tui) (Page, error) {
+func newHostnamePage(tui *Tui) (Page, error) {
 	page := &HostnamePage{}
-	page.setupMenu(mi, TuiPageHostname, "Assign Hostname", NoButtons, TuiPageAdvancedMenu)
+	page.setupMenu(tui, TuiPageHostname, "Assign Hostname", NoButtons, TuiPageAdvancedMenu)
 
 	clui.CreateLabel(page.content, 2, 2, "Assign a Hostname for the installation target", Fixed)
 
@@ -89,7 +89,7 @@ func newHostnamePage(mi *Tui) (Page, error) {
 
 	page.cancelBtn = CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Cancel", Fixed)
 	page.cancelBtn.OnClick(func(ev clui.Event) {
-		mi.gotoPage(TuiPageAdvancedMenu, mi.currPage)
+		tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
 	})
 
 	page.confirmBtn = CreateSimpleButton(page.cFrame, AutoSize, AutoSize, "Confirm", Fixed)
@@ -105,7 +105,7 @@ func newHostnamePage(mi *Tui) (Page, error) {
 		}
 		page.getModel().Hostname = hostname
 		page.setConfirmButton()
-		mi.gotoPage(TuiPageAdvancedMenu, mi.currPage)
+		tui.gotoPage(TuiPageAdvancedMenu, tui.currPage)
 	})
 	page.confirmBtn.SetEnabled(false)
 
