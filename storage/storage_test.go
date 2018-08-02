@@ -80,7 +80,7 @@ func TestInvalidValues(t *testing.T) {
 
 	tmpl, err := template.New("").Parse(templateStr)
 	if err != nil {
-		panic(err)
+		t.Fatalf("Failed to parse template: %s", err)
 	}
 
 	for _, curr := range tests {
@@ -88,7 +88,7 @@ func TestInvalidValues(t *testing.T) {
 
 		err = tmpl.Execute(w, curr)
 		if err != nil {
-			panic(err)
+			t.Fatalf("Failed to execute template: %s", err)
 		}
 
 		_, err := parseBlockDevicesDescriptor(w.Bytes())
@@ -130,7 +130,7 @@ func TestSizeUnits(t *testing.T) {
 
 	tmpl, err := template.New("").Parse(templateStr)
 	if err != nil {
-		panic(err)
+		t.Fatalf("Failed to parse template: %s", err)
 	}
 
 	for _, curr := range tests {
@@ -138,7 +138,7 @@ func TestSizeUnits(t *testing.T) {
 
 		err = tmpl.Execute(w, curr)
 		if err != nil {
-			panic(err)
+			t.Fatalf("Failed to execute template: %s", err)
 		}
 
 		bd, _ := parseBlockDevicesDescriptor(w.Bytes())
