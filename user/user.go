@@ -141,18 +141,18 @@ func Apply(rootDir string, users []*User) error {
 
 	prg := progress.NewLoop("Adding extra users")
 	if err := setTempTargetPAMConfig(rootDir); err != nil {
-		prg.Done()
+		prg.Failure()
 		return err
 	}
 
 	for _, usr := range users {
 		if err := usr.apply(rootDir); err != nil {
-			prg.Done()
+			prg.Failure()
 			return err
 		}
 	}
 
-	prg.Done()
+	prg.Success()
 	return nil
 }
 

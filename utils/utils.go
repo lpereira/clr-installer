@@ -61,6 +61,21 @@ func CopyFile(src string, dest string) error {
 	return nil
 }
 
+// FileExists returns true if the file or directory exists
+// else it returns false and the associated error
+func FileExists(filePath string) (bool, error) {
+	_, err := os.Stat(filePath)
+	if err == nil {
+		return true, nil
+	}
+
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+
+	return true, err
+}
+
 // VerifyRootUser returns an error if we're not running as root
 func VerifyRootUser() error {
 	// ProgName is the short name of this executable

@@ -12,6 +12,7 @@ import (
 	"github.com/clearlinux/clr-installer/progress"
 
 	"github.com/VladimirMarkelov/clui"
+	term "github.com/nsf/termbox-go"
 )
 
 // InstallPage is the Page implementation for installation progress page, it also implements
@@ -29,10 +30,28 @@ var (
 	loopWaitDuration = 2 * time.Second
 )
 
-// Done is part of the progress.Client implementation and sets the progress bar to "full"
-func (page *InstallPage) Done() {
+// Success is part of the progress.Client implementation and represents the
+// successful progress completion of a task by setting
+// the progress bar to "full"
+func (page *InstallPage) Success() {
 	page.prgBar.SetValue(page.prgMax)
 	clui.RefreshScreen()
+}
+
+// Failure is part of the progress.Client implementation and represents the
+// unsuccessful progress completion of a task by setting
+// the progress bar to "fail"
+func (page *InstallPage) Failure() {
+	bg := page.prgBar.BackColor()
+	page.prgBar.SetValue(0)
+	for i := 1; i <= 5; i++ {
+		page.prgBar.SetBackColor(term.ColorRed)
+		clui.RefreshScreen()
+		time.Sleep(100 * time.Millisecond)
+		page.prgBar.SetBackColor(bg)
+		clui.RefreshScreen()
+		time.Sleep(100 * time.Millisecond)
+	}
 }
 
 // Step is part of the progress.Client implementation and moves the progress bar one step
@@ -74,19 +93,20 @@ func (page *InstallPage) Activate() {
 		err := controller.Install(page.tui.rootDir, page.getModel())
 		if err != nil {
 			page.Panic(err)
+			return // In a panic state, do not continue
 		}
 
 		prg := progress.NewLoop("Saving the installation results")
 		if err := controller.SaveInstallResults(page.tui.rootDir, page.getModel()); err != nil {
 			log.ErrorError(err)
 		}
-		prg.Done()
+		prg.Success()
 
 		prg = progress.NewLoop("Cleaning up install environment")
 		if err := controller.Cleanup(page.tui.rootDir, true); err != nil {
 			log.ErrorError(err)
 		}
-		prg.Done()
+		prg.Success()
 
 		page.prgLabel.SetTitle("Installation complete")
 		page.rebootBtn.SetEnabled(true)

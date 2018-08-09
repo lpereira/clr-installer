@@ -193,7 +193,7 @@ func (bd *BlockDevice) WritePartitionTable() error {
 	if err != nil {
 		return errors.Wrap(err)
 	}
-	prg.Done()
+	prg.Success()
 
 	prg = progress.MultiStep(len(guids), "Adjusting filesystem configurations")
 	cnt := 1
@@ -214,13 +214,13 @@ func (bd *BlockDevice) WritePartitionTable() error {
 	}
 
 	if err = bd.partProbe(); err != nil {
-		prg.Done()
+		prg.Failure()
 		return err
 	}
 
 	time.Sleep(time.Duration(4) * time.Second)
 
-	prg.Done()
+	prg.Success()
 
 	return nil
 }

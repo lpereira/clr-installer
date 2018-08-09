@@ -11,6 +11,7 @@ import (
 	"github.com/clearlinux/clr-installer/progress"
 
 	"github.com/VladimirMarkelov/clui"
+	term "github.com/nsf/termbox-go"
 )
 
 // NetworkValidatePage is the Page implementation for network config validation, it also
@@ -28,10 +29,28 @@ const (
 network settings and try to reach the required network servers.`
 )
 
-// Done is part of the progress.Client implementation and sets the progress bar to "full"
-func (page *NetworkValidatePage) Done() {
+// Success is part of the progress.Client implementation and represents the
+// successful progress completion of a task by setting
+// the progress bar to "full"
+func (page *NetworkValidatePage) Success() {
 	page.prgBar.SetValue(page.prgMax)
 	clui.RefreshScreen()
+}
+
+// Failure is part of the progress.Client implementation and represents the
+// unsuccessful progress completion of a task by setting
+// the progress bar to "fail"
+func (page *NetworkValidatePage) Failure() {
+	bg := page.prgBar.BackColor()
+	page.prgBar.SetValue(0)
+	for i := 1; i <= 5; i++ {
+		page.prgBar.SetBackColor(term.ColorRed)
+		clui.RefreshScreen()
+		time.Sleep(100 * time.Millisecond)
+		page.prgBar.SetBackColor(bg)
+		clui.RefreshScreen()
+		time.Sleep(100 * time.Millisecond)
+	}
 }
 
 // Step is part of the progress.Client implementation and moves the progress bar one step
@@ -103,7 +122,9 @@ func newNetworkValidatePage(tui *Tui) (Page, error) {
 
 			if err := controller.ConfigureNetwork(page.getModel()); err != nil {
 				page.prgLabel.SetTitle("Failed. Network is not working.")
+				page.Failure()
 			} else {
+				page.Success()
 				page.prgLabel.SetTitle("Success.")
 				page.doneBtn.SetVisible(true)
 				clui.ActivateControl(tui.currPage.GetWindow(), page.doneBtn)

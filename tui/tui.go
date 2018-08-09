@@ -158,6 +158,9 @@ func (tui *Tui) Run(md *model.SystemInstall, rootDir string) (bool, error) {
 	clui.MainLoop()
 
 	if paniced != nil {
+		if errLog := md.Telemetry.LogRecord("tuipanic", 3, paniced.Error()); errLog != nil {
+			log.Error("Failed to log Telemetry fail record: %s", "tuipanic")
+		}
 		panic(paniced)
 	}
 

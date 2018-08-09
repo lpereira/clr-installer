@@ -23,8 +23,11 @@ type Client interface {
 	// time returned by LoopWaitDuration
 	Step()
 
-	// Done is called whenever a progress task is completed
-	Done()
+	// Success is called whenever a progress task is completed successfully
+	Success()
+
+	// Failure is called whenever a progress task is failed to be completed
+	Failure()
 
 	// LoopWaitDuration gives the implementation the opportunity configure the loop progress
 	// step period
@@ -35,7 +38,8 @@ type Client interface {
 // two different implementations a MultiStep and a Loop based one
 type Progress interface {
 	Partial(step int)
-	Done()
+	Success()
+	Failure()
 }
 
 // BaseProgress is the common implementation between MultiStep and Loop progress
@@ -98,11 +102,18 @@ func NewLoop(format string, a ...interface{}) Progress {
 	return prg
 }
 
-// Done notifies the actual implementation we have finished a task, this is the
-// specific implementation for Loop based progress
-func (prg *Loop) Done() {
+// Success notifies the actual implementation we have finished a task
+// successfully, this is the specific implementation for Loop based progress
+func (prg *Loop) Success() {
 	prg.done <- true
-	impl.Done()
+	impl.Success()
+}
+
+// Failure notifies the actual implementation we have finished a task
+// unsuccessfully, this is the specific implementation for Loop based progress
+func (prg *Loop) Failure() {
+	prg.done <- true
+	impl.Failure()
 }
 
 // Partial notifies the actual implementation we've moved one step on the
@@ -111,8 +122,14 @@ func (prg *BaseProgress) Partial(step int) {
 	impl.Partial(prg.total, step)
 }
 
-// Done is the common BaseProgress implementation and simply notify the actual
-// implementation we've finished a task
-func (prg *BaseProgress) Done() {
-	impl.Done()
+// Success is the common BaseProgress implementation and simply notify the actual
+// implementation we've finished a task successfully
+func (prg *BaseProgress) Success() {
+	impl.Success()
+}
+
+// Failure is the common BaseProgress implementation and simply notify the actual
+// implementation we've finished a task unsuccessfully
+func (prg *BaseProgress) Failure() {
+	impl.Failure()
 }

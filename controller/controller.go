@@ -13,6 +13,8 @@ import (
 	"sort"
 	"time"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/clearlinux/clr-installer/cmd"
 	"github.com/clearlinux/clr-installer/conf"
 	"github.com/clearlinux/clr-installer/errors"
@@ -46,6 +48,20 @@ func Install(rootDir string, model *model.SystemInstall) error {
 	// for most of the Installation commands
 	if err = utils.VerifyRootUser(); err != nil {
 		return err
+	}
+
+	if model.Telemetry.Enabled {
+		if err = model.Telemetry.CreateLocalTelemetryConf(); err != nil {
+			return err
+		}
+		if model.Telemetry.URL != "" {
+			if err = model.Telemetry.UpdateLocalTelemetryServer(); err != nil {
+				return err
+			}
+		}
+		if err = model.Telemetry.RestartLocalTelemetryServer(); err != nil {
+			return err
+		}
 	}
 
 	log.Info("Querying Clear Linux version")
@@ -90,7 +106,7 @@ func Install(rootDir string, model *model.SystemInstall) error {
 			if err = ch.MakeFs(); err != nil {
 				return err
 			}
-			prg.Done()
+			prg.Success()
 
 			// if we have a mount point set it for future mounting
 			if ch.MountPoint != "" {
@@ -133,7 +149,7 @@ func Install(rootDir string, model *model.SystemInstall) error {
 
 	prg, err := contentInstall(rootDir, version, model)
 	if err != nil {
-		prg.Done()
+		prg.Failure()
 		return err
 	}
 
@@ -181,7 +197,7 @@ func contentInstall(rootDir string, version string, model *model.SystemInstall) 
 			return prg, err
 		}
 	}
-	prg.Done()
+	prg.Success()
 
 	bundles := model.Bundles
 	bundles = append(bundles, model.Kernel.Bundle)
@@ -196,10 +212,15 @@ func contentInstall(rootDir string, version string, model *model.SystemInstall) 
 
 		prg = progress.NewLoop("Installing bundle: %s", bundle)
 		if err := sw.BundleAdd(bundle); err != nil {
-			return prg, err
+			// Attempt to continue the installation for non-core bundles
+			if errLog := model.Telemetry.LogRecord("swupd", 2, "Failed to install bundle: "+bundle); errLog != nil {
+				log.Error("Failed to log Telemetry record for failed bundled: " + bundle)
+			}
+			log.Error("Failed to install bundle: %s", bundle)
+			prg.Failure()
+		} else {
+			prg.Success()
 		}
-
-		prg.Done()
 	}
 
 	prg = progress.NewLoop("Installing boot loader")
@@ -213,7 +234,7 @@ func contentInstall(rootDir string, version string, model *model.SystemInstall) 
 	if err != nil {
 		return prg, errors.Wrap(err)
 	}
-	prg.Done()
+	prg.Success()
 
 	return nil, nil
 }
@@ -222,7 +243,7 @@ func contentInstall(rootDir string, version string, model *model.SystemInstall) 
 func ConfigureNetwork(model *model.SystemInstall) error {
 	prg, err := configureNetwork(model)
 	if err != nil {
-		prg.Done()
+		prg.Success()
 		return err
 	}
 	return nil
@@ -238,13 +259,13 @@ func configureNetwork(model *model.SystemInstall) (progress.Progress, error) {
 		if err := network.Apply("/", model.NetworkInterfaces); err != nil {
 			return prg, err
 		}
-		prg.Done()
+		prg.Success()
 
 		prg = progress.NewLoop("Restarting network interfaces")
 		if err := network.Restart(); err != nil {
 			return prg, err
 		}
-		prg.Done()
+		prg.Success()
 	}
 
 	prg := progress.NewLoop("Testing connectivity")
@@ -264,49 +285,103 @@ func configureNetwork(model *model.SystemInstall) (progress.Progress, error) {
 		return prg, errors.Errorf("Failed, network is not working.")
 	}
 
-	prg.Done()
+	prg.Success()
 
 	return nil, nil
 }
 
 // SaveInstallResults saves the results of the installation process
 // onto the target media
-func SaveInstallResults(rootDir string, model *model.SystemInstall) error {
+func SaveInstallResults(rootDir string, md *model.SystemInstall) error {
 	var err error
 	var errMsg string
 
-	if !model.PostArchive {
-		log.Info("Skipping archiving of Installation results")
-		return nil
-	}
-
-	log.Info("Saving Installation results to %s", rootDir)
-
-	saveDir := filepath.Join(rootDir, "root")
-	if err = utils.MkdirAll(saveDir, 0755); err != nil {
-		// Fallback in the unlikely case we can't use root's home
-		saveDir = rootDir
-	}
-
-	confFile := filepath.Join(saveDir, conf.ConfigFile)
-
-	if err := model.WriteFile(confFile); err != nil {
-		log.Error("Failed to write YAML file (%v) %q", err, confFile)
-		errMsg = "Failed to write YAML file"
-	}
-
-	logFile := filepath.Join(saveDir, conf.LogFile)
-
-	if err := log.ArchiveLogFile(logFile); err != nil {
+	// Log a sanitized YAML file with Telemetry
+	var cleanModel model.SystemInstall
+	// Marshal current into bytes
+	confBytes, bytesErr := yaml.Marshal(md)
+	if bytesErr != nil {
+		log.Error("Failed to generate YAML data (%v)", bytesErr)
 		if errMsg != "" {
 			errMsg = errMsg + "; "
 		}
-		errMsg = errMsg + "Failed to archive log file"
+		errMsg = errMsg + "Failed to generate YAML file"
+	}
+	// Unmarshal into a copy
+	if yamlErr := yaml.Unmarshal(confBytes, &cleanModel); yamlErr != nil {
+		errMsg = errMsg + "Failed to dumplicate YAML file"
+	}
+	cleanModel.Users = nil
+	//? cleanModel.Hostname = ""
+	//? cleanModel.HTTPSProxy = ""
+	//? cleanModel.SwupdMirror = ""
+	confBytes, bytesErr = yaml.Marshal(cleanModel)
+	if bytesErr != nil {
+		log.Error("Failed to generate YAML data (%v)", bytesErr)
+		if errMsg != "" {
+			errMsg = errMsg + "; "
+		}
+		errMsg = errMsg + "Failed to generate YAML file"
+	}
+
+	if errLog := md.Telemetry.LogRecord("success", 1, string(confBytes[:])); errLog != nil {
+		log.Error("Failed to log Telemetry success record")
+	}
+
+	if md.PostArchive {
+		log.Info("Saving Installation results to %s", rootDir)
+
+		saveDir := filepath.Join(rootDir, "root")
+		if err = utils.MkdirAll(saveDir, 0755); err != nil {
+			// Fallback in the unlikely case we can't use root's home
+			saveDir = rootDir
+		}
+
+		confFile := filepath.Join(saveDir, conf.ConfigFile)
+
+		if err := md.WriteFile(confFile); err != nil {
+			log.Error("Failed to write YAML file (%v) %q", err, confFile)
+			if errMsg != "" {
+				errMsg = errMsg + "; "
+			}
+			errMsg = errMsg + "Failed to write YAML file"
+		}
+
+		logFile := filepath.Join(saveDir, conf.LogFile)
+
+		if err := log.ArchiveLogFile(logFile); err != nil {
+			if errMsg != "" {
+				errMsg = errMsg + "; "
+			}
+			errMsg = errMsg + "Failed to archive log file"
+		}
+
+	} else {
+		log.Info("Skipping archiving of Installation results")
+	}
+
+	// Give Telemetry a chance to send before we shutdown and copy
+	time.Sleep(2 * time.Second)
+
+	if err := md.Telemetry.StopLocalTelemetryServer(); err != nil {
+		log.Warning("Failed to stop image Telemetry server")
+		if errMsg != "" {
+			errMsg = errMsg + "; "
+		}
+		errMsg = errMsg + "Failed to stop image Telemetry server"
+	}
+	if err := md.Telemetry.CopyTelemetryRecords(rootDir); err != nil {
+		log.Warning("Failed to copy image Telemetry data")
+		if errMsg != "" {
+			errMsg = errMsg + "; "
+		}
+		errMsg = errMsg + "Failed to copy image Telemetry data"
 	}
 
 	if errMsg != "" {
 		return errors.Errorf("%s", errMsg)
 	}
+
 	return nil
 }
 

@@ -60,11 +60,18 @@ func (mi *MassInstall) Partial(total int, step int) {
 	fmt.Printf("%s", line)
 }
 
-// Done is part of the progress.Client implementation and represents the progress task "done"
-// notification
-func (mi *MassInstall) Done() {
+// Success is part of the progress.Client implementation and represents the
+// successful progress completion of a task
+func (mi *MassInstall) Success() {
 	mi.prgIndex = 0
 	fmt.Printf("%s [done]\n", mi.prgDesc)
+}
+
+// Failure is part of the progress.Client implementation and represents the
+// unsuccessful progress completion of a task
+func (mi *MassInstall) Failure() {
+	mi.prgIndex = 0
+	fmt.Printf("%s [*failed*]\n", mi.prgDesc)
 }
 
 // MustRun is part of the Frontend implementation and tells the core implementation that this
@@ -113,18 +120,22 @@ func (mi *MassInstall) Run(md *model.SystemInstall, rootDir string) (bool, error
 	log.Debug("Starting install")
 
 	instError = controller.Install(rootDir, md)
+	if instError != nil {
+		fmt.Printf("ERROR: Installation has failed!\n")
+		return false, instError
+	}
 
 	prg := progress.NewLoop("Saving the installation results")
 	if err := controller.SaveInstallResults(rootDir, md); err != nil {
 		log.ErrorError(err)
 	}
-	prg.Done()
+	prg.Success()
 
 	prg = progress.NewLoop("Cleaning up install environment")
 	if err := controller.Cleanup(rootDir, true); err != nil {
 		log.ErrorError(err)
 	}
-	prg.Done()
+	prg.Success()
 
 	var reboot bool
 

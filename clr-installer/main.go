@@ -11,6 +11,8 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"reflect"
+	"regexp"
 	"syscall"
 
 	"github.com/clearlinux/clr-installer/args"
@@ -29,6 +31,7 @@ import (
 
 var (
 	frontEndImpls []frontend.Frontend
+	classExp      = regexp.MustCompile(`(?im)(\w+)`)
 )
 
 func fatal(err error) {
@@ -127,13 +130,16 @@ func main() {
 	defer func() {
 		_ = f.Close()
 	}()
+	log.Info(path.Base(os.Args[0]) + ": " + model.Version)
 
 	initFrontendList()
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
 
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGINT, syscall.SIGTERM,
+		syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGILL, syscall.SIGTRAP,
+		syscall.SIGABRT, syscall.SIGSTKFLT, syscall.SIGSYS)
 
 	rootDir, err := ioutil.TempDir("", "install-")
 	if err != nil {
@@ -195,6 +201,13 @@ func main() {
 
 			installReboot, err = fe.Run(md, rootDir)
 			if err != nil {
+				feName := classExp.FindString(reflect.TypeOf(fe).String())
+				if feName == "" {
+					feName = "unknown"
+				}
+				if errLog := md.Telemetry.LogRecord(feName, 3, err.Error()); errLog != nil {
+					log.Error("Failed to log Telemetry fail record: %s", feName)
+				}
 				fatal(err)
 			}
 
@@ -205,8 +218,11 @@ func main() {
 	}()
 
 	go func() {
-		<-sigs
+		s := <-sigs
 		fmt.Println("Leaving...")
+		if errLog := md.Telemetry.LogRecord("signaled", 2, "Interrupted by signal: "+s.String()); errLog != nil {
+			log.Error("Failed to log Telemetry signal handler for: %s", s.String())
+		}
 		done <- true
 	}()
 
@@ -218,6 +234,9 @@ func main() {
 
 	if options.Reboot && installReboot {
 		if err := cmd.RunAndLog("reboot"); err != nil {
+			if errLog := md.Telemetry.LogRecord("reboot", 1, err.Error()); errLog != nil {
+				log.Error("Failed to log Telemetry fail record: reboot")
+			}
 			fatal(err)
 		}
 	}
