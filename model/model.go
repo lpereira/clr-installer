@@ -51,11 +51,6 @@ type SystemInstall struct {
 	TelemetryPolicy   string                 `yaml:"telemetryPolicy,omitempty,flow"`
 }
 
-func init() {
-	// Make the Version of the program visible to telemetry
-	telemetry.ProgVersion = Version
-}
-
 // ContainsBundle returns true if the data model has a bundle and false otherwise
 func (si *SystemInstall) ContainsBundle(bundle string) bool {
 	for _, curr := range si.Bundles {

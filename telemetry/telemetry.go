@@ -225,7 +225,7 @@ func (tl *Telemetry) CreateTelemetryConf(rootDir string) error {
 }
 
 // CreateLocalTelemetryConf creates a new local custom Telemetry configuration
-// file to enable the uploading of telemetry records to the remote server
+// file to enable the uploading of telemetry records to the remote server.
 // Necessary as we change the default hostname to localhost in the server URI
 // during image creation to ensure record caching during the install.
 func (tl *Telemetry) CreateLocalTelemetryConf() error {
@@ -237,7 +237,7 @@ func (tl *Telemetry) CreateLocalTelemetryConf() error {
 	}
 
 	if err := utils.CopyFile(defaultTelemetryConf, customTelemetryConf); err != nil {
-		log.Error("Failed to copy telemetry config %q", customTelemetryConf)
+		log.Warning("Failed to copy telemetry config %q", customTelemetryConf)
 	}
 
 	log.Debug("Created Local Telemetry server configuration file %q", customTelemetryConf)
@@ -311,7 +311,7 @@ func (tl *Telemetry) StopLocalTelemetryServer() error {
 // CopyTelemetryRecords copies the local spooled telemetry records
 // to the target system. If records could not be sent or telemetry
 // was disable, place the unpublished records on the target system
-// to be upload if telemetry is installed an enabled.
+// to be upload if telemetry is installed and enabled.
 func (tl *Telemetry) CopyTelemetryRecords(rootDir string) error {
 	err := filepath.Walk(telemetrySpoolDir,
 		func(path string, info os.FileInfo, err error) error {
@@ -330,7 +330,7 @@ func (tl *Telemetry) CopyTelemetryRecords(rootDir string) error {
 				return nil
 			}
 			if err := utils.CopyFile(path, target); err != nil {
-				log.Error("Failed to copy telemetry %q", target)
+				log.Warning("Failed to copy telemetry %q", target)
 			}
 
 			// Ensure all contents is owned correctly
@@ -382,9 +382,17 @@ func (tl *Telemetry) LogRecord(class string, severity int, payload string) error
 		fmt.Sprintf("%d", severity),
 		"--class",
 		fmt.Sprintf("%s/%s", baseClass, class),
-		"--event-id", eventID,
-		"--payload", payload,
 	}
+	if eventID != "" {
+		args = append(args,
+			[]string{
+				"--event-id", eventID,
+			}...)
+	}
+	args = append(args,
+		[]string{
+			"--payload", payload,
+		}...)
 
 	err := cmd.RunAndLog(args...)
 	if err != nil {

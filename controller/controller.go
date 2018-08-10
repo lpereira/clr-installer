@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strings"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -294,37 +295,38 @@ func configureNetwork(model *model.SystemInstall) (progress.Progress, error) {
 // onto the target media
 func SaveInstallResults(rootDir string, md *model.SystemInstall) error {
 	var err error
-	var errMsg string
+	errMsgs := []string{}
 
 	// Log a sanitized YAML file with Telemetry
 	var cleanModel model.SystemInstall
 	// Marshal current into bytes
 	confBytes, bytesErr := yaml.Marshal(md)
 	if bytesErr != nil {
-		log.Error("Failed to generate YAML data (%v)", bytesErr)
-		if errMsg != "" {
-			errMsg = errMsg + "; "
-		}
-		errMsg = errMsg + "Failed to generate YAML file"
+		log.Error("Failed to generate a copy of YAML data (%v)", bytesErr)
+		errMsgs = append(errMsgs, "Failed to generate YAML file")
 	}
 	// Unmarshal into a copy
 	if yamlErr := yaml.Unmarshal(confBytes, &cleanModel); yamlErr != nil {
-		errMsg = errMsg + "Failed to dumplicate YAML file"
+		errMsgs = append(errMsgs, "Failed to duplicate YAML file")
 	}
-	cleanModel.Users = nil
-	//? cleanModel.Hostname = ""
-	//? cleanModel.HTTPSProxy = ""
-	//? cleanModel.SwupdMirror = ""
+	// Sanitize the config data to remove any potential
+	// Personal Information from the data set
+	cleanModel.Users = nil      // Remove User Info
+	cleanModel.Hostname = ""    // Remove user defined hostname
+	cleanModel.HTTPSProxy = ""  // Remove user defined Proxy
+	cleanModel.SwupdMirror = "" // Remove user defined Swupd Mirror
+
+	var payload string
 	confBytes, bytesErr = yaml.Marshal(cleanModel)
 	if bytesErr != nil {
-		log.Error("Failed to generate YAML data (%v)", bytesErr)
-		if errMsg != "" {
-			errMsg = errMsg + "; "
-		}
-		errMsg = errMsg + "Failed to generate YAML file"
+		log.Error("Failed to generate a sanitized data (%v)", bytesErr)
+		errMsgs = append(errMsgs, "Failed to generate a sanitized YAML file")
+		payload = strings.Join(errMsgs, ";")
+	} else {
+		payload = string(confBytes[:])
 	}
 
-	if errLog := md.Telemetry.LogRecord("success", 1, string(confBytes[:])); errLog != nil {
+	if errLog := md.Telemetry.LogRecord("success", 1, payload); errLog != nil {
 		log.Error("Failed to log Telemetry success record")
 	}
 
@@ -341,19 +343,13 @@ func SaveInstallResults(rootDir string, md *model.SystemInstall) error {
 
 		if err := md.WriteFile(confFile); err != nil {
 			log.Error("Failed to write YAML file (%v) %q", err, confFile)
-			if errMsg != "" {
-				errMsg = errMsg + "; "
-			}
-			errMsg = errMsg + "Failed to write YAML file"
+			errMsgs = append(errMsgs, "Failed to write YAML file")
 		}
 
 		logFile := filepath.Join(saveDir, conf.LogFile)
 
 		if err := log.ArchiveLogFile(logFile); err != nil {
-			if errMsg != "" {
-				errMsg = errMsg + "; "
-			}
-			errMsg = errMsg + "Failed to archive log file"
+			errMsgs = append(errMsgs, "Failed to archive log file")
 		}
 
 	} else {
@@ -365,21 +361,15 @@ func SaveInstallResults(rootDir string, md *model.SystemInstall) error {
 
 	if err := md.Telemetry.StopLocalTelemetryServer(); err != nil {
 		log.Warning("Failed to stop image Telemetry server")
-		if errMsg != "" {
-			errMsg = errMsg + "; "
-		}
-		errMsg = errMsg + "Failed to stop image Telemetry server"
+		errMsgs = append(errMsgs, "Failed to stop image Telemetry server")
 	}
 	if err := md.Telemetry.CopyTelemetryRecords(rootDir); err != nil {
 		log.Warning("Failed to copy image Telemetry data")
-		if errMsg != "" {
-			errMsg = errMsg + "; "
-		}
-		errMsg = errMsg + "Failed to copy image Telemetry data"
+		errMsgs = append(errMsgs, "Failed to copy image Telemetry data")
 	}
 
-	if errMsg != "" {
-		return errors.Errorf("%s", errMsg)
+	if len(errMsgs) > 0 {
+		return errors.Errorf("%s", strings.Join(errMsgs, ";"))
 	}
 
 	return nil

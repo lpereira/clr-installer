@@ -46,14 +46,14 @@ func initFrontendList() {
 	}
 }
 
-func validateTelemetry(options args.Args, md *model.SystemInstall) {
+func validateTelemetry(options args.Args, md *model.SystemInstall) error {
 	if options.TelemetryPolicy != "" {
 		md.TelemetryPolicy = options.TelemetryPolicy
 	}
 	// Make sure the both URL and TID are in the configuration file
 	if (md.TelemetryURL != "" && md.TelemetryTID == "") ||
 		(md.TelemetryURL == "" && md.TelemetryTID != "") {
-		fatal(errors.New("Telemetry requires both telemetryUrl and telemetryTid in the configuration file"))
+		return errors.New("Telemetry requires both telemetryUrl and telemetryTid in the configuration file")
 	} else if md.TelemetryURL != "" && md.TelemetryPolicy == "" {
 		log.Warning("Defining a Telemetry Policy is encouraged when specifying a Telemetry server")
 	}
@@ -76,7 +76,7 @@ func validateTelemetry(options args.Args, md *model.SystemInstall) {
 	// Validate the specified telemetry server
 	if md.TelemetryURL != "" {
 		if telErr := md.Telemetry.SetTelemetryServer(md.TelemetryURL, md.TelemetryTID, md.TelemetryPolicy); telErr != nil {
-			fatal(telErr)
+			return telErr
 		}
 
 		if noTelemetryDefault {
@@ -92,6 +92,8 @@ func validateTelemetry(options args.Args, md *model.SystemInstall) {
 			md.EnableTelemetry(telemetryEnable)
 		}
 	}
+
+	return nil
 }
 
 func main() {
@@ -104,6 +106,9 @@ func main() {
 	if options.DemoMode {
 		model.Version = "X.Y.Z"
 	}
+	// Make the Version of the program visible to telemetry
+	telemetry.ProgVersion = model.Version
+
 	if err := log.SetLogLevel(options.LogLevel); err != nil {
 		fatal(err)
 	}
@@ -189,7 +194,9 @@ func main() {
 		}
 	}
 
-	validateTelemetry(options, md)
+	if err = validateTelemetry(options, md); err != nil {
+		fatal(err)
+	}
 
 	installReboot := false
 

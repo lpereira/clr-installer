@@ -64,7 +64,7 @@ func (mi *MassInstall) Partial(total int, step int) {
 // successful progress completion of a task
 func (mi *MassInstall) Success() {
 	mi.prgIndex = 0
-	fmt.Printf("%s [done]\n", mi.prgDesc)
+	fmt.Printf("%s [success]\n", mi.prgDesc)
 }
 
 // Failure is part of the progress.Client implementation and represents the

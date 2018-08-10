@@ -121,11 +121,6 @@ func (args *Args) setCommandLineArgs() (err error) {
 	flag.BoolVar(
 		&args.Telemetry, "telemetry", args.Telemetry, "Enable Telemetry",
 	)
-	// We do not want this flag to be shown as part of the standard help message
-	fflag := flag.Lookup("telemetry")
-	if fflag != nil {
-		fflag.Hidden = true
-	}
 
 	flag.StringVar(
 		&args.TelemetryURL, "telemetry-url", args.TelemetryURL, "Telemetry server URL",
@@ -160,7 +155,7 @@ func (args *Args) setCommandLineArgs() (err error) {
 		&args.DemoMode, "demo", args.DemoMode, "Demonstration mode for documentation generation",
 	)
 	// We do not want this flag to be shown as part of the standard help message
-	fflag = flag.Lookup("demo")
+	fflag := flag.Lookup("demo")
 	if fflag != nil {
 		fflag.Hidden = true
 	}
